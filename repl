@@ -1,0 +1,790 @@
+#!/usr/bin/perl
+
+use File::Temp  'tempfile';
+use Carp        'carp';
+use Digest::SHA 'sha256_base64';
+
+my %data;
+my %externalized_functions;
+my @data_types;
+my @script_args;
+
+sub meta::define_form {
+  my ($namespace, $delegate) = @_;
+  push @data_types, $namespace;
+  *{"meta::${namespace}::implementation"} = $delegate;
+  *{"meta::$namespace"} = sub {
+    my ($name, $value) = @_;
+    chomp $value;
+    $data{"${namespace}::$name"} = $value;
+    $delegate->($name, $value);
+  };
+}
+
+meta::define_form 'meta', sub {
+  my ($name, $value) = @_;
+  eval $value;
+  carp $@ if $@;
+};
+
+meta::meta('datatypes::bootstrap', <<'__guYWiOv4zBmdrlI3k3sW7f/q/xsX38Xvzz0dwwLCIRM');
+meta::define_form 'bootstrap', sub {};
+__guYWiOv4zBmdrlI3k3sW7f/q/xsX38Xvzz0dwwLCIRM
+
+meta::meta('datatypes::data', <<'__j7lFraXGRfKk8ymj2mDJhNbCQMk9FSciN1hdDhzM99U');
+meta::define_form 'data', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "data::$name";
+  *{$name} = sub {
+    associate("data::$name", $_[1] || join('', <STDIN>)) if @_ > 0 && $_[0] eq '=';
+    retrieve("data::$name");
+  };
+};
+__j7lFraXGRfKk8ymj2mDJhNbCQMk9FSciN1hdDhzM99U
+
+meta::meta('datatypes::function', <<'__XSIHGGHv0Sh0JBj9KIrP/OzuuB2epyvn9pgtZyWE6t0');
+meta::define_form 'function', sub {
+  my ($name, $value) = @_;
+  $externalized_functions{$name} = "function::$name";
+  *{$name} = eval "sub {\n$value\n}";
+  carp $@ if $@;
+};
+__XSIHGGHv0Sh0JBj9KIrP/OzuuB2epyvn9pgtZyWE6t0
+
+meta::meta('datatypes::internal_function', <<'__heBxmlI7O84FgR+9+ULeiCTWJ4hqd079Z02rZnl9Ong');
+meta::define_form 'internal_function', sub {
+  my ($name, $value) = @_;
+  *{$name} = eval "sub {\n$value\n}";
+  carp $@ if $@;
+};
+__heBxmlI7O84FgR+9+ULeiCTWJ4hqd079Z02rZnl9Ong
+
+meta::meta('datatypes::section', <<'__j7aziVs+epjqp2sisd0b7i4W10tiszGEwURPNw0jubw');
+meta::define_form 'section', sub {
+  my ($name, $value) = @_;
+  $externalized_functions{$name} = "section::$name";
+
+  my $stuff_to_eval = "sub {\n";
+
+  my @lines         = split /\n/, $value;
+  my $in_code_piece = 0;
+  my $spaces        = '';
+
+  for (@lines) {
+    s/^$spaces// if $in_code_piece;
+    $in_code_piece &= ! /^\s*:.$/;
+    $stuff_to_eval .= "$_\n" if $in_code_piece;
+    $spaces = $1 if $in_code_piece |= /^(\s*)::$/;
+  }
+
+  $stuff_to_eval .= "\n}";
+
+  *{$name} = eval $stuff_to_eval;
+  carp $@ if $@;
+};
+__j7aziVs+epjqp2sisd0b7i4W10tiszGEwURPNw0jubw
+
+meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA');
+meta::define_form 'internal', \&meta::meta::implementation;
+__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
+
+meta::bootstrap('initialization', <<'__bzFASokNzruPfsSIlwZC8OG4NFNI9EfmMYeL/oWGaDs');
+#!/usr/bin/perl
+
+use File::Temp  'tempfile';
+use Carp        'carp';
+use Digest::SHA 'sha256_base64';
+
+my %data;
+my %externalized_functions;
+my @data_types;
+my @script_args;
+
+sub meta::define_form {
+  my ($namespace, $delegate) = @_;
+  push @data_types, $namespace;
+  *{"meta::${namespace}::implementation"} = $delegate;
+  *{"meta::$namespace"} = sub {
+    my ($name, $value) = @_;
+    chomp $value;
+    $data{"${namespace}::$name"} = $value;
+    $delegate->($name, $value);
+  };
+}
+
+meta::define_form 'meta', sub {
+  my ($name, $value) = @_;
+  eval $value;
+  carp $@ if $@;
+};
+
+__bzFASokNzruPfsSIlwZC8OG4NFNI9EfmMYeL/oWGaDs
+
+meta::bootstrap('pod', <<'__0h2CBA2cqa4qd6nox9dul6Jn9hcJFHw3uPdC89Xim7o');
+
+=head1 NAME
+
+object - Stateful file-based object
+
+=head1 SYNOPSYS
+
+object [options] action [arguments...]
+
+object shell
+
+=head1 DESCRIPTION
+
+Stateful objects preserve their state between executions by rewriting themselves. Each time the script exits it replaces its contents with its new state. Thus
+state management, for user-writable scripts, is completely transparent.
+
+An object rewrites itself only if its state has changed. This may seem like a dangerous operation, but some checks are put into place to ensure that it goes
+smoothly. First, the object is initially written to a separate file. Next, that file is executed and asked to provide a hashsum of its contents. The original
+object is rewritten only if that hashsum is correct. This ensures that the replacement object is functional and has the right data.
+
+Currently the only known way to lose your data is to edit the serialization-related functions in such a way that they no longer function. However, this is not
+something most people will normally do. In the future there may be a locking mechanism to prevent unintentional edits of these attributes.
+
+=cut
+__0h2CBA2cqa4qd6nox9dul6Jn9hcJFHw3uPdC89Xim7o
+
+meta::data('cltex-vim-highlighter', <<'__rHK8+R1uJAbvnRCtLyhRzf4wgCHMzBCXNEZHN7yH1yc');
+" Cleaner TeX
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   Cleaner TeX (a variant of LaTeX)
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn match  cltTitle   /^= .*$/
+syn match  cltAuthor  /^a .*$/
+syn match  cltDate    /^d .*$/
+syn match  cltSection /^\s*- .*$/
+syn region cltVerbatim start=/^\s*::$/ end=/^\s*:\.$/
+
+runtime! syntax/tex.vim
+
+hi link cltTitle    Identifier
+hi link cltAuthor   Identifier
+hi link cltDate     Identifier
+
+hi link cltSection  Type
+
+hi link cltVerbatim String
+
+let b:current_syntax = "cltex"
+__rHK8+R1uJAbvnRCtLyhRzf4wgCHMzBCXNEZHN7yH1yc
+
+meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
+shell
+__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
+
+meta::data('document', <<'__+CVe5rD14tkvlBJ7UoVHrrFAEsVBhB3OsVysvoxkiTg');
+= Interactive Lisp Environment
+a Spencer Tipping
+
+- Introduction
+  This system interprets expressions written in a Lisp-like language that doesn't yet have a name.
+__+CVe5rD14tkvlBJ7UoVHrrFAEsVBhB3OsVysvoxkiTg
+
+meta::data('header', <<'__eDtyvHFZSQrphEHm92Rjuvx5KOB2Cm+mxAPuG0JPt2g');
+\documentclass{article}
+\usepackage{palatino,mathpazo,amsmath,amssymb}
+__eDtyvHFZSQrphEHm92Rjuvx5KOB2Cm+mxAPuG0JPt2g
+
+meta::data('intro', <<'__uirjwqAxCBH+vu23aaPBO6uNM7a7cUHAYKJo8gIJsGw');
+This is a TeX document generator.
+
+If this is your first time using it, then you'll probably want to install
+the VIM highlighter for the custom TeX format. To do that, run this:
+
+  $ tex-document install-vim-highlighter
+
+If you don't mind an extra line at the end of your .vimrc file, then you
+can automatically associate .cltex files:
+
+  $ tex-document update-vimrc
+
+Now you're ready to go.
+
+To create a new TeX document, do this:
+
+  $ tex-document new newdoc
+
+Next, edit the contents of your new document:
+
+  $ ./newdoc e
+
+Once you're done editing, you can build and display the document:
+
+  $ ./newdoc make
+
+Alternately, you can use the shell interface (exit with the 'exit' command or
+control-D):
+
+  $ ./newdoc shell
+  tex-document$ e
+  tex-document$ make
+  ...
+  tex-document$ ^D
+  $
+
+If you edit and run make a lot, I recommend you save your document just to be
+on the safe side. Normally the document is not committed to disk until you exit
+the shell, but you can commit at any time by using the 'save' command.
+
+To extract your document in its original form, you can say this:
+
+  $ ./newdoc document > file
+
+And to extract the generated TeX:
+
+  $ ./newdoc compile-to-tex > file
+__uirjwqAxCBH+vu23aaPBO6uNM7a7cUHAYKJo8gIJsGw
+
+meta::data('meta-associations', <<'__3vaaH2ztWoY47CRb/Uz7A/5gy47hkpptD9Exz16V3j4');
+^function:: .pl
+^internal_function:: .pl
+^meta:: .pl
+^bootstrap:: .pl
+^data::document$ .cltex
+^data::.*-vim-highlighter$ .vim
+^section:: .perltex
+__3vaaH2ztWoY47CRb/Uz7A/5gy47hkpptD9Exz16V3j4
+
+meta::data('name', <<'__ohnJGaQmJnPUNqX7FfcA/hxTRo3E78EirwEYNwcWx28');
+repl
+__ohnJGaQmJnPUNqX7FfcA/hxTRo3E78EirwEYNwcWx28
+
+meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
+/tmp
+__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
+
+meta::data('pdf-output-file', <<'__2q7PDwLg3nPGbdeG7gNZBH7w/BOVKmKvTwwctREEywo');
+/tmp/literate-perl-object.315j2wY3NTVovWb2+VEzikNkz53qRMUaLcEb3XxckSg/document.pdf
+__2q7PDwLg3nPGbdeG7gNZBH7w/BOVKmKvTwwctREEywo
+
+meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
+evince
+__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A
+
+meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
+pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
+__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
+
+meta::data('perltex-vim-highlighter', <<'__1H4nT34NX/2392esHgzM2NizSiCw05ERd9nSvB4XyWg');
+" TeX with Perl
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   TeX with Perl in it
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn region perltexComment start=/\%^\|^\s*:.$/ end=/\%$\|^\s*::$/ contains=perltexSection
+syn match  perltexSection /^\s*- .*$/ contained
+
+runtime! syntax/perl.vim
+
+hi link perltexSection Special
+hi link perltexComment Comment
+
+let b:current_syntax = "perltex"
+__1H4nT34NX/2392esHgzM2NizSiCw05ERd9nSvB4XyWg
+
+meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
+1
+__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s
+
+meta::data('tex', <<'__36pVFkgFfbTr/DrquMMaLrTY5F5S/VJ5Z3Jc90KC+q4');
+latex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
+__36pVFkgFfbTr/DrquMMaLrTY5F5S/VJ5Z3Jc90KC+q4
+
+meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
+my ($filename) = @_;
+my @members = grep /^implementation::/, keys %data;
+
+for (@members) {
+  my $destination_name = basename($_);
+  open my($handle), "| $filename import $destination_name" or messages::error("Attribute $_ could not be written.");
+  print $handle retrieve($_);
+  close $handle;
+}
+__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q
+
+meta::function('cat', <<'__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk');
+my ($name) = @_;
+$data{$name};
+__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk
+
+meta::function('clean', <<'__YiaR22ZfeeFhhPYBUFHWBZqstuOzKtkv2XqmTuXhy1E');
+my $output_directory = &{'pdf-output-file'}();
+$output_directory =~ s+/.*++g;
+unlink <$output_directory/*>;
+rmdir $output_directory;
+__YiaR22ZfeeFhhPYBUFHWBZqstuOzKtkv2XqmTuXhy1E
+
+meta::function('clone', <<'__qP6xPZE75s9g0XJIiC6FGw0vnj2j0glUzsAHxyA3lvY');
+for (@_) {
+  if ($_) {
+    eval {
+      file::write($_, serialize(), noclobber => 1);
+      chmod(0700, $_);
+      print "File $_ cloned successfully.\n";
+    };
+
+    print "$@\n" if $@;
+  }
+}
+__qP6xPZE75s9g0XJIiC6FGw0vnj2j0glUzsAHxyA3lvY
+
+meta::function('compile', <<'__HfmDCotLaO8/ha33D7dUqCAhPmSSrWt1lJc73NXcPz8');
+my $tex_command         = tex();
+my $pdftex_command      = pdftex();
+my $filename            = 'document';
+
+my $contents            = &{'compile-to-tex'}();
+my $output_directory    = &{'output-dir'}();
+chomp $output_directory;
+
+my $temporary_directory = state_based_filename();
+$temporary_directory =~ s+^.*/++;
+$temporary_directory = "$output_directory/$temporary_directory";
+
+$tex_command    =~ s/__TEMPORARY_DIRECTORY__/$temporary_directory/g;
+$tex_command    =~ s+__INPUT_FILE__+$temporary_directory/$filename.tex+g;
+
+$pdftex_command =~ s/__TEMPORARY_DIRECTORY__/$temporary_directory/g;
+$pdftex_command =~ s+__INPUT_FILE__+$temporary_directory/$filename.tex+g;
+
+mkdir $temporary_directory;
+file::write("$temporary_directory/$filename.tex", $contents);
+
+if (&{'table-of-contents'}()) {
+  print "First invocation of TeX:\n";
+  system($tex_command);
+  print "Second invocation of TeX:\n";
+  system($tex_command);
+  print "PDFTeX:\n";
+  system($pdftex_command);
+} else {
+  print "PDFTeX:\n";
+  system($pdftex_command);
+}
+
+associate('data::pdf-output-file', my $result = "$temporary_directory/$filename.pdf", execute => 1);
+$result;
+__HfmDCotLaO8/ha33D7dUqCAhPmSSrWt1lJc73NXcPz8
+
+meta::function('compile-to-tex', <<'__JSHSZwURth92ywxoX8MxVWgU1usLijQW4Iab73qgacI');
+my %indentation_levels = (
+  0 => '\section',
+  2 => '\subsection',
+  4 => '\subsubsection',
+  6 => '\paragraph',
+  8 => '\subparagraph');
+
+my $result                       = header() . "\n";
+my $sections_already_encountered = 0;
+my $inside_code_block            = 0;
+my $code_block_indentation       = 0;
+my $collected_methods            = join "\n\n", map retrieve($_), grep /^section::/, sort keys %data;
+
+for (split /\n/, document() . "\n" . $collected_methods) {
+  # Step 1. Convert title, author, and date.
+  unless ($inside_code_block) {
+    s/^= (.*)$/\\title{$1}/;
+    s/^a (.*)$/\\author{$1}/;
+    s/^d (.*)$/\\date{$1}/;
+  }
+
+  # Step 2. Convert -- that is, unindent -- code.
+  if (/^(\s*):\.$/) {
+    $inside_code_block = $code_block_indentation = 0;
+    $_ = '\end{verbatim}';
+  }
+
+  if ($inside_code_block) {
+    my $spaces_to_delete = ' ' x $code_block_indentation;
+    s/^$spaces_to_delete//;
+  }
+
+  if (/^(\s*)::$/) {
+    $inside_code_block      = 1;
+    $code_block_indentation = length($1);
+    $_ = '\begin{verbatim}';
+  }
+
+  # Step 3. Convert section headings.
+  if (/^(\s*)- (.*)$/) {
+    unless ($sections_already_encountered) {
+      $result .= '\begin{document}\maketitle ';
+      $result .= '\tableofcontents ' if &{'table-of-contents'}();
+      $sections_already_encountered = 1;
+    }
+
+    my $section = $indentation_levels{length($1)} || die "Invalid indentation level:\n$_";
+    $_ = "${section} {${2}}";
+  }
+
+  $result .= "$_\n";
+}
+
+"$result\\end{document}";
+__JSHSZwURth92ywxoX8MxVWgU1usLijQW4Iab73qgacI
+
+meta::function('cp', <<'__yn1SQkcEk6o+gnuCy3QGVFtQb2piaCoUdJPGUkLjpD4');
+my ($from, $to) = @_;
+$data{$to} = $data{$from} if $data{$from};
+messages::error("No such attribute $from") unless $data{$from};
+$data{$from};
+__yn1SQkcEk6o+gnuCy3QGVFtQb2piaCoUdJPGUkLjpD4
+
+meta::function('create', <<'__4e/yca7FeKtJK0U61l9uCtsCPTiznglZlwh6U3iRLvY');
+my ($name, $value) = @_;
+messages::error("Attribute $name already exists.") if grep {$_ eq $name} keys %data;
+associate($name, $value || join('', <STDIN>) || "\n");
+__4e/yca7FeKtJK0U61l9uCtsCPTiznglZlwh6U3iRLvY
+
+meta::function('e', <<'__VOcQy5WG275NZGlFODdYHYBe3oJ7/CHmTT/L9O1I6t0');
+edit('data::document', extension => '.tex');
+reload();
+__VOcQy5WG275NZGlFODdYHYBe3oJ7/CHmTT/L9O1I6t0
+
+meta::function('edit', <<'__OtbuwBGfWZZef+v2WP0gCvvxbtpyxi1FbVD11BTjZzQ');
+my ($name, %options) = @_;
+
+my $meta_extension = join '', grep {
+  my $s = $_;
+  $s =~ s/\s.*$//;
+  $name =~ /$s/
+} split /\n/, &{'meta-associations'}();
+
+$meta_extension =~ s/^.*\s//;
+chomp $meta_extension;
+
+messages::error("Attribute $name does not exist.") unless grep {$_ eq $name} keys %data;
+associate($name, invoke_editor_on($data{$name} || "# Attribute $name", %options, extension => $meta_extension),
+          execute => $name !~ /^internal::/ && $name !~ /^bootstrap::/);
+delete $data{$name} if length($data{$name}) == 0;
+
+save();
+
+__OtbuwBGfWZZef+v2WP0gCvvxbtpyxi1FbVD11BTjZzQ
+
+meta::function('exists', <<'__bxU1sDtIh3+P1x0HuuY0f7sKHr9qNZUEl64m2fvwmDk');
+my $name = shift;
+grep {$_ eq $name} keys %data;
+__bxU1sDtIh3+P1x0HuuY0f7sKHr9qNZUEl64m2fvwmDk
+
+meta::function('grab', <<'__sXs1aeJVBERH6nWE7ZpWiIO5Cg7fSBWcoscDg1DHzD8');
+my ($filename, @attribute_names) = @_;
+associate("implementation::$_", `$filename cat $_`) for @attribute_names;
+__sXs1aeJVBERH6nWE7ZpWiIO5Cg7fSBWcoscDg1DHzD8
+
+meta::function('import', <<'__oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA');
+my ($name) = @_;
+associate($name, join('', <STDIN>));
+__oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
+
+meta::function('install-vim-highlighters', <<'__sU1q4qKookoza/uN5bcfaQHuraNtOAc4cN8I6CP9q18');
+my $home = $ENV{'HOME'};
+mkdir "$home/.vim";
+mkdir "$home/.vim/syntax";
+file::write("$home/.vim/syntax/cltex.vim", retrieve('data::cltex-vim-highlighter'));
+file::write("$home/.vim/syntax/perltex.vim", retrieve('data::perltex-vim-highlighter'));
+
+<<"EOF";
+The highlighters were created successfully. To have syntax highlighting activated
+automatically, append this to your .vimrc:
+
+  au BufRead,BufNewFile *.cltex   set filetype=cltex
+  au BufRead,BufNewFile *.perltex set filetype=perltex
+
+Alternately, you can run $0 update-vimrc.
+EOF
+__sU1q4qKookoza/uN5bcfaQHuraNtOAc4cN8I6CP9q18
+
+meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
+my (undef, undef, $mode) = stat $0;
+chmod $mode & 0555, $0;
+__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y
+
+meta::function('ls', <<'__M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg');
+join("\n", sort keys %externalized_functions);
+__M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg
+
+meta::function('ls-a', <<'__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18');
+join("\n", map {"  $_"} sort keys %data) . "\n";
+__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18
+
+meta::function('make', <<'__8mAUcwqcvcEhgs6tEjHaIx3uF9QOC+9DAI7NmulvJ74');
+compile();
+view();
+clean();
+__8mAUcwqcvcEhgs6tEjHaIx3uF9QOC+9DAI7NmulvJ74
+
+meta::function('mv', <<'__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y');
+my ($from, $to) = @_;
+messages::error("The '$from' attribute does not exist.") unless grep $from, keys %data;
+$data{$to} = $data{$from};
+delete $data{$from};
+__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y
+
+meta::function('new', <<'__FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos');
+clone(@_);
+__FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos
+
+meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
+my ($class_name) = @_;
+my @attributes = grep /^implementation::/, split /\n/, `$class_name ls-a`;
+
+for (@attributes) {
+  s/^\s+//;
+  s/\s+$//;
+  print STDERR "Adding $_\n";
+  associate(basename($_), `$class_name cat "$_"`);
+}
+__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg
+
+meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
+execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
+__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
+
+meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
+for my $to_be_deleted (@_) {
+  messages::warning("$to_be_deleted does not exist") unless grep {$_ eq $to_be_deleted} keys %data;
+}
+
+delete @data{@_};
+__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww
+
+meta::function('save', <<'__HuNR2A6/zt/GGZDRiR1x82a4nBxpAlIR1QGc4kUySto');
+my $serialized_data = serialize();
+my $final_state     = state();
+
+my (undef, $temporary_filename) = tempfile("$0." . 'X' x 32, OPEN => 0);
+file::write($temporary_filename, $serialized_data);
+chmod 0700, $temporary_filename;
+
+my $observed_state = `perl $temporary_filename state`;
+chomp $observed_state;
+if ($observed_state ne $final_state) {
+  messages::error("The state of this object ($final_state) is inconsistent with the state of $temporary_filename ($observed_state).\n" .
+                  "$0 has not been updated.");
+} else {
+  file::write($0, $serialized_data);
+  unlink $temporary_filename;
+}
+__HuNR2A6/zt/GGZDRiR1x82a4nBxpAlIR1QGc4kUySto
+
+meta::function('serialize', <<'__KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw');
+my @keys_without_internals = grep(!/^internal::/, sort keys %data);
+join "\n", $data{'bootstrap::initialization'},
+           (grep {$_} (map {serialize::single(@_)} grep(/^meta::/,  @keys_without_internals),
+                                                   grep(!/^meta::/, @keys_without_internals),
+                                                   grep(/^internal::/, sort keys %data))),
+           "__END__";
+__KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
+
+meta::function('shell', <<'__1pX0YiaO1Jx8AIJ3/w6tbrNGcmnuuZfIo6840aq4bU4');
+use Term::ReadLine;
+
+my $term = new Term::ReadLine "$0 shell";
+$term->ornaments(0);
+my $prompt = name() . '$ ';
+my $OUT = $term->OUT || \*STDOUT;
+
+while (defined ($_ = $term->readline($prompt))) {
+  my $command_line = $_;
+  my @args = split /\s+/;
+  my $function_name = shift @args;
+
+  return if $function_name eq 'exit';
+
+  if ($externalized_functions{$function_name}) {
+    my $result = eval {&{$function_name}(@args)};
+    messages::warning($@) if $@;
+    chomp $result;
+    print $OUT $result, "\n" unless $@;
+  } else {
+    messages::warning("Command not found: $function_name");
+  }
+
+  $term->addhistory($command_line) if $command_line;
+  $prompt = name() . '$ ';
+}
+__1pX0YiaO1Jx8AIJ3/w6tbrNGcmnuuZfIo6840aq4bU4
+
+meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
+length(serialize());
+__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80
+
+meta::function('snapshot', <<'__qjqsCy4CTt88dIi7IWM+Varpb3GcHsYrFTxW7EwpLW0');
+my ($name) = @_;
+file::write(my $finalname = state_based_filename($name), serialize(), noclobber => 1);
+chmod 0700, $finalname;
+__qjqsCy4CTt88dIi7IWM+Varpb3GcHsYrFTxW7EwpLW0
+
+meta::function('state', <<'__1S8nzRSMoxJU/VEv2rx/NrAt1iRgXQ9ugxjUP3IFunI');
+sha256_base64 serialize();
+__1S8nzRSMoxJU/VEv2rx/NrAt1iRgXQ9ugxjUP3IFunI
+
+meta::function('unlock', <<'__08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA');
+my (undef, undef, $mode) = stat $0;
+chmod $mode | 0200, $0;
+__08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
+
+meta::function('update-vimrc', <<'__R2x6hfVYcm/6NafSHbK4MOSUC/c0scCF9etKQ9+ouRs');
+open my $fh, '>>', "$ENV{'HOME'}/.vimrc";
+print $fh "au BufRead,BufNewFile *.cltex   set filetype=cltex\n";
+print $fh "au BufRead,BufnewFile *.perltex set filetype=perltex\n";
+close $fh;
+__R2x6hfVYcm/6NafSHbK4MOSUC/c0scCF9etKQ9+ouRs
+
+meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
+<<"EOD" . join '  ', split /\n/, ls ();
+Usage: $0 [options] action [arguments]
+Defined actions:
+EOD
+__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I
+
+meta::function('view', <<'__wEtlK5H0ttR24UvcFUsgg5Es1V/VbjMJlU+SKiO2jKs');
+my $pdf_reader      = &{'pdf-reader'}();
+my $pdf_output_file = &{'pdf-output-file'}();
+chomp $pdf_reader;
+system("$pdf_reader '$pdf_output_file'");
+__wEtlK5H0ttR24UvcFUsgg5Es1V/VbjMJlU+SKiO2jKs
+
+meta::internal_function('associate', <<'__D8BKmEFp/adiPPqPnXyMOzlsBMCmuZi62UpJWdoFg/0');
+my ($name, $value, %options) = @_;
+my $namespace = namespace($name);
+messages::error("Namespace $namespace does not exist") unless grep {$_ eq $namespace} @data_types;
+$data{$name} = $value;
+execute($name) if $options{'execute'};
+__D8BKmEFp/adiPPqPnXyMOzlsBMCmuZi62UpJWdoFg/0
+
+meta::internal_function('basename', <<'__T4JEqOUYjMzssdVwV/rdgAhvr0Vz9TQUo0noTdeBLxw');
+my ($name) = @_;
+$name =~ s/^[^:]*:://;
+$name;
+__T4JEqOUYjMzssdVwV/rdgAhvr0Vz9TQUo0noTdeBLxw
+
+meta::internal_function('execute', <<'__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE');
+my ($name, %options) = @_;
+my $namespace = namespace($name);
+eval {&{"meta::$namespace"}(basename($name), retrieve($name))};
+carp $@ if $@ && $options{'carp'};
+__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE
+
+meta::internal_function('file::read', <<'__ZxBqZsMZZRuLMQp8Sy//ZsoAvriDebjYLGAX7p7AxXg');
+my $name = shift;
+open my($handle), "<", $name;
+my $result = join "", <$handle>;
+close $handle;
+$result;
+__ZxBqZsMZZRuLMQp8Sy//ZsoAvriDebjYLGAX7p7AxXg
+
+meta::internal_function('file::write', <<'__+NhpMabvNL+hHZaTZwBoFx2IFa79cjOZwGxEXX+xG0o');
+my ($name, $contents, %options) = @_;
+die "Choosing not to overwrite file $name" if $options{'noclobber'} && -f $name;
+open my($handle), ">", $name or die "Can't open $name for writing";
+print $handle $contents;
+close $handle;
+__+NhpMabvNL+hHZaTZwBoFx2IFa79cjOZwGxEXX+xG0o
+
+meta::internal_function('invoke_editor_on', <<'__97Lgs5+qfyAu92Vv5GCVVSYgUgFhOKYkVYXlbWoUs6U');
+my ($data, %options) = @_;
+my $content_hash     = sha256_base64($data);
+my $editor           = $options{'editor'} || $ENV{'VISUAL'} || $ENV{'EDITOR'} ||
+                       messages::error('Either the $VISUAL or $EDITOR environment variable should be set to a valid editor.');
+my $options          = $options{'options'} || $ENV{'VISUAL_OPTS'} || $ENV{'EDITOR_OPTS'} || '';
+my $extension        = $options{'extension'} || '';
+
+my (undef, $filename) = tempfile("$0." . ("X" x 32), OPEN => 0);
+$filename .= $extension;
+
+file::write($filename, $data);
+system("$editor $options \"$filename\"");
+
+my $result = file::read($filename);
+unlink $filename;
+$result;
+__97Lgs5+qfyAu92Vv5GCVVSYgUgFhOKYkVYXlbWoUs6U
+
+meta::internal_function('messages::error', <<'__200qXouilOAQNa4NkmIj6l+Rvb49Jpy8yxvIX29NcK4');
+my ($message) = @_;
+die "$message\n";
+__200qXouilOAQNa4NkmIj6l+Rvb49Jpy8yxvIX29NcK4
+
+meta::internal_function('messages::warning', <<'__DeU/1Klulk/y4fO+wtKt+liOmUKwCEYKM8BvtlXYXBc');
+my ($message) = @_;
+print "$message\n";
+__DeU/1Klulk/y4fO+wtKt+liOmUKwCEYKM8BvtlXYXBc
+
+meta::internal_function('namespace', <<'__D7UfKyyYZ1slZZyaS28hIt8a68jkI3ELBaddROXOHug');
+my ($name) = @_;
+$name =~ s/::.*$//;
+$name;
+__D7UfKyyYZ1slZZyaS28hIt8a68jkI3ELBaddROXOHug
+
+meta::internal_function('retrieve', <<'__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk');
+my ($name) = @_;
+$data{$name};
+__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk
+
+meta::internal_function('serialize::single', <<'__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE');
+my $name               = shift || $_;
+my $contents           = $data{$name};
+my $delimiter          = "__" . sha256_base64 $contents;
+my $meta_function_name = "meta::" . namespace($name);
+my $invocation_name    = basename $name;
+"$meta_function_name('$invocation_name', <<'$delimiter');\n$contents\n$delimiter\n";
+__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE
+
+meta::internal_function('state_based_filename', <<'__zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw');
+my ($name) = @_;
+my $noise  = $name || state();
+$noise =~ s/\//-/g;
+"$0.$noise";
+__zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw
+
+meta::section('interpret', <<'__7unnwYdEBbwEoR88iuizLSngA5E4RwQAJ5Nxf4/FWrg');
+- Cons Cells
+  In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)} will
+  be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](E[b])$.
+
+  ::
+  sub cons {return bless [$_[0], $_[1]], "cons"}
+  :.
+
+- Parsing
+  The first thing to do with a new expression is implement a reader. This reader conses lists from the lexer output.
+__7unnwYdEBbwEoR88iuizLSngA5E4RwQAJ5Nxf4/FWrg
+
+meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
+my $initial_state = sha256_base64 serialize();
+
+push @script_args, shift @ARGV while @ARGV && $ARGV[0] =~ /^-/;
+
+my $default_action = retrieve('data::default-action');
+chomp $default_action;
+my $function_name = shift(@ARGV) || $default_action || 'usage';
+$function_name = 'usage' unless $externalized_functions{$function_name};
+my $result = &{$function_name}(@ARGV);
+chomp $result;
+print "$result\n" if $result;
+
+END {
+  my $serialized_data = serialize();
+  my $final_state     = sha256_base64 $serialized_data;
+  save() unless $initial_state eq $final_state;
+}
+
+__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ
+
+__END__
