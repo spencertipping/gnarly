@@ -315,9 +315,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__FxCgl2A7huWLEpFgHte9FO9S+HAeiL/PPt2jTp+GlZE');
-/tmp/repl2.GyWORjORsvD-hH97n9MkJFg0b8t45xOYrUSgtcC7l1g/document.pdf
-__FxCgl2A7huWLEpFgHte9FO9S+HAeiL/PPt2jTp+GlZE
+meta::data('pdf-output-file', <<'__/3Y0IzsKdrS0t9MsYgHOcyyDCx2PG3t0RVVM9RTMCXI');
+/tmp/repl.tW+cUTaXL-9BGjXQ9YzOcS2wxYtZp7ydt3onEFRBbJI/document.pdf
+__/3Y0IzsKdrS0t9MsYgHOcyyDCx2PG3t0RVVM9RTMCXI
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -920,13 +920,13 @@ meta::test('example', <<'__DywqioD3LgvRY92WTkpgFMVY78vyiZS8RTINOjGy4Og');
   :.
 __DywqioD3LgvRY92WTkpgFMVY78vyiZS8RTINOjGy4Og
 
-meta::test('interpret', <<'__jkfOFVEeomogwrSv2eVT/GjsXpEhvytiQN6oPuDzHqI');
+meta::test('interpret', <<'__h6/pFt7QvpFrkrylHtQ+HRUDUhQPS26cKMhTd6Nc/D0');
 - Interpreter Unit Tests
   ::
-  package main;
+  interpret();
   assert {cons(2, 3)->head() == 2} 'cons(2, 3)->head() == 2';
   :.
-__jkfOFVEeomogwrSv2eVT/GjsXpEhvytiQN6oPuDzHqI
+__h6/pFt7QvpFrkrylHtQ+HRUDUhQPS26cKMhTd6Nc/D0
 
 meta::unlit_converter('create_sections', <<'__3B8xPfI6sd/h5qx4VCgsXNpNnGyHsVGdHsAwUWihmXw');
 my ($document) = @_;
