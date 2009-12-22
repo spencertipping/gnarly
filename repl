@@ -262,9 +262,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__wadlqHjG+4O31zJD4TvIGwYYVftQmzQE8DeulcX4OxA');
-/tmp/repl.lgG3A+EOvOoS8OqlV0xP32ej8nfb+VlLw9g3UMm9a+E/document.pdf
-__wadlqHjG+4O31zJD4TvIGwYYVftQmzQE8DeulcX4OxA
+meta::data('pdf-output-file', <<'__xByT55itL50CbULday3VtZ2EZS6uJfVZITOPuAhkA0I');
+/tmp/repl.jTWbWRaX75StyUnOntMq1YjNW-7hiD1m4u2HISDxIxI/document.pdf
+__xByT55itL50CbULday3VtZ2EZS6uJfVZITOPuAhkA0I
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -753,7 +753,7 @@ $noise =~ s/\//-/g;
 "$0.$noise";
 __zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw
 
-meta::section('interpret', <<'__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4');
+meta::section('interpret', <<'__ZwQfmuIjG/TItxF+Klrn/v9/wtcxt43dnb7lrdWHaWQ');
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -762,17 +762,6 @@ meta::section('interpret', <<'__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4');
     my ($name, %members) = @_;
     *{$name} = sub {return bless $members{'new'}->(@_), $name};
     *{"${name}::$_"} = $members{$_} for keys %members;
-  }
-  :.
-
-  And for unit tests:
-
-  ::
-  sub assert {
-    my $result = eval $_[0];
-    die "error: $_[0] -> $@" if $@;
-    $result or  die   "fail: $_[0]";
-    $result and print "pass: $_[0]\n";
   }
   :.
 
@@ -788,11 +777,6 @@ meta::section('interpret', <<'__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4');
                       eval   => sub {$symbol_table{${$_[0]}}},
                       bind   => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
                       unbind => sub {delete $symbol_table{${$_[0]}}};
-
-    assert 'symbol("foo")->bind(4)->eval() == 4';
-    assert 'symbol("foo")->eval()          == 4';
-    symbol('foo')->unbind();
-    assert '! $symbol_table{"foo"}';
     :.
 
   - Functions and Macros
@@ -809,10 +793,6 @@ meta::section('interpret', <<'__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4');
     deftype 'quote', new  => sub {\$_[0]},
                      eval => sub {${$_[0]}};
     symbol('quote')->bind(macro(\&quote));
-
-    symbol('foo')->bind('bar');
-    assert 'quote(symbol("foo"))->eval()->eval() eq "bar"';
-    symbol('foo')->unbind();
     :.
 
   - Cons Cells
@@ -826,28 +806,20 @@ meta::section('interpret', <<'__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4');
                     tail => sub {$_[0][1]},
                     eval => sub {$_[0]->head()->eval()->($_[0]->tail())};
 
-    assert 'cons(2, 3)->head() == 2';
-    assert 'cons(2, 3)->tail() == 3';
-
     symbol('cons')->bind(function(\&cons));
     symbol('h')->bind(function(sub {$_[0]->head()}));
     symbol('t')->bind(function(sub {$_[0]->tail()}));
-
-    assert 'cons(symbol("h"), quote(cons(2, 3)))->eval() == 2';
-    assert 'cons(symbol("t"), quote(cons(2, 3)))->eval() == 3';
     :.
 
   - Numbers
     ::
     deftype 'number', new  => sub {\$_[0]},
                       eval => sub {${$_[0]}};
-
-    assert 'number(4)->eval() == 4';
     :.
 
 - Parsing
   The first thing to do with a new expression is implement a reader. This reader conses lists from the lexer output.
-__mfuV6jMqz9PvL6qeAiBPfPH6LXzf+Ba4JnfBxGy5Ct4
+__ZwQfmuIjG/TItxF+Klrn/v9/wtcxt43dnb7lrdWHaWQ
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
