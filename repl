@@ -840,7 +840,7 @@ meta::section('assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
   :.
 __jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
 
-meta::section('interpreter', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
+meta::section('interpreter', <<'__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg');
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -850,6 +850,8 @@ meta::section('interpreter', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
     *{$name} = sub {return bless $members{'new'}->(@_), $name};
     *{"${name}::$_"} = $members{$_} for keys %members;
   }
+
+  my $id = sub {$_[0]};
   :.
 
 - Primitive Types
@@ -868,13 +870,13 @@ meta::section('interpreter', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
 
   - Functions and Macros
     ::
-    deftype 'lambda', new  => sub {$_[0]},
+    deftype 'lambda', new  => $id,
                       call => sub {$_[0]->($_[1]->eval())},
-                      eval => sub {$_[0]};
+                      eval => $id;
 
-    deftype 'macro',  new  => sub {$_[0]},
+    deftype 'macro',  new  => $id,
                       call => sub {$_[0]->($_[1])},
-                      eval => sub {$_[0]};
+                      eval => $id;
     :.
 
   - Quoting
@@ -897,17 +899,44 @@ meta::section('interpreter', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
 
     symbol('h')->bind(lambda(sub {$_[0]->head()}));
     symbol('t')->bind(lambda(sub {$_[0]->tail()}));
+
+    my $nil = '';
+    deftype 'nil', new  => sub {\$nil},
+                   eval => $id,
+                   call => $id;
+    symbol(':')->bind(nil());
     :.
 
   - Numbers
     ::
     deftype 'number', new  => sub {\$_[0]},
-                      eval => sub {$_[0]};
-    :.
+                      eval => $id;
+    symbol('number->value')->bind(lambda(sub {${$_[0]}}));
 
-- Parsing
-  The first thing to do with a new expression is implement a reader. This reader conses lists from the lexer output.
-__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I
+    symbol('number+')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x + $_[0]})}));
+    symbol('number-')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x - $_[0]})}));
+    symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
+    symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
+    :.
+__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg
+
+meta::section('reader', <<'__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c');
+- Reader
+  The reader parses tokens in its input and constructs the corresponding form. The basic idea is simple: Each open-paren starts a new list, each close-paren
+  ends one, and atoms are consed onto the previous item.
+
+  Tokens are parsed based on a character-delegate table. This determines the parsing stage to enter based on the character read. Defaults are set up for parens
+  and symbols, and the table can be customized from there.
+
+  ::
+  my %read_table = ();
+
+  sub read_form {
+    my $result = nil();
+    
+  }
+  :.
+__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c
 
 meta::test('interpreter', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
 - Interpreter Unit Tests
