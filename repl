@@ -78,12 +78,12 @@ meta::define_form 'line_filter', sub {
 };
 __/k1BhEweDsgaEdqrALbIEjvKhsVrk/hv//e/KPydA6A
 
-meta::meta('datatypes::section', <<'__j7aziVs+epjqp2sisd0b7i4W10tiszGEwURPNw0jubw');
+meta::meta('datatypes::section', <<'__+sIaXu/jTubQJpv321ESZdZajbA4tb4E31KzSLZLA0c');
 meta::define_form 'section', sub {
   my ($name, $value) = @_;
   $externalized_functions{$name} = "section::$name";
 
-  my $stuff_to_eval = "sub {\n";
+  my $stuff_to_eval = '';
 
   my @lines         = split /\n/, $value;
   my $in_code_piece = 0;
@@ -96,12 +96,10 @@ meta::define_form 'section', sub {
     $spaces = $1 if $in_code_piece |= /^(\s*)::$/;
   }
 
-  $stuff_to_eval .= "\n}";
-
-  *{$name} = eval $stuff_to_eval;
+  eval $stuff_to_eval;
   carp $@ if $@;
 };
-__j7aziVs+epjqp2sisd0b7i4W10tiszGEwURPNw0jubw
+__+sIaXu/jTubQJpv321ESZdZajbA4tb4E31KzSLZLA0c
 
 meta::meta('datatypes::test', <<'__ueZczgsgipzDeioOy/gRBU5qUY/J01ZD6aS8UX0/cRY');
 meta::define_form 'test', sub {
@@ -315,9 +313,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__/3Y0IzsKdrS0t9MsYgHOcyyDCx2PG3t0RVVM9RTMCXI');
-/tmp/repl.tW+cUTaXL-9BGjXQ9YzOcS2wxYtZp7ydt3onEFRBbJI/document.pdf
-__/3Y0IzsKdrS0t9MsYgHOcyyDCx2PG3t0RVVM9RTMCXI
+meta::data('pdf-output-file', <<'__xXnNb8eLE3jz9NXnk1D3Ql7rh8hNq3zRhhvgTmKa/l8');
+/tmp/repl.xu2c-d4ODL6bBiQNeUP7zLrjgdlX8kSk1k3uFy3x2gg/document.pdf
+__xXnNb8eLE3jz9NXnk1D3Ql7rh8hNq3zRhhvgTmKa/l8
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -827,12 +825,12 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::section('assertions', <<'__QGwQab9XNRSQG8jwtv/nml9bCN22piSYZF197YIYJr8');
+meta::section('assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
 - Assertions for Testing
   Here are some sample assertions that can be used:
 
   ::
-  sub ::assert (&$) {
+  sub assert (&$) {
     my $thunk = $_[0];
     my $result = eval {$thunk->()};
     print "| error: $@\n"   if     $@;
@@ -840,17 +838,17 @@ meta::section('assertions', <<'__QGwQab9XNRSQG8jwtv/nml9bCN22piSYZF197YIYJr8');
     print "| pass: $_[1]\n" if     $result;
   }
   :.
-__QGwQab9XNRSQG8jwtv/nml9bCN22piSYZF197YIYJr8
+__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
 
-meta::section('interpret', <<'__GVfOEdozxiVuSZRe+p/jDbBhGYMeHLxaHIoKcBkJcM4');
+meta::section('interpret', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
   ::
   sub deftype {
     my ($name, %members) = @_;
-    *{"::$name"} = sub {return bless $members{'new'}->(@_), $name};
-    *{"::${name}::$_"} = $members{$_} for keys %members;
+    *{$name} = sub {return bless $members{'new'}->(@_), $name};
+    *{"${name}::$_"} = $members{$_} for keys %members;
   }
   :.
 
@@ -870,11 +868,13 @@ meta::section('interpret', <<'__GVfOEdozxiVuSZRe+p/jDbBhGYMeHLxaHIoKcBkJcM4');
 
   - Functions and Macros
     ::
-    deftype 'function', new  => sub {$_[0]},
-                        eval => sub {my $self = $_[0]; sub {$self->($_[0]->eval())}};
+    deftype 'lambda', new  => sub {$_[0]},
+                      call => sub {$_[0]->($_[1]->eval())},
+                      eval => sub {$_[0]};
 
-    deftype 'macro',    new  => sub {$_[0]},
-                        eval => sub {my $self = $_[0]; sub {$self->($_[0])}};
+    deftype 'macro',  new  => sub {$_[0]},
+                      call => sub {$_[0]->($_[1])},
+                      eval => sub {$_[0]};
     :.
 
   - Quoting
@@ -886,47 +886,60 @@ meta::section('interpret', <<'__GVfOEdozxiVuSZRe+p/jDbBhGYMeHLxaHIoKcBkJcM4');
 
   - Cons Cells
     In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)} will
-    be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](E[b])$, provided that {\tt nil} behaves as
-    the identity function (which it does).
+    be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](b)$, provided that {\tt nil} behaves as the
+    identity function (which it does).
 
     ::
     deftype 'cons', new  => sub {[$_[0], $_[1]]},
                     head => sub {$_[0][0]},
                     tail => sub {$_[0][1]},
-                    eval => sub {$_[0]->head()->eval()->($_[0]->tail())};
+                    eval => sub {$_[0]->head()->eval()->call($_[0]->tail())};
 
-    symbol('cons')->bind(function(\&cons));
-    symbol('h')->bind(function(sub {$_[0]->head()}));
-    symbol('t')->bind(function(sub {$_[0]->tail()}));
+    symbol('h')->bind(lambda(sub {$_[0]->head()}));
+    symbol('t')->bind(lambda(sub {$_[0]->tail()}));
     :.
 
   - Numbers
     ::
     deftype 'number', new  => sub {\$_[0]},
-                      eval => sub {${$_[0]}};
+                      eval => sub {$_[0]};
     :.
 
 - Parsing
   The first thing to do with a new expression is implement a reader. This reader conses lists from the lexer output.
-__GVfOEdozxiVuSZRe+p/jDbBhGYMeHLxaHIoKcBkJcM4
+__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I
 
-meta::test('example', <<'__DywqioD3LgvRY92WTkpgFMVY78vyiZS8RTINOjGy4Og');
+meta::test('example', <<'__dbBZRBhTNxflE30E42LT3WYqMV2jf+zCRtnZdwWdZDg');
 - Example Tests
   You can replace these with your own tests, or add new ones.
 
   ::
-  ::assert {3 == 3} 'numerical equality';
-  ::assert {3 != 4} 'numerical inequality';
+  assert {3 == 3} 'numerical equality';
+  assert {3 != 4} 'numerical inequality';
   :.
-__DywqioD3LgvRY92WTkpgFMVY78vyiZS8RTINOjGy4Og
+__dbBZRBhTNxflE30E42LT3WYqMV2jf+zCRtnZdwWdZDg
 
-meta::test('interpret', <<'__h6/pFt7QvpFrkrylHtQ+HRUDUhQPS26cKMhTd6Nc/D0');
+meta::test('interpret', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
 - Interpreter Unit Tests
   ::
-  interpret();
-  assert {cons(2, 3)->head() == 2} 'cons(2, 3)->head() == 2';
+  assert {cons(2, 3)->head() == 2} 'cons::head';
+  assert {cons(2, 3)->tail() == 3} 'cons::tail';
+
+  assert {ref quote(cons(2, 3))->eval() eq 'cons'}   'quote::eval cons';
+  assert {ref quote(number(3))->eval()  eq 'number'} 'quote::eval number';
+
+  assert {quote(cons(2, 3))->eval()->head() == 2} 'quote->cons->head';
   :.
-__h6/pFt7QvpFrkrylHtQ+HRUDUhQPS26cKMhTd6Nc/D0
+
+  - Functions and Macros
+    ::
+    assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->eval()}              'cons lambda head eval';
+    assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->call(quote(2)) == 3} 'cons lambda head eval call';
+
+    assert {cons(symbol('h'), quote(cons(2, 3)))->eval() == 2} "(h '(2 . 3))";
+    assert {cons(symbol('t'), quote(cons(2, 3)))->eval() == 3} "(t '(2 . 3))";
+    :.
+__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E
 
 meta::unlit_converter('create_sections', <<'__3B8xPfI6sd/h5qx4VCgsXNpNnGyHsVGdHsAwUWihmXw');
 my ($document) = @_;
