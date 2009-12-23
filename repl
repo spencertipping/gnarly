@@ -840,7 +840,7 @@ meta::section('assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
   :.
 __jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
 
-meta::section('interpret', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
+meta::section('interpreter', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -909,17 +909,7 @@ meta::section('interpret', <<'__3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I');
   The first thing to do with a new expression is implement a reader. This reader conses lists from the lexer output.
 __3XseKqEZFeKO8BDXIwDFYc8sM/qB6pgQJhydQs9Bc+I
 
-meta::test('example', <<'__dbBZRBhTNxflE30E42LT3WYqMV2jf+zCRtnZdwWdZDg');
-- Example Tests
-  You can replace these with your own tests, or add new ones.
-
-  ::
-  assert {3 == 3} 'numerical equality';
-  assert {3 != 4} 'numerical inequality';
-  :.
-__dbBZRBhTNxflE30E42LT3WYqMV2jf+zCRtnZdwWdZDg
-
-meta::test('interpret', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
+meta::test('interpreter', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
 - Interpreter Unit Tests
   ::
   assert {cons(2, 3)->head() == 2} 'cons::head';
