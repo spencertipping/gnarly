@@ -313,9 +313,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__w4qqjqY4j6ahRsZ9oNbdzNkbgCJ+KMRv6T1dNQUF0mk');
-/tmp/repl.qqnor71ZwkLc5H5t9sx8oH8CyYlLT9ToRqKMhfFHLQM/document.pdf
-__w4qqjqY4j6ahRsZ9oNbdzNkbgCJ+KMRv6T1dNQUF0mk
+meta::data('pdf-output-file', <<'__4RRyxPE0r5KXnJXihivtkUwnzfKO9+JGWKcqayv9h3Y');
+/tmp/repl.X1eFtLWXbHTn01nyS9D3tSJb78EE4smmX6s6+oJRCYo/document.pdf
+__4RRyxPE0r5KXnJXihivtkUwnzfKO9+JGWKcqayv9h3Y
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -840,7 +840,24 @@ meta::section('00-assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI'
   :.
 __jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
 
-meta::section('01-interpreter', <<'__F5cpIkHiX/NLqE1LerJF40aFIb05qYR8TiO6JwBbn9A');
+meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE');
+- Axiomatic Specification
+  Here are the axioms on which the language is built:
+
+  e[
+    + There exists a set $V \supseteq \mathbb Z$.
+    + For each $v_1, v_2 \in V$, there exists a new value $(v_1, v_2) \in V$.
+    + There exists an evaluative function $E: V \rightarrow V$.
+    + $E (v_1, v_2) = (E~v_1) v_2$ for all $v_1, v_2 \in V$.
+  ]e
+
+  Questions/concerns:
+
+  e[
+    + How do we distinguish between a symbol and an integer? Particularly, since there is a bijection, how do we mark symbols so that they get evaluated whereas
+      integers evaluate to themselves? With a dot, probably: $\dot 3$ vs. $3$.
+  ]e
+
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -944,7 +961,7 @@ meta::section('01-interpreter', <<'__F5cpIkHiX/NLqE1LerJF40aFIb05qYR8TiO6JwBbn9A
     symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
     symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
     :.
-__F5cpIkHiX/NLqE1LerJF40aFIb05qYR8TiO6JwBbn9A
+__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
 
 meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw');
 - Initial Bindings
