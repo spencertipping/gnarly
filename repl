@@ -313,9 +313,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__xXnNb8eLE3jz9NXnk1D3Ql7rh8hNq3zRhhvgTmKa/l8');
-/tmp/repl.xu2c-d4ODL6bBiQNeUP7zLrjgdlX8kSk1k3uFy3x2gg/document.pdf
-__xXnNb8eLE3jz9NXnk1D3Ql7rh8hNq3zRhhvgTmKa/l8
+meta::data('pdf-output-file', <<'__w4qqjqY4j6ahRsZ9oNbdzNkbgCJ+KMRv6T1dNQUF0mk');
+/tmp/repl.qqnor71ZwkLc5H5t9sx8oH8CyYlLT9ToRqKMhfFHLQM/document.pdf
+__w4qqjqY4j6ahRsZ9oNbdzNkbgCJ+KMRv6T1dNQUF0mk
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -825,7 +825,7 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::section('assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
+meta::section('00-assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
 - Assertions for Testing
   Here are some sample assertions that can be used:
 
@@ -840,7 +840,7 @@ meta::section('assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
   :.
 __jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
 
-meta::section('interpreter', <<'__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg');
+meta::section('01-interpreter', <<'__F5cpIkHiX/NLqE1LerJF40aFIb05qYR8TiO6JwBbn9A');
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -869,6 +869,33 @@ meta::section('interpreter', <<'__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg');
     :.
 
   - Functions and Macros
+    All callable things in this language are unary. The only difference between a function and a macro, then, is whether it evaluates its parameter. By default,
+    $x$ calling $y$ doesn't say anything about whether $y$ gets evaluated -- this is a decision that $x$ makes. Also, there is no lexical scoping (or indeed
+    scoping of any kind) built-in to the language, so there is no issue of evaluating symbols within their own context, etc. All non-global variable
+    definitions, whether {\tt lambda}-parameters or otherwise, are converted into combinatory form by the {\tt lambda} operator, written \verb|->|. The same is
+    true of macros, which decline to evaluate their forms.
+
+    This paradigm makes an anonymous function and a macro much more similar to one another than they are in Common Lisp or Scheme. An anonymous function is, in
+    a way, a code-expander just like a macro is; its form is replaced by a combinatory function that serves the same purpose. This transformation is done at
+    interpretation-time as a macro-expansion. Thus the only internal difference between an anonymous function and a macro is the fact that an anonymous function
+    receives the value of its parameter after evaluation, and a macro has no way of obtaining this value. Also, the output of a function is considered to have
+    already been evaluated, whereas the output of a macro will be evaluated again.
+
+    In code, functions are implemented as a property of symbols; for instance, you can say this: \verb|'a -> a| to denote the identity function. If you wanted
+    an anonymous function that invoked its parameter on nil, you could say this: \verb|'a -> (a :)|. Macros are very similar; the only difference is that
+    instead of using \verb|->|, \verb|=>| is used. So the identity macro would be written as \verb|'a => a|, and a macro that quoted its parameter would be
+    written as \verb|'a => (quote a)|, or more succinctly \verb|'a => 'a|.
+
+    Notice the property that the parameter name is evaluated before defining a macro or function. This is intentional if perhaps not useful. Since functions are
+    viewed as a product of symbols, it is natural to use a symbol value in the function position. The reason it is not useful is that since the right-hand side
+    of the lambda expression is not evaluated until the lambda is called, there is no possibility of runtime substitution of a symbol. It would be as if you had
+    the ability to write, in Common Lisp or Scheme,
+
+    \begin{verbatim}
+    (lambda ((gensym))
+      (now what exactly goes here to leverage the gensym above?))
+    \end{verbatim}
+
     ::
     deftype 'lambda', new  => $id,
                       call => sub {$_[0]->($_[1]->eval())},
@@ -883,7 +910,6 @@ meta::section('interpreter', <<'__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg');
     ::
     deftype 'quote', new  => sub {\$_[0]},
                      eval => sub {${$_[0]}};
-    symbol('quote')->bind(macro(\&quote));
     :.
 
   - Cons Cells
@@ -918,7 +944,28 @@ meta::section('interpreter', <<'__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg');
     symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
     symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
     :.
-__1ul1gDZkwh8ioNYuv6GGfPi5BNNC6i6u5x4pyGlgyGg
+__F5cpIkHiX/NLqE1LerJF40aFIb05qYR8TiO6JwBbn9A
+
+meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw');
+- Initial Bindings
+  In order to bootstrap the interpreter image, we need to set up some initial function bindings.
+
+  ::
+  symbol('quote')->bind(macro(\&quote));
+
+  symbol('h')->bind(lambda(sub {$_[0]->head()}));
+  symbol('t')->bind(lambda(sub {$_[0]->tail()}));
+
+  symbol(':')->bind(nil());
+
+  symbol('number->value')->bind(lambda(sub {${$_[0]}}));
+
+  symbol('number+')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x + $_[0]})}));
+  symbol('number-')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x - $_[0]})}));
+  symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
+  symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
+  :.
+__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw
 
 meta::section('reader', <<'__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c');
 - Reader
@@ -938,8 +985,10 @@ meta::section('reader', <<'__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c');
   :.
 __ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c
 
-meta::test('interpreter', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
+meta::test('interpreter', <<'__qf3/JT048OWZI4l3sR59PsLl8nKxCgJ7VFMsOSqokI8');
 - Interpreter Unit Tests
+  These tests depend on both the interpreter logic and the initial bindings.
+
   ::
   assert {cons(2, 3)->head() == 2} 'cons::head';
   assert {cons(2, 3)->tail() == 3} 'cons::tail';
@@ -951,6 +1000,10 @@ meta::test('interpreter', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
   :.
 
   - Functions and Macros
+    Tests for functions and macros -- basically, we need to make sure that certain things get evaluated and other things don't. Whether or not they get
+    evaluated depends on whether the left-hand side chooses to evaluate its parameter. (So functions are actually a special-case of macros that evaluate their
+    parameters.)
+
     ::
     assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->eval()}              'cons lambda head eval';
     assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->call(quote(2)) == 3} 'cons lambda head eval call';
@@ -958,7 +1011,7 @@ meta::test('interpreter', <<'__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E');
     assert {cons(symbol('h'), quote(cons(2, 3)))->eval() == 2} "(h '(2 . 3))";
     assert {cons(symbol('t'), quote(cons(2, 3)))->eval() == 3} "(t '(2 . 3))";
     :.
-__Dhm3lJWwhgHXx4ZNhhE0i40olszhQ97Q31sR5a4G63E
+__qf3/JT048OWZI4l3sR59PsLl8nKxCgJ7VFMsOSqokI8
 
 meta::unlit_converter('create_sections', <<'__3B8xPfI6sd/h5qx4VCgsXNpNnGyHsVGdHsAwUWihmXw');
 my ($document) = @_;
