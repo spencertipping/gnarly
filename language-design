@@ -161,7 +161,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('document', <<'__odYHiLD3Oj5KrX19YkqJRYSHSMwZlUZRe3YUBnZJDW0');
+meta::data('document', <<'__t2RlzKp4F+9jJ9LDZ4PV7TZo2lY0vENeLZRGuW0ju7A');
 = Language Design
 a Spencer Tipping
 begin
@@ -195,9 +195,9 @@ begin
   - Pairs \label{sec:pairs}
     Pairs work just like Lisp or Scheme cons cells, except that the convention for consing a list is reversed. That is, the list \verb|(1 2 3 4)| is consed as
     \verb|((((nil . 1) . 2) . 3) . 4)|, so the ``head'' of the list is \verb|(1 2 3)|, not \verb|1|. The motivation for this oddity arises from the evaluation
-    rule of cons pairs: $E (a . b) = (E~a) b$; that is, the evaluation of a cons pair $a . b$ is the evaluation of $a$ applied to $b$. To facilitate this model
-    of evaluation, each function application is unary. $n$-ary functions can be emulated by currying, and their invocations reflect the normal Lisp style of
-    $n$-ary function application.
+    rule of cons pairs: $E (a . b) = (E~a) b$; that is, the evaluation of a cons pair $a . b$ is the evaluation of $a$, applied to $b$. To facilitate this model
+    of evaluation, each function application is unary. $n$-ary functions can be emulated by currying, and conveniently the notation for calling a curried
+    $n$-ary function is exactly the same as it is in most Lisps.
 
     To facilitate construction and destruction of cons pairs, the following symbols are bound:
 
@@ -207,7 +207,7 @@ begin
       + $t = \lambda (x . y) . y$
       + 
     ]e
-__odYHiLD3Oj5KrX19YkqJRYSHSMwZlUZRe3YUBnZJDW0
+__t2RlzKp4F+9jJ9LDZ4PV7TZo2lY0vENeLZRGuW0ju7A
 
 meta::data('header', <<'__eDtyvHFZSQrphEHm92Rjuvx5KOB2Cm+mxAPuG0JPt2g');
 \documentclass{article}
@@ -284,9 +284,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__6k7dhgBKkbGt3UFPnpGTs2vzOBpmYpcMIlY4LUHc5ZU');
-/tmp/language-design.mPr6xgpDycbJn4q3jQX-Um1r8VX081FQhVdFw7mUfRw/document.pdf
-__6k7dhgBKkbGt3UFPnpGTs2vzOBpmYpcMIlY4LUHc5ZU
+meta::data('pdf-output-file', <<'__cp1oszaw36dafdiGWimkc0w3VDVRgDcZHltKp/T5h8w');
+/tmp/language-design.HJrshMgQQMydbEk8H2lbdPUVLXCI2oUeIGDZexWqNeU/document.pdf
+__cp1oszaw36dafdiGWimkc0w3VDVRgDcZHltKp/T5h8w
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
