@@ -161,7 +161,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('document', <<'__kcCOS4ghUOsZYs5/VNdA7K7Habp6tcdJaIfK+8HnrEY');
+meta::data('document', <<'__8Der+QUhp0uIu03NjSucWJp+yj60V3qgw3lwPhlcj98');
 = Language Design
 a Spencer Tipping
 begin
@@ -179,15 +179,16 @@ begin
   ::
   public class C1<T> {
     public final T x;
-  }
-  public class C2<T, U> extends C1<T> {
-    public final U y;
+    public class C2<U> {
+      public final U y;
+    }
   }
   :.
 
-  The only danger to this approach is that a lot of memory is allocated for closures, instead of doing an inline closure conversion. However, perhaps the
-  optimization stage can inline certain closures. As long as their extent can be bounded, the closures can be inlined somehow, I imagine.
-__kcCOS4ghUOsZYs5/VNdA7K7Habp6tcdJaIfK+8HnrEY
+  The only danger to this approach is that a lot of memory is allocated for closures instead of doing an inline closure conversion. Also, most references are
+  made indirectly -- the inner class must use its \verb|$this| reference, which is doubly-indirected. However, perhaps the optimization stage can inline certain
+  closures. As long as their extent can be bounded, the closures can be inlined somehow, I imagine.
+__8Der+QUhp0uIu03NjSucWJp+yj60V3qgw3lwPhlcj98
 
 meta::data('header', <<'__eDtyvHFZSQrphEHm92Rjuvx5KOB2Cm+mxAPuG0JPt2g');
 \documentclass{article}
@@ -264,9 +265,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__qgIifLpMn6Y7ieGZJXJh6N14qFIhl3cmwSRldbKkYT4');
-/tmp/alternate-language-design.RFHtEIj4LxFBDlcWWRhCUJR0QEiVT6E1+Kml8A0A+qc/document.pdf
-__qgIifLpMn6Y7ieGZJXJh6N14qFIhl3cmwSRldbKkYT4
+meta::data('pdf-output-file', <<'__d9j1PI13hAQA/ssI6f8G4v8tYyKKenZVFATudSz1aC0');
+/tmp/alternate-language-design.LSyw7r8RoXsMcKglfm+KAZLp2-DLW7OGm8aYrYWxorA/document.pdf
+__d9j1PI13hAQA/ssI6f8G4v8tYyKKenZVFATudSz1aC0
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
