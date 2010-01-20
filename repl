@@ -508,6 +508,10 @@ my ($filename, @attribute_names) = @_;
 associate("implementation::$_", `$filename cat $_`) for @attribute_names;
 __sXs1aeJVBERH6nWE7ZpWiIO5Cg7fSBWcoscDg1DHzD8
 
+meta::function('i', <<'__QR51fAxT8uz7FCCErQfaHW/cnBqGJ5ftzao2gbDkiZY');
+read_form($_[0])->serialize();
+__QR51fAxT8uz7FCCErQfaHW/cnBqGJ5ftzao2gbDkiZY
+
 meta::function('import', <<'__oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA');
 my ($name) = @_;
 associate($name, join('', <STDIN>));
@@ -579,6 +583,10 @@ for (@attributes) {
 }
 __ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg
 
+meta::function('r', <<'__5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk');
+read_form($_[0])->eval()->serialize();
+__5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk
+
 meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
@@ -619,7 +627,7 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__+Z83foANYBuqK7lAcxxVCinjQ8sswKWwiyEicdTqaRo');
+meta::function('shell', <<'__hZ/Zr9EkMGjda251Q1oSnmwiei8saVY2AU8lNlZ36aw');
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 shell";
@@ -629,7 +637,7 @@ my $OUT = $term->OUT || \*STDOUT;
 
 while (defined ($_ = $term->readline($prompt))) {
   my $command_line = $_;
-  my @args = grep length, split /\s+|("[^"]*(?:\\")?")/;
+  my @args = grep length, split /\s+|("[^"\\]*(?:\\")?")/;
   my $function_name = shift @args;
 
   return if $function_name eq 'exit';
@@ -655,7 +663,7 @@ while (defined ($_ = $term->readline($prompt))) {
   $term->addhistory($command_line) if $command_line;
   $prompt = name() . '$ ';
 }
-__+Z83foANYBuqK7lAcxxVCinjQ8sswKWwiyEicdTqaRo
+__hZ/Zr9EkMGjda251Q1oSnmwiei8saVY2AU8lNlZ36aw
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -886,7 +894,7 @@ meta::section('00-assertions', <<'__CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M'
   :.
 __CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M
 
-meta::section('01-interpreter', <<'__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c');
+meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY');
 - Axiomatic Specification
   Here are the axioms on which the language is built:
 
@@ -930,6 +938,7 @@ meta::section('01-interpreter', <<'__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c
     ::
     deftype 'symbol', new       => sub {\$_[0]},
                       eval      => sub {$symbol_table{${$_[0]}}},
+                      call      => sub {$_[0]->eval()->call($_[1])},
                       bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
                       unbind    => sub {delete $symbol_table{${$_[0]}}},
                       serialize => sub {${$_[0]}};
@@ -997,7 +1006,7 @@ meta::section('01-interpreter', <<'__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c
     my $nil = '';
     deftype 'nil', new       => sub {\$nil},
                    eval      => $id,
-                   call      => $id,
+                   call      => sub {$_[1]},
                    serialize => sub {':'};
     :.
 
@@ -1007,7 +1016,7 @@ meta::section('01-interpreter', <<'__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c
                       eval      => $id,
                       serialize => sub {${$_[0]}};
     :.
-__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c
+__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
 
 meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw');
 - Initial Bindings
@@ -1058,7 +1067,7 @@ meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::test('interpreter', <<'__Fm+eWTyueVv+Gf+3xcdn6/ymjzRqJV+/8KPj9Mimu7U');
+meta::test('interpreter', <<'__ofOxuz2c89wfxZmUpj6H2A/M/XPs+ViVgT01+Up4VEE');
 - Interpreter Unit Tests
   These tests depend on both the interpreter logic and the initial bindings.
 
@@ -1083,8 +1092,13 @@ meta::test('interpreter', <<'__Fm+eWTyueVv+Gf+3xcdn6/ymjzRqJV+/8KPj9Mimu7U');
 
     assert_equal cons(symbol('h'), quote(cons(2, 3)))->eval(), 2, "(h '(2 . 3))";
     assert_equal cons(symbol('t'), quote(cons(2, 3)))->eval(), 3, "(t '(2 . 3))";
+
+    assert_eq cons(nil(), quote(2))->eval()->serialize(), 2, 'cons(nil, quote(x)) == x';
+
+    assert_eq cons(cons(nil(), symbol('h')),
+                   cons(cons(nil(), symbol('quote')), cons(cons(nil(), number(2)), number(3))))->eval()->serialize(), 2, "(h '(2 . 3)) live";
     :.
-__Fm+eWTyueVv+Gf+3xcdn6/ymjzRqJV+/8KPj9Mimu7U
+__ofOxuz2c89wfxZmUpj6H2A/M/XPs+ViVgT01+Up4VEE
 
 meta::test('reader', <<'__nf6ljIEkUEFjgbnLIw9WCNXSXSmD+SDqBpjNdZBUz7U');
 - Reader Unit Tests
