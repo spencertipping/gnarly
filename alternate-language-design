@@ -161,7 +161,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('document', <<'__8Der+QUhp0uIu03NjSucWJp+yj60V3qgw3lwPhlcj98');
+meta::data('document', <<'__9A+OLx5Au6f6CJPcWS0PHNVbmGgfmWP6YXb7DhkVfoE');
 = Language Design
 a Spencer Tipping
 begin
@@ -188,7 +188,19 @@ begin
   The only danger to this approach is that a lot of memory is allocated for closures instead of doing an inline closure conversion. Also, most references are
   made indirectly -- the inner class must use its \verb|$this| reference, which is doubly-indirected. However, perhaps the optimization stage can inline certain
   closures. As long as their extent can be bounded, the closures can be inlined somehow, I imagine.
-__8Der+QUhp0uIu03NjSucWJp+yj60V3qgw3lwPhlcj98
+
+- Encoding OO
+  It isn't difficult to encode object-oriented notions. Given something like {\tt cond}, here's how:
+
+  ::
+  ('method -> (cond ((method == 'foo) ('x -> (x + 1)))
+                    ((method == 'bar) ('x -> (x - 1)))
+                    ((method == 'bif) ('x -> ('y -> (x > y))))))
+  :.
+
+  This forms a method-dispatch table that can be built on a per-instance basis. It has the disadvantage that all methods are instance-indirected, but it's a
+  purer form of a true object-oriented encoding than is the class-based object-oriented paradigm.
+__9A+OLx5Au6f6CJPcWS0PHNVbmGgfmWP6YXb7DhkVfoE
 
 meta::data('header', <<'__eDtyvHFZSQrphEHm92Rjuvx5KOB2Cm+mxAPuG0JPt2g');
 \documentclass{article}
@@ -265,9 +277,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__d9j1PI13hAQA/ssI6f8G4v8tYyKKenZVFATudSz1aC0');
-/tmp/alternate-language-design.LSyw7r8RoXsMcKglfm+KAZLp2-DLW7OGm8aYrYWxorA/document.pdf
-__d9j1PI13hAQA/ssI6f8G4v8tYyKKenZVFATudSz1aC0
+meta::data('pdf-output-file', <<'__T/e1ffFBOHEt1jo0FMbZWf+TWT7kvnEN5Cq6hmeEMO4');
+/tmp/alternate-language-design.BGNrYC-ptTdUoraxhTrqm8M-xob2tkDKpDEPRNSLIOo/document.pdf
+__T/e1ffFBOHEt1jo0FMbZWf+TWT7kvnEN5Cq6hmeEMO4
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
