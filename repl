@@ -627,7 +627,7 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__hZ/Zr9EkMGjda251Q1oSnmwiei8saVY2AU8lNlZ36aw');
+meta::function('shell', <<'__Xc/D1abI5xJTw6oyvavXrmS+ZaTDk09iQZEIvz8dWnc');
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 shell";
@@ -660,10 +660,9 @@ while (defined ($_ = $term->readline($prompt))) {
     print $OUT "Error evaluating watched expression $watch: $@\n" if $@;
   }
 
-  $term->addhistory($command_line) if $command_line;
   $prompt = name() . '$ ';
 }
-__hZ/Zr9EkMGjda251Q1oSnmwiei8saVY2AU8lNlZ36aw
+__Xc/D1abI5xJTw6oyvavXrmS+ZaTDk09iQZEIvz8dWnc
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -859,7 +858,7 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::section('00-assertions', <<'__CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M');
+meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y');
 - Assertions for Testing
   Here are some sample assertions that can be used:
 
@@ -867,9 +866,9 @@ meta::section('00-assertions', <<'__CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M'
   sub assert_base (&$) {
     my $thunk  = $_[0];
     my $result = eval {$thunk->()};
-    print "| error in $_[1]: $@\n"    if     $@;
-    print "| fail: $_[1] ($result)\n" if     $result;
-    print "| pass: $_[1]\n"           unless $result;
+    print "| \033[1;31merror\033[0;0m in $_[1]: $@\n"    if     $@;
+    print "| \033[1;31mfail\033[0;0m: $_[1] ($result)\n" if     $result;
+    print "| \033[1;32mpass\033[0;0m: $_[1]\n"           unless $result;
   }
 
   sub assert (&$) {
@@ -892,26 +891,9 @@ meta::section('00-assertions', <<'__CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M'
     assert_base {ref($value) ne $ref and "ref $value ne $ref"} $name;
   }
   :.
-__CSlL9QUGvA2Oe7ynCu96v7+QGvxM8DP/Qgqtl4/6a+M
+__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY');
-- Axiomatic Specification
-  Here are the axioms on which the language is built:
-
-  e[
-    + There exists a set $V \supseteq \mathbb Z$.
-    + For each $v_1, v_2 \in V$, there exists a new value $(v_1, v_2) \in V$.
-    + There exists an evaluative function $E: V \rightarrow V$.
-    + $E (v_1, v_2) = (E~v_1) v_2$ for all $v_1, v_2 \in V$.
-  ]e
-
-  Questions/concerns:
-
-  e[
-    + How do we distinguish between a symbol and an integer? Particularly, since there is a bijection, how do we mark symbols so that they get evaluated whereas
-      integers evaluate to themselves? With a dot, probably: $\dot 3$ vs. $3$.
-  ]e
-
+meta::section('01-interpreter', <<'__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -938,9 +920,9 @@ meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
     ::
     deftype 'symbol', new       => sub {\$_[0]},
                       eval      => sub {$symbol_table{${$_[0]}}},
-                      call      => sub {$_[0]->eval()->call($_[1])},
                       bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
                       unbind    => sub {delete $symbol_table{${$_[0]}}},
+                      call      => sub {$_[0]->eval()->call($_[1])},
                       serialize => sub {${$_[0]}};
     :.
 
@@ -974,13 +956,13 @@ meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
 
     ::
     deftype 'lambda', new       => $id,
-                      call      => sub {$_[0]->($_[1]->eval())},
                       eval      => $id,
+                      call      => sub {$_[0]->($_[1]->eval())},
                       serialize => sub {'[lambda]'};
 
     deftype 'macro',  new       => $id,
-                      call      => sub {$_[0]->($_[1])->eval()},
                       eval      => $id,
+                      call      => sub {$_[0]->($_[1])->eval()},
                       serialize => sub {'[macro]'};
     :.
 
@@ -988,7 +970,8 @@ meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
     ::
     deftype 'quote', new       => sub {\$_[0]},
                      eval      => sub {${$_[0]}},
-                     serialize => sub {"'" . eval()->serialize()};
+                     call      => sub {$_[0]->eval()->call($_[1]->eval())},
+                     serialize => sub {"'" . $_[0]->eval()->serialize()};
     :.
 
   - Cons Cells
@@ -998,15 +981,15 @@ meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
 
     ::
     deftype 'cons', new       => sub {[$_[0], $_[1]]},
+                    eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                     head      => sub {$_[0][0]},
                     tail      => sub {$_[0][1]},
-                    eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                     serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
     my $nil = '';
     deftype 'nil', new       => sub {\$nil},
                    eval      => $id,
-                   call      => sub {$_[1]},
+                   call      => sub {$_[1]->eval()},
                    serialize => sub {':'};
     :.
 
@@ -1016,9 +999,9 @@ meta::section('01-interpreter', <<'__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
                       eval      => $id,
                       serialize => sub {${$_[0]}};
     :.
-__EKPZAMW1a4EkQ+/uMz0zuPQ6CJ7mToP010M0Gp8wCGY
+__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4
 
-meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw');
+meta::section('02-initial-bindings', <<'__XuKCb6sEBh6ECQloH9VzqadrN9PGpXvBpWs3HD2qzTw');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
@@ -1029,15 +1012,8 @@ meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/Y
   symbol('t')->bind(lambda(sub {$_[0]->tail()}));
 
   symbol(':')->bind(nil());
-
-  symbol('number->value')->bind(lambda(sub {${$_[0]}}));
-
-  symbol('number+')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x + $_[0]})}));
-  symbol('number-')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x - $_[0]})}));
-  symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
-  symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
   :.
-__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw
+__XuKCb6sEBh6ECQloH9VzqadrN9PGpXvBpWs3HD2qzTw
 
 meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1067,7 +1043,7 @@ meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::test('interpreter', <<'__ofOxuz2c89wfxZmUpj6H2A/M/XPs+ViVgT01+Up4VEE');
+meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
   These tests depend on both the interpreter logic and the initial bindings.
 
@@ -1093,12 +1069,12 @@ meta::test('interpreter', <<'__ofOxuz2c89wfxZmUpj6H2A/M/XPs+ViVgT01+Up4VEE');
     assert_equal cons(symbol('h'), quote(cons(2, 3)))->eval(), 2, "(h '(2 . 3))";
     assert_equal cons(symbol('t'), quote(cons(2, 3)))->eval(), 3, "(t '(2 . 3))";
 
-    assert_eq cons(nil(), quote(2))->eval()->serialize(), 2, 'cons(nil, quote(x)) == x';
+    assert_eq cons(nil(), quote(number(2)))->eval()->serialize(), 2, "(: . 'x) => x";
 
     assert_eq cons(cons(nil(), symbol('h')),
-                   cons(cons(nil(), symbol('quote')), cons(cons(nil(), number(2)), number(3))))->eval()->serialize(), 2, "(h '(2 . 3)) live";
+                   cons(cons(nil(), symbol('quote')), cons(cons(nil(), number(2)), number(3))))->eval()->serialize(), '(: . 2)', "(h '(2 . 3)) live";
     :.
-__ofOxuz2c89wfxZmUpj6H2A/M/XPs+ViVgT01+Up4VEE
+__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0
 
 meta::test('reader', <<'__nf6ljIEkUEFjgbnLIw9WCNXSXSmD+SDqBpjNdZBUz7U');
 - Reader Unit Tests
