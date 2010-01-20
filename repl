@@ -499,6 +499,10 @@ my $name = shift;
 grep {$_ eq $name} keys %data;
 __bxU1sDtIh3+P1x0HuuY0f7sKHr9qNZUEl64m2fvwmDk
 
+meta::function('externalize', <<'__jj0WxNMYD+Os9PnZiALK0NQjchmWBqx/IFg7n0I5qBg');
+$externalized_functions{$_} = $_ for @_;
+__jj0WxNMYD+Os9PnZiALK0NQjchmWBqx/IFg7n0I5qBg
+
 meta::function('grab', <<'__sXs1aeJVBERH6nWE7ZpWiIO5Cg7fSBWcoscDg1DHzD8');
 my ($filename, @attribute_names) = @_;
 associate("implementation::$_", `$filename cat $_`) for @attribute_names;
@@ -555,6 +559,14 @@ meta::function('new', <<'__FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos');
 clone(@_);
 __FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos
 
+meta::function('perl', <<'__llkJ0NgCHf71DRkKncOeEnL6T7arvp1t4TXIpuKPxNU');
+eval($_[0]);
+__llkJ0NgCHf71DRkKncOeEnL6T7arvp1t4TXIpuKPxNU
+
+meta::function('print_form', <<'__5cFh9FYVzT9rmQgSdQ/Qa8URqPX0/r86/ofI6sSWcgM');
+read_form($_[0])->serialize()
+__5cFh9FYVzT9rmQgSdQ/Qa8URqPX0/r86/ofI6sSWcgM
+
 meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
 my ($class_name) = @_;
 my @attributes = grep /^implementation::/, split /\n/, `$class_name ls-a`;
@@ -607,7 +619,7 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__1pX0YiaO1Jx8AIJ3/w6tbrNGcmnuuZfIo6840aq4bU4');
+meta::function('shell', <<'__+Z83foANYBuqK7lAcxxVCinjQ8sswKWwiyEicdTqaRo');
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 shell";
@@ -617,24 +629,33 @@ my $OUT = $term->OUT || \*STDOUT;
 
 while (defined ($_ = $term->readline($prompt))) {
   my $command_line = $_;
-  my @args = split /\s+/;
+  my @args = grep length, split /\s+|("[^"]*(?:\\")?")/;
   my $function_name = shift @args;
 
   return if $function_name eq 'exit';
 
-  if ($externalized_functions{$function_name}) {
-    my $result = eval {&{$function_name}(@args)};
-    messages::warning($@) if $@;
-    chomp $result;
-    print $OUT $result, "\n" unless $@;
-  } else {
-    messages::warning("Command not found: $function_name");
+  s/^"(.*)"$/\1/, s/\\\\"/"/g for @args;
+
+  if ($function_name) {
+    if ($externalized_functions{$function_name}) {
+      my $result = eval {&{$function_name}(@args)};
+      messages::warning($@) if $@;
+      chomp $result;
+      print $OUT $result, "\n" unless $@;
+    } else {
+      messages::warning("Command not found: $function_name");
+    }
+  }
+
+  for my $watch (@{$transient{'watch_list'}}) {
+    print $OUT eval($watch), "\n";
+    print $OUT "Error evaluating watched expression $watch: $@\n" if $@;
   }
 
   $term->addhistory($command_line) if $command_line;
   $prompt = name() . '$ ';
 }
-__1pX0YiaO1Jx8AIJ3/w6tbrNGcmnuuZfIo6840aq4bU4
+__+Z83foANYBuqK7lAcxxVCinjQ8sswKWwiyEicdTqaRo
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -681,6 +702,10 @@ my $pdf_output_file = &{'pdf-output-file'}();
 chomp $pdf_reader;
 system("$pdf_reader '$pdf_output_file'");
 __wEtlK5H0ttR24UvcFUsgg5Es1V/VbjMJlU+SKiO2jKs
+
+meta::function('watch', <<'__dhD//JIeUty6psRafaNPVFHlY08V/gFhze8/CpWSbYw');
+push @{$transient{'watch_list'}}, $_[0];
+__dhD//JIeUty6psRafaNPVFHlY08V/gFhze8/CpWSbYw
 
 meta::internal_function('associate', <<'__D8BKmEFp/adiPPqPnXyMOzlsBMCmuZi62UpJWdoFg/0');
 my ($name, $value, %options) = @_;
@@ -825,22 +850,37 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::section('00-assertions', <<'__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI');
+meta::section('00-assertions', <<'__cHZFMk+DdD/0tNcAVVbiUjryGY8+1+vc3cxu6Sm3FOM');
 - Assertions for Testing
   Here are some sample assertions that can be used:
 
   ::
+  sub assert_base (&$) {
+    my $thunk  = $_[0];
+    my $result = eval {$thunk->()};
+    print "| error in $_[1]: $@\n"    if     $@;
+    print "| fail: $_[1] ($result)\n" if     $result;
+    print "| pass: $_[1]\n"           unless $result;
+  }
+
   sub assert (&$) {
     my $thunk = $_[0];
-    my $result = eval {$thunk->()};
-    print "| error: $@\n"   if     $@;
-    print "| fail: $_[1]\n" unless $result;
-    print "| pass: $_[1]\n" if     $result;
+    assert_base {! $thunk->()} $_[1];
+  }
+
+  sub assert_equal {
+    my ($v1, $v2, $name) = @_;
+    assert_base {$v1 != $v2 && "$v1 != $v2"} $name;
+  }
+
+  sub assert_isa {
+    my ($value, $ref, $name) = @_;
+    assert_base {ref($value) ne $ref and "ref $value ne $ref"} $name;
   }
   :.
-__jK9Rd6rc39V77SvLFiA3wvG59KYNDL1rHNHhQQRXSMI
+__cHZFMk+DdD/0tNcAVVbiUjryGY8+1+vc3cxu6Sm3FOM
 
-meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE');
+meta::section('01-interpreter', <<'__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c');
 - Axiomatic Specification
   Here are the axioms on which the language is built:
 
@@ -858,6 +898,13 @@ meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
       integers evaluate to themselves? With a dot, probably: $\dot 3$ vs. $3$.
   ]e
 
+- Bootstrap
+  The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
+
+  ::
+  my %symbol_table;
+  :.
+
 - Algebraic Data Types
   Here is a quick facility for defining algebraic data types:
 
@@ -866,23 +913,20 @@ meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
     my ($name, %members) = @_;
     *{$name} = sub {return bless $members{'new'}->(@_), $name};
     *{"${name}::$_"} = $members{$_} for keys %members;
+    $symbol_table{"meta::$name"} = $members{'new'};
   }
 
   my $id = sub {$_[0]};
   :.
 
 - Primitive Types
-  - Bootstrap
-    ::
-    my %symbol_table;
-    :.
-
   - Symbols
     ::
-    deftype 'symbol', new    => sub {\$_[0]},
-                      eval   => sub {$symbol_table{${$_[0]}}},
-                      bind   => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
-                      unbind => sub {delete $symbol_table{${$_[0]}}};
+    deftype 'symbol', new       => sub {\$_[0]},
+                      eval      => sub {$symbol_table{${$_[0]}}},
+                      bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
+                      unbind    => sub {delete $symbol_table{${$_[0]}}},
+                      serialize => sub {${$_[0]}};
     :.
 
   - Functions and Macros
@@ -914,19 +958,22 @@ meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
     \end{verbatim}
 
     ::
-    deftype 'lambda', new  => $id,
-                      call => sub {$_[0]->($_[1]->eval())},
-                      eval => $id;
+    deftype 'lambda', new       => $id,
+                      call      => sub {$_[0]->($_[1]->eval())},
+                      eval      => $id,
+                      serialize => sub {'[lambda]'};
 
-    deftype 'macro',  new  => $id,
-                      call => sub {$_[0]->($_[1])},
-                      eval => $id;
+    deftype 'macro',  new       => $id,
+                      call      => sub {$_[0]->($_[1])->eval()},
+                      eval      => $id,
+                      serialize => sub {'[macro]'};
     :.
 
   - Quoting
     ::
-    deftype 'quote', new  => sub {\$_[0]},
-                     eval => sub {${$_[0]}};
+    deftype 'quote', new       => sub {\$_[0]},
+                     eval      => sub {${$_[0]}},
+                     serialize => sub {"'" . eval()->serialize()};
     :.
 
   - Cons Cells
@@ -935,33 +982,26 @@ meta::section('01-interpreter', <<'__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
     identity function (which it does).
 
     ::
-    deftype 'cons', new  => sub {[$_[0], $_[1]]},
-                    head => sub {$_[0][0]},
-                    tail => sub {$_[0][1]},
-                    eval => sub {$_[0]->head()->eval()->call($_[0]->tail())};
-
-    symbol('h')->bind(lambda(sub {$_[0]->head()}));
-    symbol('t')->bind(lambda(sub {$_[0]->tail()}));
+    deftype 'cons', new       => sub {[$_[0], $_[1]]},
+                    head      => sub {$_[0][0]},
+                    tail      => sub {$_[0][1]},
+                    eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
+                    serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
     my $nil = '';
-    deftype 'nil', new  => sub {\$nil},
-                   eval => $id,
-                   call => $id;
-    symbol(':')->bind(nil());
+    deftype 'nil', new       => sub {\$nil},
+                   eval      => $id,
+                   call      => $id,
+                   serialize => sub {':'};
     :.
 
   - Numbers
     ::
-    deftype 'number', new  => sub {\$_[0]},
-                      eval => $id;
-    symbol('number->value')->bind(lambda(sub {${$_[0]}}));
-
-    symbol('number+')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x + $_[0]})}));
-    symbol('number-')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x - $_[0]})}));
-    symbol('number*')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x * $_[0]})}));
-    symbol('number/')->bind(lambda(sub {my $x = $_[0]; lambda(sub {$x / $_[0]})}));
+    deftype 'number', new       => sub {\$_[0]},
+                      eval      => $id,
+                      serialize => sub {${$_[0]}};
     :.
-__uHo+PocCTUHWiKO2Uu4lbIUdUccgo+HO70+YXfMwgRE
+__jvvLrrdXTOuemL7ysemsPqOlFG6h32ggux4TC/LMx6c
 
 meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw');
 - Initial Bindings
@@ -984,36 +1024,43 @@ meta::section('02-initial-bindings', <<'__a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/Y
   :.
 __a5j54koUQJfTeFczr1WQcIl8xzBpTYYe5jHo/YhParw
 
-meta::section('reader', <<'__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c');
+meta::section('03-reader', <<'__ni7ruaPAkiueQG8gMWHkFeoSSiu6twjREScmEzH14Pc');
 - Reader
-  The reader parses tokens in its input and constructs the corresponding form. The basic idea is simple: Each open-paren starts a new list, each close-paren
-  ends one, and atoms are consed onto the previous item.
-
-  Tokens are parsed based on a character-delegate table. This determines the parsing stage to enter based on the character read. Defaults are set up for parens
-  and symbols, and the table can be customized from there.
+  The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
   ::
-  my %read_table = ();
-
   sub read_form {
-    my $result = nil();
-    
+    sub lex {
+      grep length, split /([()])|\s+/, $_[0];
+    }
+
+    sub parse {
+      my ($value, $xs) = @_;
+      my $x = shift @$xs;
+
+      return $value                                      if $x eq ')' || $x eq '';
+      return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
+      return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
+      return parse(cons($value, symbol($x)), $xs);
+    }
+
+    parse nil(), [lex $_[0]];
   }
   :.
-__ye9NcfAlUU9J5750xQJPJhI15ChzwxKN+8SYZ597w7c
+__ni7ruaPAkiueQG8gMWHkFeoSSiu6twjREScmEzH14Pc
 
-meta::test('interpreter', <<'__qf3/JT048OWZI4l3sR59PsLl8nKxCgJ7VFMsOSqokI8');
+meta::test('interpreter', <<'__Fm+eWTyueVv+Gf+3xcdn6/ymjzRqJV+/8KPj9Mimu7U');
 - Interpreter Unit Tests
   These tests depend on both the interpreter logic and the initial bindings.
 
   ::
-  assert {cons(2, 3)->head() == 2} 'cons::head';
-  assert {cons(2, 3)->tail() == 3} 'cons::tail';
+  assert_equal cons(2, 3)->head(), 2, 'cons::head';
+  assert_equal cons(2, 3)->tail(), 3, 'cons::tail';
 
-  assert {ref quote(cons(2, 3))->eval() eq 'cons'}   'quote::eval cons';
-  assert {ref quote(number(3))->eval()  eq 'number'} 'quote::eval number';
+  assert_isa quote(cons(2, 3))->eval(), 'cons',   'quote::eval cons';
+  assert_isa quote(number(3))->eval(),  'number', 'quote::eval number';
 
-  assert {quote(cons(2, 3))->eval()->head() == 2} 'quote->cons->head';
+  assert_equal quote(cons(2, 3))->eval()->head(), 2, 'quote->cons->head';
   :.
 
   - Functions and Macros
@@ -1025,10 +1072,25 @@ meta::test('interpreter', <<'__qf3/JT048OWZI4l3sR59PsLl8nKxCgJ7VFMsOSqokI8');
     assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->eval()}              'cons lambda head eval';
     assert {cons(lambda(sub {$_[0] + 1}), undef)->head()->call(quote(2)) == 3} 'cons lambda head eval call';
 
-    assert {cons(symbol('h'), quote(cons(2, 3)))->eval() == 2} "(h '(2 . 3))";
-    assert {cons(symbol('t'), quote(cons(2, 3)))->eval() == 3} "(t '(2 . 3))";
+    assert_equal cons(symbol('h'), quote(cons(2, 3)))->eval(), 2, "(h '(2 . 3))";
+    assert_equal cons(symbol('t'), quote(cons(2, 3)))->eval(), 3, "(t '(2 . 3))";
     :.
-__qf3/JT048OWZI4l3sR59PsLl8nKxCgJ7VFMsOSqokI8
+__Fm+eWTyueVv+Gf+3xcdn6/ymjzRqJV+/8KPj9Mimu7U
+
+meta::test('reader', <<'__lAD4OQuM/HHA1M6tz7bnnsgH5OLoU6j2qPJQ6ho1h28');
+- Reader Unit Tests
+  ::
+  assert_isa read_form('foo')->tail(), 'symbol', 'read_form foo tail';
+  assert_isa read_form('foo')->head(), 'nil',    'read_form foo head';
+
+  assert_isa read_form('foo bar')->tail(),         'symbol', 'read_form foo bar tail';
+  assert_isa read_form('foo bar')->head(),         'cons',   'read_form foo bar head';
+  assert_isa read_form('foo bar')->head()->tail(), 'symbol', 'read_form foo bar head tail';
+
+  assert_isa read_form('(x)')->tail(), 'cons',   'read_form (x) tail';
+  assert_isa read_form('(x)')->head(), 'nil',    'read_form (x) head';
+  :.
+__lAD4OQuM/HHA1M6tz7bnnsgH5OLoU6j2qPJQ6ho1h28
 
 meta::unlit_converter('create_sections', <<'__3B8xPfI6sd/h5qx4VCgsXNpNnGyHsVGdHsAwUWihmXw');
 my ($document) = @_;
