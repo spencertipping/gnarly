@@ -893,7 +893,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4');
+meta::section('01-interpreter', <<'__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -922,7 +922,7 @@ meta::section('01-interpreter', <<'__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4
                       eval      => sub {$symbol_table{${$_[0]}}},
                       bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
                       unbind    => sub {delete $symbol_table{${$_[0]}}},
-                      call      => sub {$_[0]->eval()->call($_[1])},
+                      call      => sub {$_[1]->eval()->call($_[0])},
                       serialize => sub {${$_[0]}};
     :.
 
@@ -970,7 +970,6 @@ meta::section('01-interpreter', <<'__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4
     ::
     deftype 'quote', new       => sub {\$_[0]},
                      eval      => sub {${$_[0]}},
-                     call      => sub {$_[0]->eval()->call($_[1]->eval())},
                      serialize => sub {"'" . $_[0]->eval()->serialize()};
     :.
 
@@ -999,9 +998,9 @@ meta::section('01-interpreter', <<'__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4
                       eval      => $id,
                       serialize => sub {${$_[0]}};
     :.
-__c8LL/uO1oSvKiPEVKbl3c3nkATbNBfetixH3mCnrSH4
+__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg
 
-meta::section('02-initial-bindings', <<'__XuKCb6sEBh6ECQloH9VzqadrN9PGpXvBpWs3HD2qzTw');
+meta::section('02-initial-bindings', <<'__Zw4sdx2Lt+jGwikNtmbnI1B29IFRI2J88LnMExZgIsM');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
@@ -1011,9 +1010,16 @@ meta::section('02-initial-bindings', <<'__XuKCb6sEBh6ECQloH9VzqadrN9PGpXvBpWs3HD
   symbol('h')->bind(lambda(sub {$_[0]->head()}));
   symbol('t')->bind(lambda(sub {$_[0]->tail()}));
 
+  symbol('<-')->bind(macro(sub {
+    my $symbol = $_[0];
+    lambda(sub {
+      $symbol->bind($_[0])
+    })
+  }));
+
   symbol(':')->bind(nil());
   :.
-__XuKCb6sEBh6ECQloH9VzqadrN9PGpXvBpWs3HD2qzTw
+__Zw4sdx2Lt+jGwikNtmbnI1B29IFRI2J88LnMExZgIsM
 
 meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
