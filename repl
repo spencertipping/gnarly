@@ -563,9 +563,10 @@ meta::function('new', <<'__FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos');
 clone(@_);
 __FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos
 
-meta::function('perl', <<'__llkJ0NgCHf71DRkKncOeEnL6T7arvp1t4TXIpuKPxNU');
+meta::function('perl', <<'__XfLS9FlyE7w0CyERaGa/CTG/y2CrH4ZDN6M0SAM3IfY');
 eval($_[0]);
-__llkJ0NgCHf71DRkKncOeEnL6T7arvp1t4TXIpuKPxNU
+print $@ if $@;
+__XfLS9FlyE7w0CyERaGa/CTG/y2CrH4ZDN6M0SAM3IfY
 
 meta::function('print_form', <<'__5cFh9FYVzT9rmQgSdQ/Qa8URqPX0/r86/ofI6sSWcgM');
 read_form($_[0])->serialize()
@@ -587,9 +588,12 @@ meta::function('r', <<'__5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk');
 read_form($_[0])->eval()->serialize();
 __5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk
 
-meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
-execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
-__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
+meta::function('reload', <<'__dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o');
+for (grep {! (/^internal::/ || /^bootstrap::/)} sort keys %data) {
+  print "Loading $_...\n";
+  execute($_);
+}
+__dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -893,7 +897,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg');
+meta::section('01-interpreter', <<'__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -957,13 +961,21 @@ meta::section('01-interpreter', <<'__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg
     ::
     deftype 'lambda', new       => $id,
                       eval      => $id,
-                      call      => sub {$_[0]->($_[1]->eval())},
-                      serialize => sub {'[lambda]'};
+                      call      => sub {$_[0]->($_[1]->eval())->eval()},
+                      serialize => sub {
+                        my $gensym = gensym;
+                        $gensym->bind($gensym);
+                        "(${$gensym} -> " . $_[0]->call($gensym)->serialize() . ')';
+                      };
 
     deftype 'macro',  new       => $id,
                       eval      => $id,
                       call      => sub {$_[0]->($_[1])->eval()},
-                      serialize => sub {'[macro]'};
+                      serialize => sub {
+                        my $gensym = gensym;
+                        $gensym->bind($gensym);
+                        "(${$gensym} => " . $_[0]->call($gensym)->serialize() . ')';
+                      };
     :.
 
   - Quoting
@@ -998,37 +1010,86 @@ meta::section('01-interpreter', <<'__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg
                       eval      => $id,
                       serialize => sub {${$_[0]}};
     :.
-__RBtSyQlqTytj8qTGrnmoudQcihhuFyhDmdzUe/lIygg
+__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY
 
-meta::section('02-initial-bindings', <<'__Zw4sdx2Lt+jGwikNtmbnI1B29IFRI2J88LnMExZgIsM');
+meta::section('02-initial-bindings', <<'__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/szK9s');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
   ::
-  symbol('quote')->bind(macro(\&quote));
+  my $gensym_counter = 0;
+  sub gensym {
+    ++$gensym_counter;
+    symbol("#($gensym_counter)");
+  }
 
-  symbol('h')->bind(lambda(sub {$_[0]->head()}));
-  symbol('t')->bind(lambda(sub {$_[0]->tail()}));
+  symbol('gensym')->bind(lambda(sub {quote(gensym)}));
+
+  symbol("'")->bind(macro(\&quote));
+
+  symbol('h')->bind(lambda(sub {quote($_[0]->head())}));
+  symbol('t')->bind(lambda(sub {quote($_[0]->tail())}));
+  symbol('c')->bind(lambda(sub {
+    my $head = $_[0];
+    lambda(sub {
+      my $tail = $_[0];
+      quote(cons($head, $tail));
+    });
+  }));
 
   symbol('<-')->bind(macro(sub {
     my $symbol = $_[0];
     lambda(sub {
-      $symbol->bind($_[0])
-    })
+      $symbol->bind($_[0]);
+    });
   }));
+
+  sub map_form {
+    my ($f, $x) = @_;
+    return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
+    return quote($f->($x->eval()))                                  if ref $x eq 'quote';
+    return $f->($x);
+  }
+
+  sub replace_symbol {
+    my ($symbol, $replacement) = @_;
+    sub {
+      return $replacement if ref $_[0] eq 'symbol' && ${$_[0]} eq ${$symbol};
+      return $_[0];
+    }
+  }
+
+  sub lambda_like {
+    my ($wrapper, $result_map) = @_;
+    macro(sub {
+      my $symbol = $_[0];
+      lambda(sub {
+        my $body     = $_[0];
+        my $gensym   = gensym;
+        my $new_form = map_form(replace_symbol($symbol, $gensym), $body);
+        $wrapper->(sub {
+          my $value = $_[0];
+          $result_map->(map_form(replace_symbol($gensym, quote($value)), $new_form));
+        });
+      });
+    });
+  }
+
+  symbol('->')->bind(lambda_like(\&lambda, sub {$_[0]}));
+  symbol('=>')->bind(lambda_like(\&macro,  sub {$_[0]->eval()}));
 
   symbol(':')->bind(nil());
   :.
-__Zw4sdx2Lt+jGwikNtmbnI1B29IFRI2J88LnMExZgIsM
+__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/szK9s
 
-meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
+meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
   ::
   sub read_form {
     sub lex {
-      grep length, split /([()])|\s+/, $_[0];
+      grep length, split /([()'])|\s+/, $_[0];
     }
 
     sub parse {
@@ -1047,7 +1108,7 @@ meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
-__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
+__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
