@@ -1046,7 +1046,7 @@ meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
     :.
 __Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
 
-meta::section('02-initial-bindings', <<'__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VSLoAyU');
+meta::section('02-initial-bindings', <<'__TEsyj+vDOuCTbdpKZxHZvUetyeMWAKzu8F9jTVfcCDE');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
@@ -1061,7 +1061,7 @@ meta::section('02-initial-bindings', <<'__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VS
 
   symbol("'")->bind(macro(\&quote));
 
-  symbol('<')->bind(macro(sub {$_[0]->eval()}));
+  symbol('<')->bind(lambda(sub {$_[0]}));
 
   symbol('h')->bind(lambda(sub {quote($_[0]->head())}));
   symbol('t')->bind(lambda(sub {quote($_[0]->tail())}));
@@ -1116,7 +1116,7 @@ meta::section('02-initial-bindings', <<'__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VS
 
   symbol(':')->bind(nil());
   :.
-__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VSLoAyU
+__TEsyj+vDOuCTbdpKZxHZvUetyeMWAKzu8F9jTVfcCDE
 
 meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
 - Reader
@@ -1146,7 +1146,7 @@ meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
   keeps the reader code very simple, as above.
 __4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw
 
-meta::session('twice', <<'__3PTiJH9kAOPMhpFUumSgm9ZSpg8+S73Y1iGl4wPLbYE');
+meta::session('twice', <<'__fADEANzM4w8cjWYPOCsIe3Wubfbq/s2RJJMRTbfd/Sw');
 
 'compose <- ('f -> ('('g -> ('('x -> ('(f (g x))))))))
 compose ('x -> ('(h x))) ('x -> ('(c x x))) 5
@@ -1230,7 +1230,39 @@ twice
 twice ('f)
 n
 gensym :
-__3PTiJH9kAOPMhpFUumSgm9ZSpg8+S73Y1iGl4wPLbYE
+mn
+n
+; n n
+; ; n
+; ; ;
+; ; ; ; n
+; ; ; n
+; ; ; n n
+n
+twice (inc n)
+n
+'n <- :
+< ('(compose h dup))
+< ('(compose h dup)) 5
+< ('(compose h dup 5))
+< <
+< (compose h dup)
+< (compose h dup 5)
+< (compose h dup)
+< (compose h dup) x
+< (compose h dup) ('x)
+<
+< ('(compose h dup))
+< ('('(compose h dup)))
+< ('(compose h dup))
+< ('x)
+< ('('x))
+< ('(compose h dup))
+< ('x)
+< ('('x))
+twice
+twice ('x)
+__fADEANzM4w8cjWYPOCsIe3Wubfbq/s2RJJMRTbfd/Sw
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
