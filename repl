@@ -603,7 +603,7 @@ for (grep {! (/^internal::/ || /^bootstrap::/)} sort keys %data) {
 }
 __dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o
 
-meta::function('repl', <<'__kVs88bh8c4Gx1qqbtHfAmxHnKpzFDA6xaNfUsDhVGho');
+meta::function('repl', <<'__WW/eBoPgxRY3lPDKBRANYBt5bk1PR1xw4UQfDegcuC8');
 my ($name) = @_;
 
 return 'usage: repl <name>' unless $name;
@@ -615,8 +615,6 @@ $term->ornaments(0);
 my $prompt = name() . ' (repl)> ';
 my $OUT = $term->OUT || \*STDOUT;
 
-my @commands = split /\n/, retrieve("session::$name") || '';
-
 sub run_command {
   my ($command) = @_;
   print "$_\n  | " . eval {read_form($command)->eval()->serialize()};
@@ -625,17 +623,15 @@ sub run_command {
 }
 
 print "Replaying commands...\n";
-for (@commands) {
-  run_command $_;
-  $term->add_history($_);
-}
+run_command $_ for split /\n/, (retrieve("session::$name") || '');
 
+print "Ready.\n";
 while (defined ($_ = $term->readline($prompt))) {
   run_command $_;
   associate("session::$name", retrieve("session::$name") . "\n$_");
   save();
 }
-__kVs88bh8c4Gx1qqbtHfAmxHnKpzFDA6xaNfUsDhVGho
+__WW/eBoPgxRY3lPDKBRANYBt5bk1PR1xw4UQfDegcuC8
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -939,7 +935,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I');
+meta::section('01-interpreter', <<'__MlgVSRHw0owU1MmO66QLU3e06G3LgDibL0wgwGaDPvI');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -1016,6 +1012,7 @@ meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
     ::
     deftype 'quote', new       => sub {\$_[0]},
                      eval      => sub {${$_[0]}},
+                     call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                      serialize => sub {"'" . $_[0]->eval()->serialize()};
     :.
 
@@ -1029,6 +1026,7 @@ meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
                     eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                     head      => sub {$_[0][0]},
                     tail      => sub {$_[0][1]},
+                    call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                     serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
     my $nil = '';
@@ -1042,11 +1040,12 @@ meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
     ::
     deftype 'number', new       => sub {\$_[0]},
                       eval      => $id,
+                      call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                       serialize => sub {${$_[0]}};
     :.
-__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
+__MlgVSRHw0owU1MmO66QLU3e06G3LgDibL0wgwGaDPvI
 
-meta::section('02-initial-bindings', <<'__TEsyj+vDOuCTbdpKZxHZvUetyeMWAKzu8F9jTVfcCDE');
+meta::section('02-initial-bindings', <<'__3wLfrAke8Wh5LRMso39lxThDjHSN8AAtMACAeM4jr80');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
@@ -1096,27 +1095,28 @@ meta::section('02-initial-bindings', <<'__TEsyj+vDOuCTbdpKZxHZvUetyeMWAKzu8F9jTV
   }
 
   sub lambda_like {
-    my ($wrapper) = @_;
+    my ($wrapper, $value_wrap) = @_;
     macro(sub {
       my $symbol = $_[0];
-      lambda(sub {
+      macro(sub {
         my $body     = $_[0];
         my $gensym   = gensym;
         my $new_form = map_form(replace_symbol($symbol, $gensym), $body);
+        print "Using " . $new_form->serialize() . " as a lambda or macro template\n";
         $wrapper->(sub {
           my $value = $_[0];
-          map_form(replace_symbol($gensym, quote($value)), $new_form);
+          map_form(replace_symbol($gensym, $value_wrap->($value)), $new_form);
         });
       });
     });
   }
 
-  symbol('->')->bind(lambda_like(\&lambda));
-  symbol('=>')->bind(lambda_like(\&macro));
+  symbol('->')->bind(lambda_like(\&lambda, \&quote));
+  symbol('=>')->bind(lambda_like(\&macro,  sub {$_[0]}));
 
   symbol(':')->bind(nil());
   :.
-__TEsyj+vDOuCTbdpKZxHZvUetyeMWAKzu8F9jTVfcCDE
+__3wLfrAke8Wh5LRMso39lxThDjHSN8AAtMACAeM4jr80
 
 meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
 - Reader
@@ -1146,7 +1146,13 @@ meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
   keeps the reader code very simple, as above.
 __4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw
 
-meta::session('twice', <<'__fADEANzM4w8cjWYPOCsIe3Wubfbq/s2RJJMRTbfd/Sw');
+meta::session('lambda', <<'__Yh2h6E3Xj77yhJ/OlXFTxoawCA9EaaWzJF3z1IqEzN8');
+
+'f <- ('x -> ('y -> (c x y))
+f ('y)
+__Yh2h6E3Xj77yhJ/OlXFTxoawCA9EaaWzJF3z1IqEzN8
+
+meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
 'compose <- ('f -> ('('g -> ('('x -> ('(f (g x))))))))
 compose ('x -> ('(h x))) ('x -> ('(c x x))) 5
@@ -1262,7 +1268,96 @@ n
 < ('('x))
 twice
 twice ('x)
-__fADEANzM4w8cjWYPOCsIe3Wubfbq/s2RJJMRTbfd/Sw
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+'x !> ('x)
+('x !> ('x)) 6
+('x !> x) 6
+'!> <- ('var => ('body -> ('x => (< ((var => body) x)
+'!> <- ('('var => ('('body -> ('('x => ('(< ((var => body) x)
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+('x !> x) 6
+('x !> ('x)) 6
+('x !> ('x))
+'x !> ('x) 6
+'x !> ('x) ('x)
+'x !> x
+'x !> x 6
+'!> <- ('var => ('(body -> ('(x => ('(< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('x => ('(< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => (< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => (< ('((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => ('body)) x)
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => ('body)) ('x))
+'x !> x 6
+'!> <- ('var => ('('body -> ('('x => ('(< ((var => body) x)
+reload
+'x !> x 6
+'x !> x
+'x !> x c
+'!> <- ('var => ('('body -> ('x => ('(< ((var => body) x)
+'x !> x c
+'!> <- ('var => ('body -> ('x => ('(< ((var => body) x)
+'x !> x c
+'!> <- ('var => ('('body -> ('('x => ('(< (((var) => (body)) x)
+'x !> x c
+'x !> x 9
+'!> <- ('var => ('('body -> ('('x => ('(< ((< var => body) x)
+'x !> x 9
+'!> <- ('var => ('body -> ('x => (< ((var => body) x)
+'x !> x
+'x !> x 6
+'!> <- ('var => ('body => ('x => (< ((var => body) x)
+'x !> x 6
+'!> <- ('var => ('body => ('x => (< ((< var => body) x)
+'x !> x 6
+!> x x
+!> x x 7
+('var => ('body => ('x => (< ((var => body) x)))))) 6
+('var => ('body => ('x => (< ((var => body) x)))))) x x
+('var => ('body => ('x => (< ((var => body) x)))))) x x 9
+('var => ('body => ('x => (< ((var => body) x)))))) x x 9 0
+('var => ('body => ('x => (< ((var => body) x))))) x x 9 0
+('var => ('body => ('x => (< ((var => body) x))))) x x
+('var => ('body => ('x => (< ((var => body) x))))) x x 0
+('var => ('body => ('x => (< ((var => body) x))))) x x c
+('var => ('body => ('x => (< ((var => body) x))))) x x
+('var => ('body => ('x => (< ((var => body) x))))) x x 6
+('var => ('body => ('x => (< ((var => body) x))))) y y 6
+x
+('var => ('body => ('x => (< ((var => body) x))))) ('x) ('x) 6
+('var => ('body => ('x => (< ((var => body) x))))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e ('e) 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e ('('e)) 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x)))))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x))) e e 6
+('var => ('body => ('x => (< ((('var) => body) x))))) e e 6
+'!> <- ('var => ('body => ('x => (< ((('var) => body) x)))))
+'x !> x
+'x !> x 6
+'e !> e 6
+('x -> ('y -> (c x y))
+'g <- ('x -> ('y -> (c x y))
+g ('x) ('y)
+g ('y) ('x)
+->
+y
+('y)
+('x)
+x
+__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
