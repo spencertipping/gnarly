@@ -101,6 +101,14 @@ meta::define_form 'section', sub {
 };
 __+sIaXu/jTubQJpv321ESZdZajbA4tb4E31KzSLZLA0c
 
+meta::meta('datatypes::session', <<'__6AMvIzGHEBbN2hZz4yWARvZDJJfFV5o3+/QO5+A3FLA');
+meta::define_form 'session', sub {
+  my ($name, $value) = @_;
+  $externalized_functions{$name} = "session::$name";
+  *{$name} = sub {repl($name)};
+};
+__6AMvIzGHEBbN2hZz4yWARvZDJJfFV5o3+/QO5+A3FLA
+
 meta::meta('datatypes::test', <<'__ueZczgsgipzDeioOy/gRBU5qUY/J01ZD6aS8UX0/cRY');
 meta::define_form 'test', sub {
   my ($name, $value) = @_;
@@ -595,6 +603,40 @@ for (grep {! (/^internal::/ || /^bootstrap::/)} sort keys %data) {
 }
 __dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o
 
+meta::function('repl', <<'__kVs88bh8c4Gx1qqbtHfAmxHnKpzFDA6xaNfUsDhVGho');
+my ($name) = @_;
+
+return 'usage: repl <name>' unless $name;
+
+use Term::ReadLine;
+
+my $term = new Term::ReadLine "$0 repl for $name";
+$term->ornaments(0);
+my $prompt = name() . ' (repl)> ';
+my $OUT = $term->OUT || \*STDOUT;
+
+my @commands = split /\n/, retrieve("session::$name") || '';
+
+sub run_command {
+  my ($command) = @_;
+  print "$_\n  | " . eval {read_form($command)->eval()->serialize()};
+  chomp $@;
+  print $@ ? $@ : '', "\n\n";
+}
+
+print "Replaying commands...\n";
+for (@commands) {
+  run_command $_;
+  $term->add_history($_);
+}
+
+while (defined ($_ = $term->readline($prompt))) {
+  run_command $_;
+  associate("session::$name", retrieve("session::$name") . "\n$_");
+  save();
+}
+__kVs88bh8c4Gx1qqbtHfAmxHnKpzFDA6xaNfUsDhVGho
+
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
   messages::warning("$to_be_deleted does not exist") unless grep {$_ eq $to_be_deleted} keys %data;
@@ -897,7 +939,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY');
+meta::section('01-interpreter', <<'__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -911,7 +953,7 @@ meta::section('01-interpreter', <<'__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY
   ::
   sub deftype {
     my ($name, %members) = @_;
-    *{$name} = sub {return bless $members{'new'}->(@_), $name};
+    *{$name} = sub {bless $members{'new'}->(@_), $name};
     *{"${name}::$_"} = $members{$_} for keys %members;
     $symbol_table{"meta::$name"} = $members{'new'};
   }
@@ -962,20 +1004,12 @@ meta::section('01-interpreter', <<'__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY
     deftype 'lambda', new       => $id,
                       eval      => $id,
                       call      => sub {$_[0]->($_[1]->eval())->eval()},
-                      serialize => sub {
-                        my $gensym = gensym;
-                        $gensym->bind($gensym);
-                        "(${$gensym} -> " . $_[0]->call($gensym)->serialize() . ')';
-                      };
+                      serialize => sub {'[lambda]'};
 
     deftype 'macro',  new       => $id,
                       eval      => $id,
                       call      => sub {$_[0]->($_[1])->eval()},
-                      serialize => sub {
-                        my $gensym = gensym;
-                        $gensym->bind($gensym);
-                        "(${$gensym} => " . $_[0]->call($gensym)->serialize() . ')';
-                      };
+                      serialize => sub {'[macro]'};
     :.
 
   - Quoting
@@ -1010,9 +1044,9 @@ meta::section('01-interpreter', <<'__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY
                       eval      => $id,
                       serialize => sub {${$_[0]}};
     :.
-__gqNlOnQ9JJfYZFtnCFANrGLI/2Zx117rsEI/X/AIpFY
+__Iv8KPvoO61UZHt0Wh8WodSsM9EmZHMKg+NtKPmh4j9I
 
-meta::section('02-initial-bindings', <<'__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/szK9s');
+meta::section('02-initial-bindings', <<'__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VSLoAyU');
 - Initial Bindings
   In order to bootstrap the interpreter image, we need to set up some initial function bindings.
 
@@ -1026,6 +1060,8 @@ meta::section('02-initial-bindings', <<'__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/
   symbol('gensym')->bind(lambda(sub {quote(gensym)}));
 
   symbol("'")->bind(macro(\&quote));
+
+  symbol('<')->bind(macro(sub {$_[0]->eval()}));
 
   symbol('h')->bind(lambda(sub {quote($_[0]->head())}));
   symbol('t')->bind(lambda(sub {quote($_[0]->tail())}));
@@ -1060,7 +1096,7 @@ meta::section('02-initial-bindings', <<'__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/
   }
 
   sub lambda_like {
-    my ($wrapper, $result_map) = @_;
+    my ($wrapper) = @_;
     macro(sub {
       my $symbol = $_[0];
       lambda(sub {
@@ -1069,18 +1105,18 @@ meta::section('02-initial-bindings', <<'__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/
         my $new_form = map_form(replace_symbol($symbol, $gensym), $body);
         $wrapper->(sub {
           my $value = $_[0];
-          $result_map->(map_form(replace_symbol($gensym, quote($value)), $new_form));
+          map_form(replace_symbol($gensym, quote($value)), $new_form);
         });
       });
     });
   }
 
-  symbol('->')->bind(lambda_like(\&lambda, sub {$_[0]}));
-  symbol('=>')->bind(lambda_like(\&macro,  sub {$_[0]->eval()}));
+  symbol('->')->bind(lambda_like(\&lambda));
+  symbol('=>')->bind(lambda_like(\&macro));
 
   symbol(':')->bind(nil());
   :.
-__4sNKTo5cbX2Dn438egBHrKHUfQT6OvVbGGSdw/szK9s
+__SkoXlaOdi96/p0FtqRe4q056D2aAlZ11dSK4VSLoAyU
 
 meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
 - Reader
@@ -1109,6 +1145,92 @@ meta::section('03-reader', <<'__4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw');
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
 __4dyJP8MUlpn2Ww3WbNLbzJaKxUyn8fE7slvqoacWHpw
+
+meta::session('twice', <<'__3PTiJH9kAOPMhpFUumSgm9ZSpg8+S73Y1iGl4wPLbYE');
+
+'compose <- ('f -> ('('g -> ('('x -> ('(f (g x))))))))
+compose ('x -> ('(h x))) ('x -> ('(c x x))) 5
+'id <- ('x -> ('x))
+'def <- ('name => ('('var => ('('body => ('('name <- ('var -> 'body))))))))
+def f x x
+'dup <- ('x -> ('(c x x)))
+compose h dup
+compose h dup 6
+compose t dup 6
+id 6
+'k <- ('x -> ('('y -> ('x)))
+k 5
+k 5 8
+k k 5
+k k 5 8
+k k 5 8 0
+'; <- ('x -> ('('y -> ('y))))
+; 5 6
+'twice <- ('form => ('(; form form)))
+twice 5
+'n <- :
+'inc <- ('('symbol => ('(symbol <- (c : symbol)))))
+'inc <- ('symbol => ('(symbol <- (c : symbol))))
+inc n
+n
+inc n
+n
+'inc <- ('symbol => ('(symbol <- (c : symbol
+inc n
+n
+< ('n)
+'inc <- ('(< ('symbol => ('(symbol <- (c : symbol
+'inc <- ('symbol => ('(symbol <- (c : symbol
+< (inc n)
+< (inc n)
+n
+(inc n)
+< 5
+< ('n)
+'inc <- ('symbol => ('(symbol <- (c : (< symbol
+(inc n)
+(inc n)
+(inc n)
+n
+'n <- :
+twice ('(inc n))
+< (twice ('(inc n)))
+< (twice (inc n))
+n
+< (twice (< (inc n)))
+n
+< (twice (< (inc n)))
+n
+'n <- :
+< (twice (< (inc n)))
+n
+'n <- :
+(twice x)
+'twice <- ('form => ('(; (< form) (< form
+(twice x)
+(twice ('x))
+n
+< (twice (inc n))
+n
+'n <- :
+< (twice (inc n))
+< (twice (inc n))
+< (twice (inc n))
+n
+'n <- :
+n
+(twice (inc n))
+;
+; (inc n) (inc n)
+n
+'n <- :
+; (inc n) (inc n)
+'n <- :
+twice
+twice ('f)
+n
+gensym :
+__3PTiJH9kAOPMhpFUumSgm9ZSpg8+S73Y1iGl4wPLbYE
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
