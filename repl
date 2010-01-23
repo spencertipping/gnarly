@@ -932,7 +932,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4');
+meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -940,8 +940,8 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
   my %symbol_table;
   :.
 
-- Algebraic Data Types
-  Here is a quick facility for defining algebraic data types:
+- Data Types
+  Here is a quick facility for defining interpreter data types:
 
   ::
   sub deftype {
@@ -955,14 +955,41 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
   :.
 
 - Primitive Types
+  - Church-Encoded Booleans
+    These aren't primitives, but they are used throughout the interpreter logic.
+
+    ::
+    deftype 'lambda', new       => sub {[@_]},
+                      eval      => $id,
+                      call      => sub {$_[0][1]->($_[1])},
+                      serialize => sub {$_[0][0]};
+
+    my $true  = lambda('true',  sub {my $x = $_[0]; lambda('(true ' . $x->serialize() . ')', sub {$x})});
+    my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]})});
+    :.
+
   - Symbols
     ::
     deftype 'symbol', new       => sub {\$_[0]},
-                      eval      => sub {$symbol_table{${$_[0]}}},
+                      eval      => sub {$symbol_table{${$_[0]}} || die 'Cannot evaluate symbol ' . $_[0]->serialize() . ' because it is undefined.'},
                       bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
-                      unbind    => sub {delete $symbol_table{${$_[0]}}},
-                      call      => sub {$_[1]->eval()->call($_[0])},
+                      unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
+                      equals    => sub {ref $_[1] eq 'symbol' && ${$_[0]} eq ${$_[1]} || ${$_[0]} eq $_[1]},
+                      call      => sub {
+                        my $self = $_[0];
+                        return lambda('(' . $_[0]->serialize() . ' bind)', sub {$self->bind($_[0]->eval())}) if $_[0]->equals('bind');
+                        return $_[0]->eval()                                                                 if $_[0]->equals('value');
+                        return lambda('(' . $_[0]->serialize() . ' <=)',
+                                      sub {
+                                        my $rhs = $_[0];
+                                        ref $rhs eq 'symbol' && ${$self} le ${rhs} ? $true : $false;
+                                      })                                                                     if $_[0]->equals('<=');
+
+                        return $_[1]->eval()->call($_[0]);
+                      },
                       serialize => sub {${$_[0]}};
+
+    symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
     :.
 
   - Functions and Macros
@@ -994,20 +1021,43 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
     \end{verbatim}
 
     ::
-    deftype 'lambda', new       => $id,
-                      eval      => $id,
-                      call      => sub {$_[0]->($_[1]->eval())->eval()},
-                      serialize => sub {'[lambda]'};
-
-    deftype 'macro',  new       => $id,
-                      eval      => $id,
-                      call      => sub {$_[0]->($_[1])->eval()},
-                      serialize => sub {'[macro]'};
-
     deftype 'placeholder', new       => sub {\$_[0]},
                            eval      => sub {die 'Cannot evaluate beta-expansion placeholder ' . $_[0]->serialize()},
                            call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                            serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
+
+    sub map_form {
+      my ($f, $x) = @_;
+      return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
+      return $f->($x);
+    }
+
+    deftype 'expander', new => sub {[@_]},
+                        eval => $id,
+                        call => sub {
+                          my ($placeholder, $form) = @{$_[0]};
+                          my $value                = $_[1];
+                          map_form(sub {$_[0] == $placeholder ? $value : $_[0]}, $form);
+                        },
+                        serialize => sub {
+                          my ($placeholder, $form) = @{$_[0]};
+                          '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
+                        };
+
+    symbol('e')->bind(lambda('[e]', sub {
+      my $f = $_[0]->eval();
+      lambda('(e ' . $f->serialize() . ')', sub {$f->call($_[0])->eval()});
+    }));
+
+    symbol('beta')->bind(lambda('[beta]', sub {
+      my $symbol = $_[0];
+      lambda('(' . $symbol->serialize() . ' -> ...)', sub {
+        my $body        = $_[0];
+        my $placeholder = placeholder($symbol);
+        expander($placeholder,
+                 map_form(sub {ref $_[0] eq 'symbol' && ${$_[0]} eq ${$symbol} ? $placeholder : $_[0]}, $body));
+      });
+    }));
     :.
 
   - Quoting
@@ -1015,7 +1065,9 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
     deftype 'quote', new       => sub {\$_[0]},
                      eval      => sub {${$_[0]}},
                      call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-                     serialize => sub {"'" . $_[0]->eval()->serialize()};
+                     serialize => sub {'(quote ' . $_[0]->eval()->serialize() . ')'};
+
+    symbol('quote')->bind(lambda('[quote]', \&quote));
     :.
 
   - Cons Cells
@@ -1028,7 +1080,7 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
                     eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                     head      => sub {$_[0][0]},
                     tail      => sub {$_[0][1]},
-                    call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
+                    call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                     serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
     my $nil = '';
@@ -1036,6 +1088,8 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
                    eval      => $id,
                    call      => sub {$_[1]->eval()},
                    serialize => sub {':'};
+
+    symbol(':')->bind(nil());
     :.
 
   - Numbers
@@ -1045,74 +1099,9 @@ meta::section('01-interpreter', <<'__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
                       call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                       serialize => sub {${$_[0]}};
     :.
-__hZxynphJdrDd0YN9jMUIRm8SFCxePLKu4dRThy08KY4
+__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
 
-meta::section('02-initial-bindings', <<'__sHjb3N3c+B0pyhRr48PRc7rxTmUTOY3yo4HrV+8VLUg');
-- Initial Bindings
-  In order to bootstrap the interpreter image, we need to set up some initial function bindings.
-
-  ::
-  my $gensym_counter = 0;
-  sub gensym {
-    ++$gensym_counter;
-    symbol("#($gensym_counter)");
-  }
-
-  symbol('gensym')->bind(lambda(sub {quote(gensym)}));
-
-  symbol("'")->bind(macro(\&quote));
-
-  symbol('<')->bind(lambda(sub {$_[0]}));
-
-  symbol('?')->bind(lambda(sub {ref $_[0] eq 'nil' ? macro(sub {my $x = $_[0]; lambda(sub {$_[0]})}) :
-                                                     lambda(sub {my $x = $_[0]; macro(sub {$x})})}));
-  symbol('h')->bind(lambda(sub {quote($_[0]->head())}));
-  symbol('t')->bind(lambda(sub {quote($_[0]->tail())}));
-  symbol('c')->bind(lambda(sub {
-    my $head = $_[0];
-    lambda(sub {
-      my $tail = $_[0];
-      quote(cons($head, $tail));
-    });
-  }));
-
-  symbol('<-')->bind(macro(sub {
-    my $symbol = $_[0];
-    lambda(sub {
-      $symbol->bind($_[0]);
-    });
-  }));
-
-  sub map_form {
-    my ($f, $x) = @_;
-    return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
-    return $f->($x);
-  }
-
-  sub lambda_like {
-    my ($wrapper, $value_wrapper) = @_;
-    macro(sub {
-      my $symbol = $_[0];
-      macro(sub {
-        my $body        = $_[0];
-        my $placeholder = placeholder($symbol);
-        my $new_form    = map_form sub {ref $_[0] eq 'symbol' && ${$_[0]} eq ${$symbol} ? $placeholder : $_[0]}, $body;
-        $wrapper->(sub {
-          my $value = $_[0];
-          map_form sub {$_[0] == $placeholder ? $value_wrapper->($value) : $_[0]}, $new_form;
-        });
-      });
-    });
-  }
-
-  symbol('->')->bind(lambda_like(\&lambda, \&quote));
-  symbol('=>')->bind(lambda_like(\&macro,  sub {$_[0]}));
-
-  symbol(':')->bind(nil());
-  :.
-__sHjb3N3c+B0pyhRr48PRc7rxTmUTOY3yo4HrV+8VLUg
-
-meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
+meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
@@ -1139,6 +1128,13 @@ meta::section('03-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
+
+meta::session('beta', <<'__qBmWpKLmKqa9pZsF4ClBkq4FV/SWRoK0v78ZE8f3EZs');
+quote beta' bind (e (beta x x))
+quote beta' (quote bind) (e (beta x x))
+beta'
+quote
+__qBmWpKLmKqa9pZsF4ClBkq4FV/SWRoK0v78ZE8f3EZs
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
@@ -1173,6 +1169,25 @@ def2 inc2 x (c : x)
 inc1 5
 inc2 5
 __AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE
+
+meta::session('new', <<'__IEbDxZPfS/UanBsU5EAT8a4lyCstXImFz1INsEtQMsA');
+
+quote beta'
+: (quote beta')
+(quote foo) <= (quote bar)
+
+foo <= bar
+((quote foo))
+(((quote foo)))
+(quote (quote (quote foo)))
+e (beta x x) (quote (quote (quote foo)))
+e (e (beta x x)) (quote (quote (quote foo)))
+e (e (e (beta x x))) (quote (quote (quote foo)))
+e (e (e (e (beta x x)))) (quote (quote (quote foo)))
+e (e (e (e (e (beta x x))))) (quote (quote (quote foo)))
+e (e (e (e (e (e (beta x x)))))) (quote (quote (quote foo)))
+e (e (e (e (e (e (e (beta x x))))))) (quote (quote (quote foo)))
+__IEbDxZPfS/UanBsU5EAT8a4lyCstXImFz1INsEtQMsA
 
 meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
