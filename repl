@@ -932,7 +932,7 @@ meta::section('00-assertions', <<'__IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y'
   :.
 __IEjFER7Da1WbXUJN/HmGtp3SjvR3MGBVe/uzUpWcA5Y
 
-meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0');
+meta::section('01-interpreter', <<'__CBeznifImnp/Q6ic++pwYMNljOmV/zX2qywaVYyFaIQ');
 - Bootstrap
   The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
 
@@ -977,13 +977,13 @@ meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
                       equals    => sub {ref $_[1] eq 'symbol' && ${$_[0]} eq ${$_[1]} || ${$_[0]} eq $_[1]},
                       call      => sub {
                         my $self = $_[0];
-                        return lambda('(' . $_[0]->serialize() . ' bind)', sub {$self->bind($_[0]->eval())}) if $_[0]->equals('bind');
-                        return $_[0]->eval()                                                                 if $_[0]->equals('value');
+                        return lambda('(' . $_[0]->serialize() . ' bind)', sub {$self->bind($_[0]->eval())}) if $_[1]->equals('bind');
+                        return $_[0]->eval()                                                                 if $_[1]->equals('value');
                         return lambda('(' . $_[0]->serialize() . ' <=)',
                                       sub {
                                         my $rhs = $_[0];
                                         ref $rhs eq 'symbol' && ${$self} le ${rhs} ? $true : $false;
-                                      })                                                                     if $_[0]->equals('<=');
+                                      })                                                                     if $_[1]->equals('<=');
 
                         return $_[1]->eval()->call($_[0]);
                       },
@@ -1062,12 +1062,7 @@ meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
 
   - Quoting
     ::
-    deftype 'quote', new       => sub {\$_[0]},
-                     eval      => sub {${$_[0]}},
-                     call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-                     serialize => sub {'(quote ' . $_[0]->eval()->serialize() . ')'};
-
-    symbol('quote')->bind(lambda('[quote]', \&quote));
+    symbol('quote')->bind(lambda('[quote]', $id));
     :.
 
   - Cons Cells
@@ -1082,6 +1077,7 @@ meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
                     tail      => sub {$_[0][1]},
                     call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                     serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
+    symbol('cons')->bind(lambda('[cons]', sub {my $head = $_[0]; lambda('(cons ' . $head->serialize() . ')', sub {cons($head->eval(), $_[0]->eval())})}));
 
     my $nil = '';
     deftype 'nil', new       => sub {\$nil},
@@ -1099,7 +1095,7 @@ meta::section('01-interpreter', <<'__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
                       call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                       serialize => sub {${$_[0]}};
     :.
-__3r8x5eBqhbg20KdufGg7t/ZhxJLs9DpADEA0boAWpS0
+__CBeznifImnp/Q6ic++pwYMNljOmV/zX2qywaVYyFaIQ
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1146,19 +1142,123 @@ def count xs (? xs (c : (count (t xs))) :)
 count l
 __t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4
 
-meta::session('lambda', <<'__r/rCy+seIh1DrlwiYWXY6H2MU1eUDgvsa04/s6/r+2U');
+meta::session('lambda', <<'__OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70');
 
-' f <- (' x -> (' y -> (c x y))
-f (' y)
-f (' y) (' y)
-' g <- (' x -> (' y -> (' z -> (c (c x y) z)
-g 3
-g 3 4
-g 3 4 5
-g (' y)
-g (' x) (' y)
-g (' x) (' y) (' z)
-__r/rCy+seIh1DrlwiYWXY6H2MU1eUDgvsa04/s6/r+2U
+(quote fn) bind (e (beta name) (e (beta expansion) (e (e (beta name expansion
+fn x (x x)
+(quote fn) bind (e (e (beta name) (e (beta expansion) (e (e (beta name expansion
+fn x (x x)
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta name expansion
+fn x (x x)
+fn x (x x) 6
+fn x (x x) (quote 6)
+fn x (cons x x)
+fn x (cons x x) 6
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (beta name expansion
+fn x (cons x x) 6
+fn x (cons x x) (quote foo)
+(quote macro) bind (e (e (e (beta name) (e (e (beta expansion) (beta name expansion
+(macro x x) 5
+(macro x (cons x x)) cons
+(quote macro) bind (e (e (e (e (beta name) (e (e (beta expansion) (beta name expansion
+(macro x (cons x x)) cons
+(quote macro) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e ((beta name expansion) value)
+(macro x (cons x x)) cons
+(quote macro) bind (e (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e ((beta name expansion) value)
+(macro x (cons x x)) cons
+(quote macro) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (e (beta name expansion) value)
+(macro x (cons x x)) cons
+(quote macro) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) value)
+(macro x (cons x x)) cons
+(macro x (cons x x)) beta
+(macro x (x <= x)) bar
+(macro x (x <= x)) (quote bar)
+(macro x (x <= (quote x))) (quote bar)
+(macro x ((quote x) <= (quote x))) bar
+(macro x ((quote x) <= x)) bar
+(quote def) bind (macro name (macro variable (macro expansion ((quote name) bind (fn variable expression)
+def f x x
+fn x x
+fn x x 6
+def f x
+def f x x
+(quote def) bind (macro name (macro variable (macro expansion ((quote name) bind (fn variable expansion)
+def f x x
+(quote def) bind (macro name (macro variable (macro expansion (name bind (fn variable expansion)
+def f x x
+def (quote f) x x
+(quote def) bind (macro name (macro variable (macro expansion ((quote name) bind (fn variable expansion)
+def (quote f) x x
+def f x x
+(quote let) bind (macro name (fn value ((quote name) bind value
+let f (fn x x)
+f
+(macro q)
+(macro q q)
+
+(macro q q q)
+(macro q q (quote q))
+(quote macro) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value ((beta name expansion) value))
+(macro q q (quote q))
+(macro q q (quote a))
+(quote let) bind (macro name (fn value ((quote name) bind value
+let f (fn x x)
+let : f (fn x x)
+let f (fn x x)
+(quote let) bind (fn name (fn value ((quote name) bind value
+let (quote f) (fn x x)
+let f (fn x x)
+f
+fn x x 6
+fn x x q
+(fn x x)
+(fn x x) (quote a)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value ((beta name expansion) value)
+(fn x (quote x)) a
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) value)
+(fn x (quote x)) a
+(fn x (quote x)) (quote a)
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (beta value (e (beta name expansion) value)
+(fn x (quote x)) (quote a)
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) value)
+(fn x (quote x)) (quote a)
+(fn x x) (quote a)
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name (quote expansion)) value)
+(fn x x) (quote a)
+(fn x (quote x)) (quote a)
+e (fn x (quote x)) (quote a)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e ((beta name expansion) value)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) value)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) value)
+(fn x (quote x)) a
+(fn x (quote x)) (quote a)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) (quote value)
+(fn x (quote x)) a
+(quote id) bind (e (beta x x)
+id (quote a)
+id a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) (quote (id value)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (e (beta name expansion) (quote (id value)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) (e (quote (id value)
+(fn x (quote x)) a
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (e (beta value (e (beta name expansion) (quote (id value
+(fn x (quote x)) a
+(fn x (quote x))
+(fn x (quote x)) (quote a)
+(fn x x) (quote a)
+(quote fn) bind (e (e (beta name) (e (e (beta expansion) (e (e (beta value (e (beta name expansion) (quote (id value
+(fn x x) (quote a)
+(fn x (quote x)) (quote a)
+(fn x (quote x)) a
+__OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70
 
 meta::session('lambda-new', <<'__AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE');
 ' fun <- (' var => (' expansion => (-> var expansion
@@ -1170,24 +1270,16 @@ inc1 5
 inc2 5
 __AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE
 
-meta::session('new', <<'__IEbDxZPfS/UanBsU5EAT8a4lyCstXImFz1INsEtQMsA');
-
-quote beta'
-: (quote beta')
-(quote foo) <= (quote bar)
-
-foo <= bar
-((quote foo))
-(((quote foo)))
-(quote (quote (quote foo)))
-e (beta x x) (quote (quote (quote foo)))
-e (e (beta x x)) (quote (quote (quote foo)))
-e (e (e (beta x x))) (quote (quote (quote foo)))
-e (e (e (e (beta x x)))) (quote (quote (quote foo)))
-e (e (e (e (e (beta x x))))) (quote (quote (quote foo)))
-e (e (e (e (e (e (beta x x)))))) (quote (quote (quote foo)))
-e (e (e (e (e (e (e (beta x x))))))) (quote (quote (quote foo)))
-__IEbDxZPfS/UanBsU5EAT8a4lyCstXImFz1INsEtQMsA
+meta::session('new', <<'__ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI');
+(quote beta') bind (e (beta x x))
+beta' x x (quote a)
+beta' 5
+beta' (quote 5)
+beta' (quote (quote 5))
+beta (quote 5)
+:
+: (quote 5)
+__ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI
 
 meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
