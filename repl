@@ -101,13 +101,9 @@ meta::define_form 'section', sub {
 };
 __+sIaXu/jTubQJpv321ESZdZajbA4tb4E31KzSLZLA0c
 
-meta::meta('datatypes::session', <<'__6AMvIzGHEBbN2hZz4yWARvZDJJfFV5o3+/QO5+A3FLA');
-meta::define_form 'session', sub {
-  my ($name, $value) = @_;
-  $externalized_functions{$name} = "session::$name";
-  *{$name} = sub {repl($name)};
-};
-__6AMvIzGHEBbN2hZz4yWARvZDJJfFV5o3+/QO5+A3FLA
+meta::meta('datatypes::session', <<'__rDxpJZi2nnRrs0bEuCdBqYj6Oi9yGg51SB9r93gB18Y');
+meta::define_form 'session', sub {};
+__rDxpJZi2nnRrs0bEuCdBqYj6Oi9yGg51SB9r93gB18Y
 
 meta::meta('datatypes::test', <<'__ueZczgsgipzDeioOy/gRBU5qUY/J01ZD6aS8UX0/cRY');
 meta::define_form 'test', sub {
@@ -321,9 +317,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__vQmwGtrILatxejGc/l7IdRwVv1czFCX3faNYkT3fR30');
-/tmp/repl.KPbj5w0PuyyqJZ2R8rF9vn84ttUpuNz0yQ6LsOUrCes/document.pdf
-__vQmwGtrILatxejGc/l7IdRwVv1czFCX3faNYkT3fR30
+meta::data('pdf-output-file', <<'__vdawKu/BC+j1M2zqf/Znh2/IEQKTpORv15G6NknzaLo');
+/tmp/repl.nevB5N9ldC2Kz1tLSzwOM1YojOPg4hZQheqLbrZuDZE/document.pdf
+__vdawKu/BC+j1M2zqf/Znh2/IEQKTpORv15G6NknzaLo
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -603,7 +599,7 @@ for (grep {! (/^internal::/ || /^bootstrap::/)} sort keys %data) {
 }
 __dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o
 
-meta::function('repl', <<'__WW/eBoPgxRY3lPDKBRANYBt5bk1PR1xw4UQfDegcuC8');
+meta::function('repl', <<'__JgoGhW+H84ort5h3UCfmR6z/6gUDS0WIoYmEpOOsJNo');
 my ($name) = @_;
 
 return 'usage: repl <name>' unless $name;
@@ -612,26 +608,27 @@ use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 repl for $name";
 $term->ornaments(0);
-my $prompt = name() . ' (repl)> ';
+my $prompt = $name . ' (repl)> ';
 my $OUT = $term->OUT || \*STDOUT;
 
-sub run_command {
+my $run_command = sub {
   my ($command) = @_;
-  print "$_\n  | " . eval {read_form($command)->eval()->serialize()};
+  print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
   chomp $@;
   print $@ ? $@ : '', "\n\n";
-}
+};
 
 print "Replaying commands...\n";
-run_command $_ for split /\n/, (retrieve("session::$name") || '');
+my @commands = split /\n/, retrieve("session::$name");
+$run_command->($_) for @commands;
 
 print "Ready.\n";
 while (defined ($_ = $term->readline($prompt))) {
-  run_command $_;
+  $run_command->($_);
   associate("session::$name", retrieve("session::$name") . "\n$_");
   save();
 }
-__WW/eBoPgxRY3lPDKBRANYBt5bk1PR1xw4UQfDegcuC8
+__JgoGhW+H84ort5h3UCfmR6z/6gUDS0WIoYmEpOOsJNo
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
