@@ -337,9 +337,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__KyrIpIlf0+mPjwbFhmpLwVvLwtNcAhgEwiJ0SpJr5DE');
-/tmp/repl.KtzV2vpO5hDvqHKGOVfgcOJnsp3zzdQ852La6UUSsG0/document.pdf
-__KyrIpIlf0+mPjwbFhmpLwVvLwtNcAhgEwiJ0SpJr5DE
+meta::data('pdf-output-file', <<'__WtFVDabaH+HP/HEzJRYqJorwvsxRoUP1SENmCXR1AMI');
+/tmp/repl.zIpF-hvF9kmPnIZgYOlAO-kChxErfpg7t4V0+Sp0ReA/document.pdf
+__WtFVDabaH+HP/HEzJRYqJorwvsxRoUP1SENmCXR1AMI
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -884,7 +884,7 @@ $line =~ s/^begin$/$document_header/;
 $line;
 __1jqqbjBcdOqh/3nTKZSDbW1AgEo4kg0dQ5HdRAgxyzE
 
-meta::line_filter('convert_itemized_environments', <<'__gAE2Xtr56GtOlw89sIcBSU7zkQUP/eBlx479kht7O2s');
+meta::line_filter('convert_itemized_environments', <<'__crKVW6OfRA2nN2SGPWQ/DAD9NPUws+boS8dK4cf3X2I');
 my ($line) = @_;
 
 $line =~ s/^\s*\+ /\\item /;
@@ -903,8 +903,7 @@ $line =~ s/^\s*\]d$/\\end{description}/;
 $line =~ s/^\s*\]a$/\\end{align*}/;
 
 $line;
-
-__gAE2Xtr56GtOlw89sIcBSU7zkQUP/eBlx479kht7O2s
+__crKVW6OfRA2nN2SGPWQ/DAD9NPUws+boS8dK4cf3X2I
 
 meta::line_filter('convert_sections', <<'__lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw');
 my ($line) = @_;
@@ -958,7 +957,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__MFeksjvg3OaeHqtEioP8VzAZdVqL+Dqa8D7/4d5Nxvg');
+meta::section('01-interpreter', <<'__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1001,7 +1000,9 @@ meta::section('01-interpreter', <<'__MFeksjvg3OaeHqtEioP8VzAZdVqL+Dqa8D7/4d5Nxvg
       function, we need to create one in order to build $\lambda$. This may sound circular, but it actually isn't too bad.
 
       a[
-        (\lambda~x~.~f)~y = E[(\beta~x~f)~Q[E[y]]] &\Rightarrow 
+        (\lambda~x~.~f)~y & = E[(\beta~x~f)~Q[E[y]]] \\
+                          & = [E] ((\beta~x~f)~Q[E[y]]) \\
+                          & = [E] (E [(\beta~v~(E[(\beta~x~f)~E[v]]))] E[Q[E[y]]])
       ]a
 
   - Bootstrap
@@ -1177,7 +1178,7 @@ meta::section('01-interpreter', <<'__MFeksjvg3OaeHqtEioP8VzAZdVqL+Dqa8D7/4d5Nxvg
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__MFeksjvg3OaeHqtEioP8VzAZdVqL+Dqa8D7/4d5Nxvg
+__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
