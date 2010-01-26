@@ -337,9 +337,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__WtFVDabaH+HP/HEzJRYqJorwvsxRoUP1SENmCXR1AMI');
-/tmp/repl.zIpF-hvF9kmPnIZgYOlAO-kChxErfpg7t4V0+Sp0ReA/document.pdf
-__WtFVDabaH+HP/HEzJRYqJorwvsxRoUP1SENmCXR1AMI
+meta::data('pdf-output-file', <<'__h+9NAlUdk48Sjr1/QaIGQXHaMSPC8hyL5fdAodK7G/k');
+/tmp/repl.oPRO00BO9OAoMAMvP2qhGukLpmE8fh3nujjw35vH+U0/document.pdf
+__h+9NAlUdk48Sjr1/QaIGQXHaMSPC8hyL5fdAodK7G/k
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -957,52 +957,48 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8');
+meta::section('01-interpreter', <<'__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
 
   - Fundamental Semantics
+    We assume the existence of two meta-functions $E$ and $Q$, whose application is denoted by square brackets instead of parentheses. $E[x]$ indicates that $x$
+    should be evaluated, and $Q[x]$ indicates that $x$ should be quoted. $E[x]$ corresponds to invoking \verb|x->eval()| in the interpreter, so for instance
+    $E[(a . b)] = E[a]b$. The semantic of $Q$ is simply that $E[Q[x]] = x$, so $Q$ defers evaluation by one step.
+
     - Beta expansion
-      The {\tt [beta]} function provides $\beta$-expansion in the untyped lambda calculus. It does no evaluation on its own; it merely constructs non-evaluative
-      lambda-forms. So, for example, running this:
-
-      :: example
-      [beta] x (x x) foo
-      :.
-
-      \noindent would yield the result {\tt (foo foo)}. Used without the evaluation combinator, it serves as a simple rewrite system with no programmability.
-
-    - Evaluation combinator
-      The evaluation combinator {\tt [e]} takes a function and returns a new function that evaluates its result. So, for example, we can turn the {\tt [beta]}
-      form in the previous section into a proper macro by combining it with {\tt [e]}:
-
-      :: example
-      [e] ([beta] x (x x)) foo
-      :.
-
-      \noindent Unlike before, this will yield an error because evaluating the form {\tt (foo foo)} isn't possible (in this case, {\tt foo} is undefined). Using
-      the evaluation combinator with {\tt [beta]} it is possible to construct regular functions and macros.
-
-    - Building {\tt lambda}
-      Using {\tt [e]} and {\tt [beta]} to build {\tt lambda} is not as trivial as it might seem. In this language, {\tt lambda} is a strict evaluator, so the
-      argument is first evaluated, then quoted, then substituted, and finally the resulting form after $\beta$-expansion is evaluated. In other words, the
-      semantics for $\lambda$ are:
-
+      The {\tt [beta]} function provides $\beta$-expansion in the untyped lambda calculus. Formally, its behavior is described by the equation:
+      
       a[
-        (\lambda~x~.~f)~y = E[(\beta~x~f)~Q[E[y]]]
+        \beta~x~f~y & = f[y/x]
       ]a
 
-      \noindent where $E[x]$ represents the evaluation of $x$, $Q[x]$ represents a quoted form of $x$, and $\beta$ is the {\tt [beta]} function.\footnote{A
-      quick note about quoting here: We need to quote the result of evaluating the argument because of the identity-symbol case. If the function $\lambda x.x$
-      is evaluated on a quoted symbol, then you would have the equation $E[E[Q[x]]]$, which ends up evaluating the symbol. This, however, is not the desired
-      behavior, so we must quote the evaluated argument to protect it from further evaluation.} Because initially there is no evaluative $\beta$-expansion
-      function, we need to create one in order to build $\lambda$. This may sound circular, but it actually isn't too bad.
+      It does no evaluation on its own; it merely rewrites the literal forms that it is given. So, for example, running \verb|[beta] x (x x) foo| would yield
+      the result \verb|(foo foo)|.
+
+    - Evaluation combinator
+      The evaluation combinator {\tt [e]} takes an object and returns a new object that evaluates its result. Formally, this behavior is that $[e]~(\beta~x~f) =
+      \beta~x~E[f]$. So, for example, we can turn the {\tt [beta]} form in the previous section into a proper macro by combining it with {\tt [e]}, so that the
+      expression \verb|[e] ([beta] x (x x)) foo| yields an error as it attempts to evaluate the form {\tt (foo foo)}.\footnote{It isn't possible in this case
+      because {\tt foo} is undefined.} Using the evaluation combinator with {\tt [beta]} it is possible to construct regular functions and macros.
+
+    - Building {\tt lambda}
+      The semantic of {\tt lambda} is:
 
       a[
-        (\lambda~x~.~f)~y & = E[(\beta~x~f)~Q[E[y]]] \\
-                          & = [E] ((\beta~x~f)~Q[E[y]]) \\
-                          & = [E] (E [(\beta~v~(E[(\beta~x~f)~E[v]]))] E[Q[E[y]]])
+        \lambda~x~f~y & = E \left[ \beta~x~E[f]~Q\left[ E[y] \right]\right] \\
+                      & = E \left[ [e] (\beta~x~f)~Q\left[ E[y] \right]\right] \\
+                      & = E \left[ [e] (\beta~x~f)~Q\left[ (\beta~x~E[x]) y \right] \right] \\
+                      & = E \left[ [e] (\beta~x~f)~Q\left[ [e] (\beta~x~x) y \right] \right]
+      ]a
+
+      At this point we need some way to achieve the $Q[E[y]]$ on the last argument. We can't use eta-expansion here because this language is only a partial
+      lambda-calculus; some values are not functions, so calling them will cause errors. Also, $\lambda x . e x$ might not be of the same type as $e$, since $e$
+      might not be a function. The identity function can be constructed as $[e] (\beta~x~x)$, so it makes sense to build that separately:
+
+      a[
+        [i] & = [e] (\beta~x~x)
       ]a
 
   - Bootstrap
@@ -1145,7 +1141,10 @@ meta::section('01-interpreter', <<'__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8
 
     - Quoting
       ::
-      symbol('[quote]')->bind(lambda('[quote]', $id));
+      deftype 'quote', new       => sub {\$_[0]},
+                       eval      => sub {${$_[0]}},
+                       serialize => sub {'(quote ' . ${$_[0]}->serialize() . ')'};
+      symbol('[quote]')->bind(lambda('[quote]', \&quote));
       :.
 
     - Cons Cells
@@ -1178,7 +1177,7 @@ meta::section('01-interpreter', <<'__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__WfadeRxI3kVapUIivzdZfjfycHELCEanYUepSvdbxf8
+__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1208,12 +1207,9 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('beta', <<'__qBmWpKLmKqa9pZsF4ClBkq4FV/SWRoK0v78ZE8f3EZs');
-quote beta' bind (e (beta x x))
-quote beta' (quote bind) (e (beta x x))
-beta'
-quote
-__qBmWpKLmKqa9pZsF4ClBkq4FV/SWRoK0v78ZE8f3EZs
+meta::session('beta', <<'__jTHJtwBWLfekn/K7OUxPZNVJw2rNWiHKUZw25DLfSKE');
+[quote] [id] bind ([e] ([e] ([beta] x ([quote] x))))
+__jTHJtwBWLfekn/K7OUxPZNVJw2rNWiHKUZw25DLfSKE
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
