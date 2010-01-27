@@ -78,6 +78,14 @@ meta::define_form 'line_filter', sub {
 };
 __/k1BhEweDsgaEdqrALbIEjvKhsVrk/hv//e/KPydA6A
 
+meta::meta('datatypes::note', <<'__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34');
+meta::define_form 'note', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "note::$name";
+  *{$name} = sub {edit("note::$name")};
+};
+__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34
+
 meta::meta('datatypes::section', <<'__+sIaXu/jTubQJpv321ESZdZajbA4tb4E31KzSLZLA0c');
 meta::define_form 'section', sub {
   my ($name, $value) = @_;
@@ -337,9 +345,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__h+9NAlUdk48Sjr1/QaIGQXHaMSPC8hyL5fdAodK7G/k');
-/tmp/repl.oPRO00BO9OAoMAMvP2qhGukLpmE8fh3nujjw35vH+U0/document.pdf
-__h+9NAlUdk48Sjr1/QaIGQXHaMSPC8hyL5fdAodK7G/k
+meta::data('pdf-output-file', <<'__pA1P4mR8K0EkOhzP6uwfVxo6/fDzki4iVpzplf/lASw');
+/tmp/repl.6ukmjv6nnNjPe06eyIF-4rm5-slWbTUn6S-hsOYJQ3c/document.pdf
+__pA1P4mR8K0EkOhzP6uwfVxo6/fDzki4iVpzplf/lASw
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -586,6 +594,10 @@ __PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y
 meta::function('new', <<'__FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos');
 clone(@_);
 __FQjehdFg7T3T2iHPMlGp6nAnrKAsQUIK5CXW02wNnos
+
+meta::function('notes', <<'__9OB8og1t9W9mdqvF5+Zvbv1/z0k/IB2FIl7IL6MCfcs');
+join "\n", grep /note::/, sort keys %data;
+__9OB8og1t9W9mdqvF5+Zvbv1/z0k/IB2FIl7IL6MCfcs
 
 meta::function('perl', <<'__XfLS9FlyE7w0CyERaGa/CTG/y2CrH4ZDN6M0SAM3IfY');
 eval($_[0]);
@@ -922,6 +934,42 @@ if ($line =~ /^(\s*)- (.*)$/) {
   $line;
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
+
+meta::note('scratchwork', <<'__x6Da6WpO92jQ8zSPTVkd4uBibsPF2CDnufm+EpNRTQo');
+= Thoughts.
+
+- Cons/eval
+  Cons, if Church-encoded, doesn't have the correct semantics. E[(a.b)] should be E[a]b, but as it stands passing in the eval combinator would result in E[(a
+  b)], which isn't right. In fact, there doesn't seem to be any way to achieve the right behavior unless we are guaranteed the presence of : at the beginning of
+  a list; in that case, we'd have E[(: a)] = E[a], which kicks the process off. But that doesn't continue, so it's probably unproductive to consider this line
+  of reasoning.
+
+  Therefore it makes sense to represent cons cells as objects if we're using the eval combinator. Now if we're going to use a combinator that works properly,
+  then I can imagine changing this...
+
+  - Preserving Church-encoding with a proper combinator
+    The semantics of a Church-encoded cons cell are:
+
+      cons x y f = f x y
+
+    So if we wanted our desired evaluation rule, then we'd need f to evaluate its first parameter by normal evaluation logic. So it wouldn't be an eval
+    combinator; rather, it would be a simple evaluation function. This semantic works properly for cons cells, but fails elsewhere. For example, it then becomes
+    impossible to multi-evaluate a form:
+
+      e (e (cons x y)) => e (cons x y) => (x . y)
+
+    So this line of reasoning is unproductive.
+
+  - Using cons objects
+    Cons works well as an object because we can treat it as callable anyway. For example, we could establish that:
+
+      (x . y) 'head => x
+      (x . y) 'tail => y
+      (x . y) 'eval => E[x] y
+
+    This provides a convenient way to deal with the fact that we've got something that isn't really a function but acts like one. I suppose by this definition
+    /cons/ is a partial function that does the right thing. It could also know to apply its arguments to a function that it is called on.
+__x6Da6WpO92jQ8zSPTVkd4uBibsPF2CDnufm+EpNRTQo
 
 meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0');
 - Unit Testing Framework
