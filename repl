@@ -345,9 +345,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__pA1P4mR8K0EkOhzP6uwfVxo6/fDzki4iVpzplf/lASw');
-/tmp/repl.6ukmjv6nnNjPe06eyIF-4rm5-slWbTUn6S-hsOYJQ3c/document.pdf
-__pA1P4mR8K0EkOhzP6uwfVxo6/fDzki4iVpzplf/lASw
+meta::data('pdf-output-file', <<'__mQqbPSjloJkrY1b+7ysj6TEzTx9GH/9QFHAvnY02oBA');
+/tmp/repl.GoSfavA8VPOs5rNzrUYTQh-YisTPRifq9oxIh+D9DkE/document.pdf
+__mQqbPSjloJkrY1b+7ysj6TEzTx9GH/9QFHAvnY02oBA
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -935,7 +935,7 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::note('scratchwork', <<'__x6Da6WpO92jQ8zSPTVkd4uBibsPF2CDnufm+EpNRTQo');
+meta::note('scratchwork', <<'__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI');
 = Thoughts.
 
 - Cons/eval
@@ -968,8 +968,11 @@ meta::note('scratchwork', <<'__x6Da6WpO92jQ8zSPTVkd4uBibsPF2CDnufm+EpNRTQo');
       (x . y) 'eval => E[x] y
 
     This provides a convenient way to deal with the fact that we've got something that isn't really a function but acts like one. I suppose by this definition
-    /cons/ is a partial function that does the right thing. It could also know to apply its arguments to a function that it is called on.
-__x6Da6WpO92jQ8zSPTVkd4uBibsPF2CDnufm+EpNRTQo
+    /cons/ is a partial function that does the right thing. It could also know to apply its elements to a function that it is called on.
+
+    The (x . y) 'eval case isn't degenerate. In reality, you'd write (x 'eval), where x is some cons-cell. In that case, you'd have the right result; x would be
+    evaluated into the cons-cell that it represents, and 'eval would be called on it.
+__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI
 
 meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0');
 - Unit Testing Framework
@@ -1255,9 +1258,11 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('beta', <<'__jTHJtwBWLfekn/K7OUxPZNVJw2rNWiHKUZw25DLfSKE');
+meta::session('beta', <<'__bge+BmyaIoFqDSh3qcMwbZsUDqmLDXo3dNYeuIp2CFw');
 [quote] [id] bind ([e] ([e] ([beta] x ([quote] x))))
-__jTHJtwBWLfekn/K7OUxPZNVJw2rNWiHKUZw25DLfSKE
+[quote] [e]
+[quote] [beta] [e]
+__bge+BmyaIoFqDSh3qcMwbZsUDqmLDXo3dNYeuIp2CFw
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
