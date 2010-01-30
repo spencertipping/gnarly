@@ -1008,7 +1008,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0');
+meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1033,6 +1033,22 @@ meta::section('01-interpreter', <<'__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0
       \beta~x~E[f]$. So, for example, we can turn the {\tt [beta]} form in the previous section into a proper macro by combining it with {\tt [e]}, so that the
       expression \verb|[e] ([beta] x (x x)) foo| yields an error as it attempts to evaluate the form {\tt (foo foo)}.\footnote{It isn't possible in this case
       because {\tt foo} is undefined.} Using the evaluation combinator with {\tt [beta]} it is possible to construct regular functions and macros.
+
+    - Building {\tt macro}
+      The semantic of {\tt macro} is:
+
+      a[
+        \gamma~x~f~y & = E \left[ \beta~x~E[f]~y \right] \\
+                     & = \left[ [e] (\beta~x~f) y \right] \\
+        \gamma       & = \beta~x~E\left[ \beta~f~E\left[ [e]~f \right]right] \\
+                     & = [e] (\beta~x) ([e] (\beta~f) ([e]~f))
+      ]a
+
+      Thus building a temporary rendition of {\tt macro} is simple; we can do so by using the above form as:
+
+      :: example
+      <- macro ([e] ([beta] x) ([e] ([beta] f) ([e] f)))
+      :.
 
     - Building {\tt lambda}
       The semantic of {\tt lambda} is:
@@ -1192,10 +1208,7 @@ meta::section('01-interpreter', <<'__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0
 
     - Quoting
       ::
-      deftype 'quote', new       => sub {\$_[0]},
-                       eval      => sub {${$_[0]}},
-                       serialize => sub {'(quote ' . ${$_[0]}->serialize() . ')'};
-      symbol('[quote]')->bind(lambda('[quote]', \&quote));
+      symbol('[quote]')->bind(lambda('[quote]', $id));
       :.
 
     - Cons Cells
@@ -1228,7 +1241,7 @@ meta::section('01-interpreter', <<'__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__B/fkh7BF2+b7lEfwo9/KhdkhIlJLbwxWoU/rvTJebS0
+__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1258,11 +1271,18 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('beta', <<'__bge+BmyaIoFqDSh3qcMwbZsUDqmLDXo3dNYeuIp2CFw');
-[quote] [id] bind ([e] ([e] ([beta] x ([quote] x))))
-[quote] [e]
-[quote] [beta] [e]
-__bge+BmyaIoFqDSh3qcMwbZsUDqmLDXo3dNYeuIp2CFw
+meta::session('beta', <<'__nWoxG2F+0OcyyNUZQ6X33HKjSiU5msUaUygFzYzrSuI');
+[quote] macro bind ([e] ([e] ([beta] x) ([e] ([e] ([beta] f) ([e] ([beta] x f))))))
+macro x (x x)
+macro x (x x) 5
+macro x (x x) macro
+macro x (x x) macro macro
+macro x ([e] x) macro
+macro x ([e] x) macro x x
+macro x ([e] x) macro x x y
+macro x (cons x x) 5
+macro x (cons ([quote] x) ([quote] x)) y
+__nWoxG2F+0OcyyNUZQ6X33HKjSiU5msUaUygFzYzrSuI
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
