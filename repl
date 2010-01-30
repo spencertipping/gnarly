@@ -1008,7 +1008,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0');
+meta::section('01-interpreter', <<'__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1033,40 +1033,6 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
       \beta~x~E[f]$. So, for example, we can turn the {\tt [beta]} form in the previous section into a proper macro by combining it with {\tt [e]}, so that the
       expression \verb|[e] ([beta] x (x x)) foo| yields an error as it attempts to evaluate the form {\tt (foo foo)}.\footnote{It isn't possible in this case
       because {\tt foo} is undefined.} Using the evaluation combinator with {\tt [beta]} it is possible to construct regular functions and macros.
-
-    - Building {\tt macro}
-      The semantic of {\tt macro} is:
-
-      a[
-        \gamma~x~f~y & = E \left[ \beta~x~E[f]~y \right] \\
-                     & = \left[ [e] (\beta~x~f) y \right] \\
-        \gamma       & = \beta~x~E\left[ \beta~f~E\left[ [e]~f \right]right] \\
-                     & = [e] (\beta~x) ([e] (\beta~f) ([e]~f))
-      ]a
-
-      Thus building a temporary rendition of {\tt macro} is simple; we can do so by using the above form as:
-
-      :: example
-      <- macro ([e] ([beta] x) ([e] ([beta] f) ([e] f)))
-      :.
-
-    - Building {\tt lambda}
-      The semantic of {\tt lambda} is:
-
-      a[
-        \lambda~x~f~y & = E \left[ \beta~x~E[f]~Q\left[ E[y] \right]\right] \\
-                      & = E \left[ [e] (\beta~x~f)~Q\left[ E[y] \right]\right] \\
-                      & = E \left[ [e] (\beta~x~f)~Q\left[ (\beta~x~E[x]) y \right] \right] \\
-                      & = E \left[ [e] (\beta~x~f)~Q\left[ [e] (\beta~x~x) y \right] \right]
-      ]a
-
-      At this point we need some way to achieve the $Q[E[y]]$ on the last argument. We can't use eta-expansion here because this language is only a partial
-      lambda-calculus; some values are not functions, so calling them will cause errors. Also, $\lambda x . e x$ might not be of the same type as $e$, since $e$
-      might not be a function. The identity function can be constructed as $[e] (\beta~x~x)$, so it makes sense to build that separately:
-
-      a[
-        [i] & = [e] (\beta~x~x)
-      ]a
 
   - Bootstrap
     The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
@@ -1114,7 +1080,7 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
 
         bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
         unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
-        equals    => sub {ref $_[1] eq 'symbol' && ${$_[0]} eq ${$_[1]} || ${$_[0]} eq $_[1]},
+        equals    => sub {ref $_[1] eq 'symbol' ? ${$_[0]} eq ${$_[1]} : ${$_[0]} eq $_[1]},
         call      => sub {
           my $self = $_[0];
           if (ref $_[1] eq 'symbol') {
@@ -1170,7 +1136,7 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
         new       => sub {\$_[0]},
         eval      => sub {die 'Cannot evaluate beta-expansion placeholder ' . $_[0]->serialize()},
         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-        serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
+        serialize => sub {'[-> ' . ${$_[0]}->serialize() . ']'};
 
       sub map_form {
         my ($f, $x) = @_;
@@ -1192,12 +1158,12 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
 
       symbol('[e]')->bind(lambda('[e]', sub {
         my $f = $_[0]->eval();
-        lambda('(e ' . $f->serialize() . ')', sub {$f->call($_[0])->eval()});
+        lambda('[e ' . $f->serialize() . ']', sub {$f->call($_[0])->eval()});
       }));
 
       symbol('[beta]')->bind(lambda('[beta]', sub {
         my $symbol = $_[0];
-        lambda('(' . $symbol->serialize() . ' -> ...)', sub {
+        lambda('[' . $symbol->serialize() . ' -> ...]', sub {
           my $body        = $_[0];
           my $placeholder = placeholder($symbol);
           expander($placeholder,
@@ -1212,9 +1178,9 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
       :.
 
     - Cons Cells
-      In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)} will
-      be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](b)$, provided that {\tt nil} behaves as the
-      identity function (which it does).
+      In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)}
+      will be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](b)$, provided that {\tt nil} behaves
+      as the identity function (which it does).
 
       ::
       deftype 'cons', new       => sub {[$_[0], $_[1]]},
@@ -1241,7 +1207,7 @@ meta::section('01-interpreter', <<'__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__R2z5NfNb2I/6EVm5zM1JBrKqXc+J9ylGVJy363qSb/0
+__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1271,7 +1237,7 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('beta', <<'__nWoxG2F+0OcyyNUZQ6X33HKjSiU5msUaUygFzYzrSuI');
+meta::session('beta', <<'__Are2hRdrIom9YKpc32Gx5yuR8V3Rq7cscFp3wRJxCHM');
 [quote] macro bind ([e] ([e] ([beta] x) ([e] ([e] ([beta] f) ([e] ([beta] x f))))))
 macro x (x x)
 macro x (x x) 5
@@ -1282,7 +1248,13 @@ macro x ([e] x) macro x x
 macro x ([e] x) macro x x y
 macro x (cons x x) 5
 macro x (cons ([quote] x) ([quote] x)) y
-__nWoxG2F+0OcyyNUZQ6X33HKjSiU5msUaUygFzYzrSuI
+macro x (macro y (cons (quote x) (quote y)))
+macro x (macro y (cons (quote x) (quote y))) 5 6
+macro x (macro y (cons ([quote] x) ([quote] y))) 5 6
+macro x (macro y (cons ([quote] x) ([quote] y))) x y
+macro x (macro y (cons ([quote] x) ([quote] y))) y x
+macro x (macro y (cons ([quote] x) ([quote] y))) y
+__Are2hRdrIom9YKpc32Gx5yuR8V3Rq7cscFp3wRJxCHM
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
