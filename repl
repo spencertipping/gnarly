@@ -935,6 +935,32 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
+meta::note('macro', <<'__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A');
+Macros don't do quite what you might expect. Because the body of a macro is unevaluated, currying macros is not very useful in most cases. Here's an example:
+
+     (macro x (macro y (cons ([quote] x) ([quote] y)))) y x
+  => (macro y (cons ([quote] y) ([quote] y))) x
+  => (cons ([quote] x) ([quote] x))
+  => (x . x)
+
+There are cases where this would be useful, but what you really want is probably something more like this (remember that lists are consed in reverse):
+
+     (macro x+y (cons (x+y head tail) (x+y tail))) (y x)
+  => (cons ([-> (y x)] head tail) ([-> (y x)] tail))
+  => (y . x)
+
+Unfortunately, the same problem arises with lambdas. Because expressions are lazily evaluated (this is a property of using the eval-combinator), we have no way
+of requiring that the inner lambda apply itself prior to finishing the beta-substitution. What we would really like is this series of events:
+
+     (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
+  => (lambda y (cons [-placeholder containing [quote] y] y)) ([quote] y)
+  => (cons [-placeholder containing [quote] y] [-placeholder containing [quote] y])
+  => (y . y)
+
+In other words, it would be nice to interrupt the beta-expansion by first replacing things with opaque placeholders and then finalizing the replacement with the
+proper values. (This may be possible given the current architecture.)
+__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A
+
 meta::note('scratchwork', <<'__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI');
 = Thoughts.
 
@@ -1008,7 +1034,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM');
+meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1187,7 +1213,14 @@ meta::section('01-interpreter', <<'__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM
                       eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                       head      => sub {$_[0][0]},
                       tail      => sub {$_[0][1]},
-                      call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
+                      call      => sub {
+                        if (ref $_[1] eq 'symbol') {
+                          return $_[0]->head() if $_[1]->equals('head');
+                          return $_[0]->tail() if $_[1]->equals('tail');
+                        } else {
+                          die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
+                        }
+                      },
                       serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
       symbol('cons')->bind(lambda('[cons]', sub {my $head = $_[0]; lambda('(cons ' . $head->serialize() . ')', sub {cons($head->eval(), $_[0]->eval())})}));
 
@@ -1207,7 +1240,7 @@ meta::section('01-interpreter', <<'__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__mK0obrxXPIeNlMF3ScB2D7W76QRdOohLAG2oP53V1mM
+__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
 
 meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
@@ -1237,24 +1270,81 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('beta', <<'__Are2hRdrIom9YKpc32Gx5yuR8V3Rq7cscFp3wRJxCHM');
+meta::session('beta', <<'__myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc');
 [quote] macro bind ([e] ([e] ([beta] x) ([e] ([e] ([beta] f) ([e] ([beta] x f))))))
-macro x (x x)
-macro x (x x) 5
-macro x (x x) macro
-macro x (x x) macro macro
-macro x ([e] x) macro
-macro x ([e] x) macro x x
-macro x ([e] x) macro x x y
-macro x (cons x x) 5
-macro x (cons ([quote] x) ([quote] x)) y
-macro x (macro y (cons (quote x) (quote y)))
-macro x (macro y (cons (quote x) (quote y))) 5 6
-macro x (macro y (cons ([quote] x) ([quote] y))) 5 6
-macro x (macro y (cons ([quote] x) ([quote] y))) x y
-macro x (macro y (cons ([quote] x) ([quote] y))) y x
-macro x (macro y (cons ([quote] x) ([quote] y))) y
-__Are2hRdrIom9YKpc32Gx5yuR8V3Rq7cscFp3wRJxCHM
+macro x+y (cons (x+y head tail) (x+y tail))
+macro x+y (cons (x+y head tail) (x+y tail)) (5 6)
+macro x+y ([quote] (cons (x+y head tail) (x+y tail))) (5 6)
+macro x+y (cons (x+y head tail) (x+y tail)) (5 6)
+macro x+y (cons : (cons (x+y head tail) (x+y tail))) (5 6)
+macro x+y (cons (x+y head tail) (x+y tail)) y
+macro x+y (cons (x+y head tail) (x+y tail))
+macro x+y ([quote] x+y)
+macro x+y ([quote] x+y) foo
+macro x+y ([quote] x+y) (5 6)
+macro x+y (cons ([quote] (x+y head tail)) ([quote] (x+y tail))) (5 6)
+macro x+y (cons (([quote] x+y ([quote] head) ([quote] tail))) (([quote] x+y ([quote] tail)))) (5 6)
+gensym
+[quote] lambda bind (macro :parameter: (macro :body: (macro :argument: ([e] ([beta] :parameter: :body:) (macro :x: :x: :argument:))))
+lambda x x
+lambda x x 5
+lambda x x y
+lambda x x (cons 5 5)
+lambda x (cons x x) (cons 5 5)
+lambda x (cons x ([quote] y)) (cons 5 5)
+lambda x (cons x ([quote] y)) ([quote] a)
+lambda x (cons ([quote] x) ([quote] y)) ([quote] a)
+lambda x (cons (x) ([quote] y)) ([quote] a)
+lambda x (cons x ([quote] y)) ([quote] a)
+lambda x (cons ([quote] y) ([quote] y)) ([quote] a)
+lambda x (cons ([quote] y) ([quote] y)) a
+lambda x (cons ([quote] y) ([quote] y)) (a a)
+lambda x (cons ([quote] y) ([quote] y)) (5 5)
+lambda x (cons ([quote] x) ([quote] y)) (5 5)
+[quote] lambda bind (macro :parameter: (macro :body: (macro :argument: ([e] ([beta] :parameter: :body:) (macro :x: :x: :argument:))))
+lambda x (cons ([quote] x) ([quote] y)) (5 5)
+[quote] lambda bind (macro :parameter: (macro :body: (macro :argument: ([e] ([e] ([beta] :parameter: :body:) (macro :x: :x: :argument:)))))
+lambda x (cons ([quote] x) ([quote] y)) (5 5)
+[quote] lambda bind (macro :parameter: (macro :body: ([e] (macro :argument: ([e] ([beta] :parameter: :body:) (macro :x: :x: :argument:)))))
+lambda x (cons ([quote] x) ([quote] y)) (5 5)
+lambda x (cons ([quote] x) ([quote] y)) 5
+[quote] lambda bind (macro :parameter: (macro :body: (macro :argument: ([e] ([beta] :parameter: :body:) (macro :x: :x: :argument:))))
+lambda x (cons ([quote] x) ([quote] y)) 5
+lambda x (cons ([quote] x) ([quote] y)) 5
+[e] (lambda x (cons ([quote] x) ([quote] y)) 5)
+[e] (lambda x (cons ([quote] x) ([quote] y)) 5) :
+[e] (lambda x (cons ([quote] x) ([quote] y))) 5
+lambda x (cons ([quote] x) ([quote] y)) 5
+lambda x (cons x ([quote] y)) 5
+lambda x (cons x ([quote] y)) a
+lambda x (cons x ([quote] y)) (a a)
+lambda x (cons x ([quote] y)) (cons a)
+lambda x (cons x ([quote] y)) (cons a) head tail 5
+lambda x (cons x ([quote] y)) (cons ([quote] a)) head tail 5
+lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
+lambda x (cons x ([quote] y)) (cons ([quote] a)) head
+lambda x (cons x ([quote] y)) (cons ([quote] a))
+lambda x (cons x ([quote] y)) (cons ([quote] a)) head
+lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
+(lambda x (lambda y (cons x y))) 5 6
+(lambda x (lambda y (cons x y))) ([quote] x) ([quote] y)
+(lambda x (lambda y (cons x y))) ([quote] y) ([quote] x)
+(lambda x (lambda y (cons x y))) ([quote] y)
+(lambda x (lambda y (cons x y))) ([quote] y) ([quote] x)
+(lambda x (lambda y (cons x y))) ([quote] y) ([quote] x) :
+(lambda x (lambda y (cons x y))) ([quote] y) ([quote] x)
+(lambda x (lambda y (cons x y))) y
+(lambda x (lambda y (cons x y))) y x
+(lambda x (lambda y (cons x y))) 5 6
+(lambda x (lambda y (cons x y))) 6 5
+(lambda x (lambda y (cons x y))) ([quote] 6)
+(lambda x (lambda y (cons x y))) ([quote] 6) ([quote] 5)
+(lambda x (lambda y (cons x y))) ([quote] 6) ([quote] y)
+(lambda x (lambda y (cons x y))) ([quote] 6) ([quote] x)
+(lambda x (lambda y (cons x y))) ([quote] x) ([quote] x)
+(lambda x (lambda y (cons x y))) ([quote] x) ([quote] y)
+(lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
+__myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
