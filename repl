@@ -323,19 +323,20 @@ And to extract the generated TeX:
   $ ./newdoc compile-to-tex > file
 __uirjwqAxCBH+vu23aaPBO6uNM7a7cUHAYKJo8gIJsGw
 
-meta::data('meta-associations', <<'__LFbUILfqPrYMsFUSJaFljSVU6jHl6baHEj7ML+iA/Ns');
+meta::data('meta-associations', <<'__z/V/wHtQJ1mYI9/x0IGw2Xfv9hF2/Armu9WHEUK5dW4');
 ^function:: .pl
 ^internal_function:: .pl
 ^meta:: .pl
 ^bootstrap:: .pl
 ^data::document$ .cltex
-^data::vim-highlighter$ .vim
+^data::.*vim-highlighter$ .vim
 ^unlit_converter:: .pl
 ^line_filter:: .pl
 ^code_filter:: .pl
 ^section:: .perltex
+^session:: .tnl
 ^test:: .perltex
-__LFbUILfqPrYMsFUSJaFljSVU6jHl6baHEj7ML+iA/Ns
+__z/V/wHtQJ1mYI9/x0IGw2Xfv9hF2/Armu9WHEUK5dW4
 
 meta::data('name', <<'__ohnJGaQmJnPUNqX7FfcA/hxTRo3E78EirwEYNwcWx28');
 repl
@@ -356,6 +357,34 @@ __BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A
 meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
+
+meta::data('session-vim-highlighter', <<'__XGMKQbQJccUhCNsQlhIs44VTzBhoXajAciUMWwNFswI');
+" The New Language
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   A minimalistic combinatory language with rewriting
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+set iskeyword=33-39,42-126,128-255
+
+syn keyword tnlBuiltins    compose' eval beta
+syn keyword tnlFunctions   bind gensym counter type <=
+syn region  tnlComments    start=/#/ end=/$/
+syn match   tnlNumber      /\<-\?[0-9.]\+\>/
+syn match   tnlParens      /[()]/
+
+hi link tnlBuiltins  Keyword
+hi link tnlFunctions Identifier
+hi link tnlNumber    Number
+hi link tnlComments  Comment
+hi link tnlParens    Special
+
+let b:current_syntax = "tnl"
+__XGMKQbQJccUhCNsQlhIs44VTzBhoXajAciUMWwNFswI
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -549,21 +578,23 @@ my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
 
-meta::function('install-vim-highlighter', <<'__3qCLWaQi9Dp8Xjs/XCdFMcPXj4H4+DWldUwYv9/fAGs');
+meta::function('install-vim-highlighter', <<'__JrzWkwyz5vHE4Xn6zDg7a5f7scfw0zV63RjadpxIksA');
 my $home = $ENV{'HOME'};
 mkdir "$home/.vim";
 mkdir "$home/.vim/syntax";
 file::write("$home/.vim/syntax/cltex.vim", retrieve('data::vim-highlighter'));
+file::write("$home/.vim/syntax/tnl.vim",   retrieve('data::session-vim-highlighter'));
 
 <<"EOF";
 The highlighter was created successfully. To have syntax highlighting activated
 automatically, append this line to your .vimrc:
 
   au BufRead,BufNewFile *.cltex set filetype=cltex
+  au BufRead,BufNewFile *.tnl   set filetype=tnl
 
 Alternately, you can run $0 update-vimrc.
 EOF
-__3qCLWaQi9Dp8Xjs/XCdFMcPXj4H4+DWldUwYv9/fAGs
+__JrzWkwyz5vHE4Xn6zDg7a5f7scfw0zV63RjadpxIksA
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -779,11 +810,12 @@ my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
 
-meta::function('update-vimrc', <<'__QweSkvdteATxlMZfDti3sl2iWNE+LbkHc1E7FkqNuCg');
+meta::function('update-vimrc', <<'__/tiTzfrH6z0Z6XAHXMyuJW3NozZ0vKtzEd/K2Dy1hD8');
 open my $fh, '>>', "$ENV{'HOME'}/.vimrc";
-print $fh "au BufRead,BufNewFile *.cltex set filetype=cltex";
+print $fh "\nau BufRead,BufNewFile *.cltex set filetype=cltex";
+print $fh "\nau BufRead,BufNewFile *.tnl   set filetype=tnl";
 close $fh;
-__QweSkvdteATxlMZfDti3sl2iWNE+LbkHc1E7FkqNuCg
+__/tiTzfrH6z0Z6XAHXMyuJW3NozZ0vKtzEd/K2Dy1hD8
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
@@ -1059,7 +1091,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis');
+meta::section('01-interpreter', <<'__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1236,12 +1268,12 @@ meta::section('01-interpreter', <<'__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis
       }));
 
       symbol('eval')->bind(lambda('[eval]', sub {$_[0]->eval()->eval()}));
-      symbol('compose')->bind(lambda('[compose]', sub {
+      symbol('compose\'')->bind(lambda('[compose\']', sub {
         my $f = $_[0]->eval();
-        lambda('(' . $f->serialize() . ' o ...)', sub {
+        lambda('(' . $f->serialize() . ' o\' ...)', sub {
           my $g = $_[0]->eval();
-          lambda('(' . $f->serialize() . ' o ' . $g->serialize() . ')', sub {
-            $f->call(placeholder($g->call($_[0])));
+          lambda('(' . $f->serialize() . ' o\' ' . $g->serialize() . ')', sub {
+            $f->call($g->call($_[0]));
           });
         });
       }));
@@ -1284,7 +1316,7 @@ meta::section('01-interpreter', <<'__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis
+__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1430,25 +1462,28 @@ quote ((cons x x) x)
 (compose compose)
 __G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo
 
-meta::session('compose2', <<'__iVK6YQTuW61GfMTc7EgRabSukYL+Sj6PMpotk2oBbaI');
+meta::session('compose2', <<'__lO3qJIjuKzQn6/tOY5cFKM8h6KjkTKGjRtHAvUyfKyQ');
 # Define quote. This is a rewrite from a form to itself, which will absorb one eval.
-beta x x quote bind (beta x x)
+beta _ _ quote bind (beta _ _)
+quote quote2 bind (beta _ (quote _))
+
+# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
+# the leftmost function. This requires quoting it.
+quote compose bind (compose' eval (beta _ (compose' (compose' _ quote2))
 
 # Eval forms are tricky. Normally, the eval function evals its argument (as functions do) and then evals that value, returning it. However, there are cases
 # where this behavior is not useful. For these cases, eval1 is defined as a function that triggers only one evaluation on its parameter.
-quote eval1 bind (compose eval quote)
-quote e< bind (compose eval)
-quote e> bind (e< (beta f (compose f eval)
-quote e1< bind (compose eval1)
-quote e1> bind (e< (beta f (compose f eval1)))
-quote q> bind (e< (beta f (compose f quote
+quote e<  bind (compose eval)
+quote e>  bind (e< (beta _ (compose _ eval)))
+quote q>  bind (e< (beta _ (compose _ quote)))
 
-# Macros.
-quote macro bind (e< (beta name (e> (e< (beta ev (beta ev (e< (beta name ev))))) (gensym (quote γ))
-macro foo
-macro foo foo
-macro foo foo eval
-__iVK6YQTuW61GfMTc7EgRabSukYL+Sj6PMpotk2oBbaI
+quote e<' bind (compose' eval)
+quote e>' bind (e< (beta _ (compose' _ eval)))
+quote q>' bind (e< (beta _ (compose' _ quote)))
+
+quote macro  bind (e< (beta name (e< (e>' (beta ev (e< (beta ev (e< (beta name ev)))))) (quote (gensym (quote γ))))))
+quote lambda bind (macro name (macro expansion (e> (beta name expansion)
+__lO3qJIjuKzQn6/tOY5cFKM8h6KjkTKGjRtHAvUyfKyQ
 
 meta::session('ebqe', <<'__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM');
 
