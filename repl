@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+use utf8;
+
+binmode STDOUT, ':utf8';
+
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
@@ -148,8 +152,12 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8');
+meta::bootstrap('initialization', <<'__gDfHG7WDQe2cjOY3Un76S6L3cQOU/LSNcwNYL3Lz8eU');
 #!/usr/bin/perl
+
+use utf8;
+
+binmode STDOUT, ':utf8';
 
 use File::Temp  'tempfile';
 use Carp        'carp';
@@ -181,7 +189,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8
+__gDfHG7WDQe2cjOY3Un76S6L3cQOU/LSNcwNYL3Lz8eU
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -242,14 +250,15 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('document', <<'__RnqO4D38fo7eeWD5Lgkbt4xFQ8QkWiz+Q9EB0TE6AcE');
-= Interactive Lisp Environment
+meta::data('document', <<'__88+b9fjpp/XfCv9UlGo7dU0etAKEofNyYMyx7Gmc4cU');
+= Gnarly Programming Language
 a Spencer Tipping
 begin
 
 - Introduction
-  This system interprets expressions written in a Lisp-like language that doesn't yet have a name.
-__RnqO4D38fo7eeWD5Lgkbt4xFQ8QkWiz+Q9EB0TE6AcE
+  Gnarly is a minimalistic combinatory language with rewriting. This script provides a multi-session REPL, automatic image saving and loading, and the
+  interpreter source code.
+__88+b9fjpp/XfCv9UlGo7dU0etAKEofNyYMyx7Gmc4cU
 
 meta::data('header', <<'__B8m9YZiGw2dspg9B3atiP1uO9NXiTc3IUTuQk8aYLWw');
 \documentclass{article}
@@ -323,7 +332,7 @@ And to extract the generated TeX:
   $ ./newdoc compile-to-tex > file
 __uirjwqAxCBH+vu23aaPBO6uNM7a7cUHAYKJo8gIJsGw
 
-meta::data('meta-associations', <<'__z/V/wHtQJ1mYI9/x0IGw2Xfv9hF2/Armu9WHEUK5dW4');
+meta::data('meta-associations', <<'__rP9455ERs+HDCFwK5CbemdmWivRRRDsaqzhK/4Of4ng');
 ^function:: .pl
 ^internal_function:: .pl
 ^meta:: .pl
@@ -334,9 +343,9 @@ meta::data('meta-associations', <<'__z/V/wHtQJ1mYI9/x0IGw2Xfv9hF2/Armu9WHEUK5dW4
 ^line_filter:: .pl
 ^code_filter:: .pl
 ^section:: .perltex
-^session:: .tnl
+^session:: .gnarly
 ^test:: .perltex
-__z/V/wHtQJ1mYI9/x0IGw2Xfv9hF2/Armu9WHEUK5dW4
+__rP9455ERs+HDCFwK5CbemdmWivRRRDsaqzhK/4Of4ng
 
 meta::data('name', <<'__ohnJGaQmJnPUNqX7FfcA/hxTRo3E78EirwEYNwcWx28');
 repl
@@ -346,9 +355,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__mQqbPSjloJkrY1b+7ysj6TEzTx9GH/9QFHAvnY02oBA');
-/tmp/repl.GoSfavA8VPOs5rNzrUYTQh-YisTPRifq9oxIh+D9DkE/document.pdf
-__mQqbPSjloJkrY1b+7ysj6TEzTx9GH/9QFHAvnY02oBA
+meta::data('pdf-output-file', <<'__gFs2KtsORXD+oeALOmabA882HzsJc232N2yUGtuhtrQ');
+/tmp/repl.raqzcPGKtsmTIbJkQXoJGWOrm7uuo+ozZkN5FeJT5D4/document.pdf
+__gFs2KtsORXD+oeALOmabA882HzsJc232N2yUGtuhtrQ
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
@@ -358,8 +367,8 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__XGMKQbQJccUhCNsQlhIs44VTzBhoXajAciUMWwNFswI');
-" The New Language
+meta::data('session-vim-highlighter', <<'__KDl0ccdlwqqGvhYJqooeJRmaUlvEQ7Ep1R0AHQdyD5o');
+" Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
 
@@ -371,20 +380,22 @@ endif
 
 set iskeyword=33-39,42-126,128-255
 
-syn keyword tnlBuiltins    compose' eval beta
-syn keyword tnlFunctions   bind gensym counter type <=
-syn region  tnlComments    start=/#/ end=/$/
-syn match   tnlNumber      /\<-\?[0-9.]\+\>/
-syn match   tnlParens      /[()]/
+syn keyword gnarlyBuiltins      compose' eval beta
+syn keyword gnarlyFunctions     bind gensym counter type <=
+syn keyword gnarlyUserFunctions quote compose macro lambda e< e> e<' e>' q> q>' e1> quote2
+syn region  gnarlyComments      start=/#/ end=/$/
+syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/
+syn match   gnarlyParens        /[()]/
 
-hi link tnlBuiltins  Keyword
-hi link tnlFunctions Identifier
-hi link tnlNumber    Number
-hi link tnlComments  Comment
-hi link tnlParens    Special
+hi link gnarlyBuiltins      Keyword
+hi link gnarlyFunctions     Type
+hi link gnarlyUserFunctions Identifier
+hi link gnarlyNumber        Number
+hi link gnarlyComments      Comment
+hi link gnarlyParens        Special
 
-let b:current_syntax = "tnl"
-__XGMKQbQJccUhCNsQlhIs44VTzBhoXajAciUMWwNFswI
+let b:current_syntax = "gnarly"
+__KDl0ccdlwqqGvhYJqooeJRmaUlvEQ7Ep1R0AHQdyD5o
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -578,23 +589,23 @@ my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
 
-meta::function('install-vim-highlighter', <<'__JrzWkwyz5vHE4Xn6zDg7a5f7scfw0zV63RjadpxIksA');
+meta::function('install-vim-highlighter', <<'__TmVuhhK0m7hhHTY7P0vUg2SlzlvtVrYG1v7guGcBjG8');
 my $home = $ENV{'HOME'};
 mkdir "$home/.vim";
 mkdir "$home/.vim/syntax";
-file::write("$home/.vim/syntax/cltex.vim", retrieve('data::vim-highlighter'));
-file::write("$home/.vim/syntax/tnl.vim",   retrieve('data::session-vim-highlighter'));
+file::write("$home/.vim/syntax/cltex.vim",  retrieve('data::vim-highlighter'));
+file::write("$home/.vim/syntax/gnarly.vim", retrieve('data::session-vim-highlighter'));
 
 <<"EOF";
 The highlighter was created successfully. To have syntax highlighting activated
 automatically, append this line to your .vimrc:
 
-  au BufRead,BufNewFile *.cltex set filetype=cltex
-  au BufRead,BufNewFile *.tnl   set filetype=tnl
+  au BufRead,BufNewFile *.cltex  set filetype=cltex
+  au BufRead,BufNewFile *.gnarly set filetype=gnarly
 
 Alternately, you can run $0 update-vimrc.
 EOF
-__JrzWkwyz5vHE4Xn6zDg7a5f7scfw0zV63RjadpxIksA
+__TmVuhhK0m7hhHTY7P0vUg2SlzlvtVrYG1v7guGcBjG8
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -812,12 +823,12 @@ my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
 
-meta::function('update-vimrc', <<'__/tiTzfrH6z0Z6XAHXMyuJW3NozZ0vKtzEd/K2Dy1hD8');
+meta::function('update-vimrc', <<'__u9D9zOyYETf+Potof5ijxSB/ripo6ZLAqt5LQifGyOc');
 open my $fh, '>>', "$ENV{'HOME'}/.vimrc";
-print $fh "\nau BufRead,BufNewFile *.cltex set filetype=cltex";
-print $fh "\nau BufRead,BufNewFile *.tnl   set filetype=tnl";
+print $fh "\nau BufRead,BufNewFile *.cltex  set filetype=cltex";
+print $fh "\nau BufRead,BufNewFile *.gnarly set filetype=gnarly";
 close $fh;
-__/tiTzfrH6z0Z6XAHXMyuJW3NozZ0vKtzEd/K2Dy1hD8
+__u9D9zOyYETf+Potof5ijxSB/ripo6ZLAqt5LQifGyOc
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
@@ -984,371 +995,7 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
-meta::note('debruijn', <<'__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw');
-Using De Bruijn Indices
-This has the problem that beta-reduction requires value conversion. "Free" references, that is, references which reach beyond immediate closures, need to have
-their values incremented depending on the destination context of a substitution. So, for example:
-
-  (λ λ 1 2) (λ 3)  =>  (λ (λ 4) ...)
-
-or some such. In any case, this is far too counterintuitive for practical use and requires the β-expander to know something about lambdas.
-__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw
-
-meta::note('macro', <<'__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A');
-Macros don't do quite what you might expect. Because the body of a macro is unevaluated, currying macros is not very useful in most cases. Here's an example:
-
-     (macro x (macro y (cons ([quote] x) ([quote] y)))) y x
-  => (macro y (cons ([quote] y) ([quote] y))) x
-  => (cons ([quote] x) ([quote] x))
-  => (x . x)
-
-There are cases where this would be useful, but what you really want is probably something more like this (remember that lists are consed in reverse):
-
-     (macro x+y (cons (x+y head tail) (x+y tail))) (y x)
-  => (cons ([-> (y x)] head tail) ([-> (y x)] tail))
-  => (y . x)
-
-Unfortunately, the same problem arises with lambdas. Because expressions are lazily evaluated (this is a property of using the eval-combinator), we have no way
-of requiring that the inner lambda apply itself prior to finishing the beta-substitution. What we would really like is this series of events:
-
-     (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
-  => (lambda y (cons [-placeholder containing [quote] y] y)) ([quote] y)
-  => (cons [-placeholder containing [quote] y] [-placeholder containing [quote] y])
-  => (y . y)
-
-In other words, it would be nice to interrupt the beta-expansion by first replacing things with opaque placeholders and then finalizing the replacement with the
-proper values. (This may be possible given the current architecture.)
-__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A
-
-meta::note('scratchwork', <<'__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI');
-= Thoughts.
-
-- Cons/eval
-  Cons, if Church-encoded, doesn't have the correct semantics. E[(a.b)] should be E[a]b, but as it stands passing in the eval combinator would result in E[(a
-  b)], which isn't right. In fact, there doesn't seem to be any way to achieve the right behavior unless we are guaranteed the presence of : at the beginning of
-  a list; in that case, we'd have E[(: a)] = E[a], which kicks the process off. But that doesn't continue, so it's probably unproductive to consider this line
-  of reasoning.
-
-  Therefore it makes sense to represent cons cells as objects if we're using the eval combinator. Now if we're going to use a combinator that works properly,
-  then I can imagine changing this...
-
-  - Preserving Church-encoding with a proper combinator
-    The semantics of a Church-encoded cons cell are:
-
-      cons x y f = f x y
-
-    So if we wanted our desired evaluation rule, then we'd need f to evaluate its first parameter by normal evaluation logic. So it wouldn't be an eval
-    combinator; rather, it would be a simple evaluation function. This semantic works properly for cons cells, but fails elsewhere. For example, it then becomes
-    impossible to multi-evaluate a form:
-
-      e (e (cons x y)) => e (cons x y) => (x . y)
-
-    So this line of reasoning is unproductive.
-
-  - Using cons objects
-    Cons works well as an object because we can treat it as callable anyway. For example, we could establish that:
-
-      (x . y) 'head => x
-      (x . y) 'tail => y
-      (x . y) 'eval => E[x] y
-
-    This provides a convenient way to deal with the fact that we've got something that isn't really a function but acts like one. I suppose by this definition
-    /cons/ is a partial function that does the right thing. It could also know to apply its elements to a function that it is called on.
-
-    The (x . y) 'eval case isn't degenerate. In reality, you'd write (x 'eval), where x is some cons-cell. In that case, you'd have the right result; x would be
-    evaluated into the cons-cell that it represents, and 'eval would be called on it.
-__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI
-
-meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0');
-- Unit Testing Framework
-  - Assertions
-    ::
-    sub assert_base (&$) {
-      my $thunk  = $_[0];
-      my $result = eval {$thunk->()};
-      print "| \033[1;31merror\033[0;0m in $_[1]: $@\n"    if     $@;
-      print "| \033[1;31mfail\033[0;0m: $_[1] ($result)\n" if     $result;
-      print "| \033[1;32mpass\033[0;0m: $_[1]\n"           unless $result;
-    }
-
-    sub assert (&$) {
-      my $thunk = $_[0];
-      assert_base {! $thunk->()} $_[1];
-    }
-
-    sub assert_equal {
-      my ($v1, $v2, $name) = @_;
-      assert_base {$v1 != $v2 && "$v1 != $v2"} $name;
-    }
-
-    sub assert_eq {
-      my ($v1, $v2, $name) = @_;
-      assert_base {$v1 ne $v2 && "$v1 ne $v2"} $name;
-    }
-
-    sub assert_isa {
-      my ($value, $ref, $name) = @_;
-      assert_base {ref($value) ne $ref and "ref $value ne $ref"} $name;
-    }
-    :.
-__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
-
-meta::section('01-interpreter', <<'__qdsoyhvZXuGbSNIoUWeIeqWU2Rk03hpdIrRkU1GQzO0');
-- Interpreter
-  The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
-  list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
-
-  - Fundamental Semantics
-    We assume the existence of two meta-functions $E$ and $Q$, whose application is denoted by square brackets instead of parentheses. $E[x]$ indicates that $x$
-    should be evaluated, and $Q[x]$ indicates that $x$ should be quoted. $E[x]$ corresponds to invoking \verb|x->eval()| in the interpreter, so for instance
-    $E[(a . b)] = E[a]b$. The semantic of $Q$ is simply that $E[Q[x]] = x$, so $Q$ defers evaluation by one step.
-
-    - Beta expansion
-      The {\tt [beta]} function provides $\beta$-expansion in the untyped lambda calculus. Formally, its behavior is described by the equation:
-      
-      a[
-        \beta~x~f~y & = f[y/x]
-      ]a
-
-      It does no evaluation on its own; it merely rewrites the literal forms that it is given. So, for example, running \verb|[beta] x (x x) foo| would yield
-      the result \verb|(foo foo)|.
-
-    - Evaluation combinator
-      The evaluation combinator {\tt [e]} takes an object and returns a new object that evaluates its result. Formally, this behavior is that $[e]~(\beta~x~f) =
-      \beta~x~E[f]$. So, for example, we can turn the {\tt [beta]} form in the previous section into a proper macro by combining it with {\tt [e]}, so that the
-      expression \verb|[e] ([beta] x (x x)) foo| yields an error as it attempts to evaluate the form {\tt (foo foo)}.\footnote{It isn't possible in this case
-      because {\tt foo} is undefined.} Using the evaluation combinator with {\tt [beta]} it is possible to construct regular functions and macros.
-
-  - Bootstrap
-    The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
-
-    ::
-    my %symbol_table;
-    :.
-
-  - Data Types
-    Here is a quick facility for defining interpreter data types:
-
-    ::
-    sub deftype {
-      my ($name, %members) = @_;
-      *{$name} = sub {bless $members{'new'}->(@_), $name};
-      *{"${name}::$_"} = $members{$_} for keys %members;
-      $symbol_table{"meta::$name"} = $members{'new'};
-    }
-
-    my $id = sub {$_[0]};
-    :.
-
-  - Primitive Types
-    - Church-Encoded Booleans
-      These aren't primitives, but they are used throughout the interpreter logic.
-
-      ::
-      deftype 'lambda', new       => sub {[@_]},
-                        eval      => $id,
-                        call      => sub {$_[0][1]->($_[1])},
-                        serialize => sub {$_[0][0]};
-
-      my $true  = lambda('true',  sub {my $x = $_[0];
-                                       lambda('(true ' . $x->serialize() . ')', sub {$x})});
-      my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]})});
-      :.
-
-    - Symbols
-      ::
-      deftype 'symbol',
-        new       => sub {\$_[0]},
-        eval      => sub {$symbol_table{${$_[0]}} ||
-                          die 'Cannot evaluate symbol ' . $_[0]->serialize() .
-                              ' because it is undefined.'},
-
-        bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
-        unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
-        equals    => sub {ref $_[1] eq 'symbol' ? ${$_[0]} eq ${$_[1]} : ${$_[0]} eq $_[1]},
-        call      => sub {
-          my $self = $_[0];
-          if (ref $_[1] eq 'symbol') {
-            $_[1]->equals('bind')  ? lambda('(' . $_[0]->serialize() . ' bind)',
-                                           sub {$self->bind($_[0]->eval())}) :
-            $_[1]->equals('value') ? $_[0]->eval() || nil() :
-            $_[1]->equals('<=')    ? lambda('(' . $_[0]->serialize() . ' <=)',
-                                     sub {
-                                       my $rhs = $_[0];
-                                       ref $rhs eq 'symbol' &&
-                                           ${$self} le ${rhs} ? $true : $false;
-                                     }) :
-            $_[1]->eval()->call($_[0]);
-          } else {
-            $_[1]->eval()->call($_[0]);
-          }
-        },
-        serialize => sub {${$_[0]}};
-
-      symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
-
-      my $gensym_count = 0;
-      sub gensym {
-        my $value = $_[0]->eval();
-        die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
-        ++$gensym_count;
-        symbol("#$$value$gensym_count");
-      }
-
-      symbol('gensym')->bind(lambda('[gensym]', \&gensym));
-      :.
-
-    - Functions and Macros
-      All callable things in this language are unary. The only difference between a function and a macro, then, is whether it evaluates its parameter. By default,
-      $x$ calling $y$ doesn't say anything about whether $y$ gets evaluated -- this is a decision that $x$ makes. Also, there is no lexical scoping (or indeed
-      scoping of any kind) built-in to the language, so there is no issue of evaluating symbols within their own context, etc. All non-global variable
-      definitions, whether {\tt lambda}-parameters or otherwise, are converted into combinatory form by the {\tt lambda} operator, written \verb|->|. The same is
-      true of macros, which decline to evaluate their forms.
-
-      This paradigm makes an anonymous function and a macro much more similar to one another than they are in Common Lisp or Scheme. An anonymous function is, in
-      a way, a code-expander just like a macro is; its form is replaced by a combinatory function that serves the same purpose. This transformation is done at
-      interpretation-time as a macro-expansion. Thus the only internal difference between an anonymous function and a macro is the fact that an anonymous function
-      receives the value of its parameter after evaluation, and a macro has no way of obtaining this value. Also, the output of a function is considered to have
-      already been evaluated, whereas the output of a macro will be evaluated again.
-
-      In code, functions are implemented as a property of symbols; for instance, you can say this: \verb|'a -> a| to denote the identity function. If you wanted
-      an anonymous function that invoked its parameter on nil, you could say this: \verb|'a -> (a :)|. Macros are very similar; the only difference is that
-      instead of using \verb|->|, \verb|=>| is used. So the identity macro would be written as \verb|'a => a|, and a macro that quoted its parameter would be
-      written as \verb|'a => (quote a)|, or more succinctly \verb|'a => 'a|.
-
-      Notice the property that the parameter name is evaluated before defining a macro or function. This is intentional if perhaps not useful. Since functions are
-      viewed as a product of symbols, it is natural to use a symbol value in the function position. The reason it is not useful is that since the right-hand side
-      of the lambda expression is not evaluated until the lambda is called, there is no possibility of runtime substitution of a symbol. It would be as if you had
-      the ability to write, in Common Lisp or Scheme,
-
-      \begin{verbatim}
-      (lambda ((gensym))
-        (now what exactly goes here to leverage the gensym above?))
-      \end{verbatim}
-
-      ::
-      deftype 'placeholder',
-        new       => sub {\$_[0]},
-        eval      => sub {${$_[0]}},
-        call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-        serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
-
-      sub map_form {
-        my ($f, $x) = @_;
-        return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
-        return $f->($x);
-      }
-
-      deftype 'expander', new => sub {[@_]},
-                          eval => $id,
-                          call => sub {
-                            my ($placeholder, $form) = @{$_[0]};
-                            my $value                = $_[1];
-                            map_form(sub {$_[0] == $placeholder ? $value : $_[0]}, $form);
-                          },
-                          serialize => sub {
-                            my ($placeholder, $form) = @{$_[0]};
-                            '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
-                          };
-
-      deftype 'counter', new => sub {\$_[0]},
-                         eval => sub {counter(${$_[0]} + 1)},
-                         call => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-                         serialize => sub {"[counter +${$_[0]}]"};
-
-      symbol('counter')->bind(counter(0));
-
-      symbol('beta')->bind(lambda('[beta]', sub {
-        my $symbol = $_[0];
-        die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
-        lambda('[beta ' . $symbol->serialize() . ' -> ...]', sub {
-          my $body        = $_[0];
-          my $placeholder = placeholder(gensym(placeholder(symbol('β'))));
-          expander($placeholder,
-                   map_form(sub {$symbol->equals($_[0]) ? $placeholder : $_[0]}, $body));
-        });
-      }));
-
-      symbol('eval')->bind(lambda('[eval]', sub {$_[0]->eval()->eval()}));
-      symbol('compose\'')->bind(lambda('[compose\']', sub {
-        my $f = $_[0]->eval();
-        lambda('(' . $f->serialize() . ' o\' ...)', sub {
-          my $g = $_[0]->eval();
-          lambda('(' . $f->serialize() . ' o\' ' . $g->serialize() . ')', sub {
-            $f->call($g->call($_[0]));
-          });
-        });
-      }));
-      :.
-
-    - Cons Cells
-      In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)}
-      will be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](b)$, provided that {\tt nil} behaves
-      as the identity function (which it does).
-
-      ::
-      deftype 'cons', new       => sub {[$_[0], $_[1]]},
-                      eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
-                      head      => sub {$_[0][0]},
-                      tail      => sub {$_[0][1]},
-                      call      => sub {
-                        if (ref $_[1] eq 'symbol') {
-                          return $_[0]->head() if $_[1]->equals('head');
-                          return $_[0]->tail() if $_[1]->equals('tail');
-                        } else {
-                          die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
-                        }
-                      },
-                      serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
-      symbol('cons')->bind(lambda('[cons]', sub {my $head = $_[0]; lambda('(cons ' . $head->serialize() . ')', sub {cons($head->eval(), $_[0]->eval())})}));
-
-      my $nil = '';
-      deftype 'nil', new       => sub {\$nil},
-                     eval      => $id,
-                     call      => sub {$_[1]->eval()},
-                     serialize => sub {':'};
-
-      symbol(':')->bind(nil());
-      :.
-
-    - Numbers
-      ::
-      deftype 'number', new       => sub {\$_[0]},
-                        eval      => $id,
-                        call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
-                        serialize => sub {${$_[0]}};
-      :.
-__qdsoyhvZXuGbSNIoUWeIeqWU2Rk03hpdIrRkU1GQzO0
-
-meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
-- Reader
-  The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
-
-  ::
-  sub read_form {
-    sub lex {
-      grep length, split /([()])|\s+/, $_[0];
-    }
-
-    sub parse {
-      my ($value, $xs) = @_;
-      my $x = shift @$xs;
-
-      return $value                                      if $x eq ')' || $x eq '' || $x =~ /^#/;
-      return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
-      return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
-      return parse(cons($value, symbol($x)), $xs);
-    }
-
-    parse nil(), [lex $_[0]];
-  }
-  :.
-
-  Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
-  keeps the reader code very simple, as above.
-__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
-
-meta::session('beta', <<'__myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc');
+meta::note('beta', <<'__myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc');
 [quote] macro bind ([e] ([e] ([beta] x) ([e] ([e] ([beta] f) ([e] ([beta] x f))))))
 macro x+y (cons (x+y head tail) (x+y tail))
 macro x+y (cons (x+y head tail) (x+y tail)) (5 6)
@@ -1424,30 +1071,7 @@ lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
 (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
 __myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc
 
-meta::session('c2', <<'__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U');
-# Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
-beta _ _ quote  bind (beta _ _)
-quote    quote2 bind (beta _ (quote _))
-
-# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
-# the leftmost function. This requires quoting it.
-quote compose bind (compose' eval (beta _ (compose' (compose' _ quote2))))
-
-quote e<  bind (compose eval)
-quote e>  bind (e< (beta _ (compose _ eval)))
-quote q>  bind (e< (beta _ (compose _ quote)))
-
-quote e<' bind (compose' eval)
-quote e>' bind (e< (beta _ (compose' _ eval)))
-quote q>' bind (e< (beta _ (compose' _ quote)))
-
-quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
-
-quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
-quote lambda bind (e>' (macro ev (macro name (macro ev (e< (e1> (beta name ev)))))) (quote (gensym (quote λ))))
-__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U
-
-meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
+meta::note('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
 <- let <-
 <- def (=> name (=> var (=> body (let name (fn var body
@@ -1457,7 +1081,7 @@ def count xs (? xs (c : (count (t xs))) :)
 count l
 __t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4
 
-meta::session('compose', <<'__G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo');
+meta::note('compose', <<'__G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo');
 beta x x quote bind (beta x x)
 quote e2 bind (compose eval eval)
 quote e< bind (compose eval)
@@ -1487,7 +1111,17 @@ quote ((cons x x) x)
 (compose compose)
 __G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo
 
-meta::session('ebqe', <<'__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM');
+meta::note('debruijn', <<'__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw');
+Using De Bruijn Indices
+This has the problem that beta-reduction requires value conversion. "Free" references, that is, references which reach beyond immediate closures, need to have
+their values incremented depending on the destination context of a substitution. So, for example:
+
+  (λ λ 1 2) (λ 3)  =>  (λ (λ 4) ...)
+
+or some such. In any case, this is far too counterintuitive for practical use and requires the β-expander to know something about lambdas.
+__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw
+
+meta::note('ebqe', <<'__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM');
 
 quote ec bind (ebqe f (ebqe x (eval (f x
 quote macro bind (eval (beta x (ec (beta f
@@ -1532,7 +1166,7 @@ quote ec bind (ebqe f (eval (eval (beta x (eval (f x)
 ec (beta x x) y
 __/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM
 
-meta::session('lambda', <<'__OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70');
+meta::note('lambda', <<'__OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70');
 
 (quote fn) bind (e (beta name) (e (beta expansion) (e (e (beta name expansion
 fn x (x x)
@@ -1650,7 +1284,7 @@ id a
 (fn x (quote x)) a
 __OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70
 
-meta::session('lambda-new', <<'__AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE');
+meta::note('lambda-new', <<'__AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE');
 ' fun <- (' var => (' expansion => (-> var expansion
 ' def1 <- (' name => (' var => (' expansion => (' name <- (-> var expansion
 ' def2 <- (' name => (' var => (' expansion => (' name <- (fun var expansion
@@ -1660,7 +1294,33 @@ inc1 5
 inc2 5
 __AFkm6iYlZDKbysu0bnNRQzbr1cH2I7Uxp0XY5heFWQE
 
-meta::session('new', <<'__ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI');
+meta::note('macro', <<'__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A');
+Macros don't do quite what you might expect. Because the body of a macro is unevaluated, currying macros is not very useful in most cases. Here's an example:
+
+     (macro x (macro y (cons ([quote] x) ([quote] y)))) y x
+  => (macro y (cons ([quote] y) ([quote] y))) x
+  => (cons ([quote] x) ([quote] x))
+  => (x . x)
+
+There are cases where this would be useful, but what you really want is probably something more like this (remember that lists are consed in reverse):
+
+     (macro x+y (cons (x+y head tail) (x+y tail))) (y x)
+  => (cons ([-> (y x)] head tail) ([-> (y x)] tail))
+  => (y . x)
+
+Unfortunately, the same problem arises with lambdas. Because expressions are lazily evaluated (this is a property of using the eval-combinator), we have no way
+of requiring that the inner lambda apply itself prior to finishing the beta-substitution. What we would really like is this series of events:
+
+     (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
+  => (lambda y (cons [-placeholder containing [quote] y] y)) ([quote] y)
+  => (cons [-placeholder containing [quote] y] [-placeholder containing [quote] y])
+  => (y . y)
+
+In other words, it would be nice to interrupt the beta-expansion by first replacing things with opaque placeholders and then finalizing the replacement with the
+proper values. (This may be possible given the current architecture.)
+__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A
+
+meta::note('new', <<'__ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI');
 (quote beta') bind (e (beta x x))
 beta' x x (quote a)
 beta' 5
@@ -1671,41 +1331,46 @@ beta (quote 5)
 : (quote 5)
 __ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI
 
-meta::session('tc2', <<'__HM96zz94SnmGi1M83bZNHiYeHI/MKwL8NL9D7zhakvY');
-# Macro tests
-macro ev
-macro ev ev
-macro name
-macro name name
-macro x (cons x x)
-macro x (cons x x) eval
-macro x (cons (quote x) (quote x))
-macro x (cons (quote x) (quote x)) eval
+meta::note('scratchwork', <<'__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI');
+= Thoughts.
 
-macro x (macro y (cons x y)) y
-macro x (macro y (cons x y)) y x
-macro x (macro y (cons (quote x) (quote y))) y x
+- Cons/eval
+  Cons, if Church-encoded, doesn't have the correct semantics. E[(a.b)] should be E[a]b, but as it stands passing in the eval combinator would result in E[(a
+  b)], which isn't right. In fact, there doesn't seem to be any way to achieve the right behavior unless we are guaranteed the presence of : at the beginning of
+  a list; in that case, we'd have E[(: a)] = E[a], which kicks the process off. But that doesn't continue, so it's probably unproductive to consider this line
+  of reasoning.
 
-# Lambda tests
-lambda x
-lambda x x
-lambda name
-lambda name name
-lambda expansion
-lambda expansion expansion
-lambda _ _ (quote foo)
-lambda
-lambda x (lambda y (cons x y))
-lambda x (lambda y (cons x y)) 5 6
-lambda x (lambda y (cons x y)) (quote foo) (quote bar)
-lambda x (lambda y (cons x y)) (quote x) (quote y)
-lambda x (lambda y (cons x y)) (quote y) (quote x)
-lambda name
-lambda x
-lambda ev
-__HM96zz94SnmGi1M83bZNHiYeHI/MKwL8NL9D7zhakvY
+  Therefore it makes sense to represent cons cells as objects if we're using the eval combinator. Now if we're going to use a combinator that works properly,
+  then I can imagine changing this...
 
-meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
+  - Preserving Church-encoding with a proper combinator
+    The semantics of a Church-encoded cons cell are:
+
+      cons x y f = f x y
+
+    So if we wanted our desired evaluation rule, then we'd need f to evaluate its first parameter by normal evaluation logic. So it wouldn't be an eval
+    combinator; rather, it would be a simple evaluation function. This semantic works properly for cons cells, but fails elsewhere. For example, it then becomes
+    impossible to multi-evaluate a form:
+
+      e (e (cons x y)) => e (cons x y) => (x . y)
+
+    So this line of reasoning is unproductive.
+
+  - Using cons objects
+    Cons works well as an object because we can treat it as callable anyway. For example, we could establish that:
+
+      (x . y) 'head => x
+      (x . y) 'tail => y
+      (x . y) 'eval => E[x] y
+
+    This provides a convenient way to deal with the fact that we've got something that isn't really a function but acts like one. I suppose by this definition
+    /cons/ is a partial function that does the right thing. It could also know to apply its elements to a function that it is called on.
+
+    The (x . y) 'eval case isn't degenerate. In reality, you'd write (x 'eval), where x is some cons-cell. In that case, you'd have the right result; x would be
+    evaluated into the cons-cell that it represents, and 'eval would be called on it.
+__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI
+
+meta::note('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
 'compose <- ('f -> ('('g -> ('('x -> ('(f (g x))))))))
 compose ('x -> ('(h x))) ('x -> ('(c x x))) 5
@@ -1911,6 +1576,325 @@ y
 ('x)
 x
 __UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E
+
+meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0');
+- Unit Testing Framework
+  - Assertions
+    ::
+    sub assert_base (&$) {
+      my $thunk  = $_[0];
+      my $result = eval {$thunk->()};
+      print "| \033[1;31merror\033[0;0m in $_[1]: $@\n"    if     $@;
+      print "| \033[1;31mfail\033[0;0m: $_[1] ($result)\n" if     $result;
+      print "| \033[1;32mpass\033[0;0m: $_[1]\n"           unless $result;
+    }
+
+    sub assert (&$) {
+      my $thunk = $_[0];
+      assert_base {! $thunk->()} $_[1];
+    }
+
+    sub assert_equal {
+      my ($v1, $v2, $name) = @_;
+      assert_base {$v1 != $v2 && "$v1 != $v2"} $name;
+    }
+
+    sub assert_eq {
+      my ($v1, $v2, $name) = @_;
+      assert_base {$v1 ne $v2 && "$v1 ne $v2"} $name;
+    }
+
+    sub assert_isa {
+      my ($value, $ref, $name) = @_;
+      assert_base {ref($value) ne $ref and "ref $value ne $ref"} $name;
+    }
+    :.
+__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
+
+meta::section('01-interpreter', <<'__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo');
+- Interpreter
+  The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
+  list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
+
+  - Bootstrap
+    The symbol table is used/modified by programs. It stores both the API for working with symbols, and the global definitions that the program uses to run.
+
+    ::
+    my %symbol_table;
+    :.
+
+  - Data Types
+    Here is a quick facility for defining interpreter data types:
+
+    ::
+    sub deftype {
+      my ($name, %members) = @_;
+      *{$name} = sub {bless $members{'new'}->(@_), $name};
+      *{"${name}::$_"} = $members{$_} for keys %members;
+      $symbol_table{"meta::$name"} = $members{'new'};
+    }
+
+    my $id = sub {$_[0]};
+    :.
+
+  - Primitive Types
+    - Church-Encoded Booleans
+      These aren't primitives, but they are used throughout the interpreter logic.
+
+      ::
+      deftype 'lambda', new       => sub {[@_]},
+                        eval      => $id,
+                        call      => sub {$_[0][1]->($_[1])},
+                        serialize => sub {$_[0][0]};
+
+      my $true  = lambda('true',  sub {my $x = $_[0];
+                                       lambda('(true ' . $x->serialize() . ')', sub {$x})});
+      my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]})});
+      :.
+
+    - Symbols
+      ::
+      deftype 'symbol',
+        new       => sub {\$_[0]},
+        eval      => sub {$symbol_table{${$_[0]}} ||
+                          die 'Cannot evaluate symbol ' . $_[0]->serialize() .
+                              ' because it is undefined.'},
+
+        bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
+        unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
+        equals    => sub {ref $_[1] eq 'symbol' ? ${$_[0]} eq ${$_[1]} : ${$_[0]} eq $_[1]},
+        call      => sub {
+          my $self = $_[0];
+          if (ref $_[1] eq 'symbol') {
+            $_[1]->equals('bind')  ? lambda('(' . $_[0]->serialize() . ' bind)',
+                                           sub {$self->bind($_[0]->eval())}) :
+            $_[1]->equals('value') ? $_[0]->eval() || nil() :
+            $_[1]->equals('<=')    ? lambda('(' . $_[0]->serialize() . ' <=)',
+                                     sub {
+                                       my $rhs = $_[0];
+                                       ref $rhs eq 'symbol' &&
+                                           ${$self} le ${rhs} ? $true : $false;
+                                     }) :
+            $_[1]->eval()->call($_[0]);
+          } else {
+            $_[1]->eval()->call($_[0]);
+          }
+        },
+        serialize => sub {${$_[0]}};
+
+      symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
+
+      my $gensym_count = 0;
+      sub gensym {
+        my $value = $_[0]->eval();
+        die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
+        ++$gensym_count;
+        symbol("#$$value$gensym_count");
+      }
+
+      symbol('gensym')->bind(lambda('[gensym]', \&gensym));
+      :.
+
+    - Functions and Macros
+      All callable things in this language are unary. The only difference between a function and a macro, then, is whether it evaluates its parameter. By
+      default, $x$ calling $y$ doesn't say anything about whether $y$ gets evaluated -- this is a decision that $x$ makes. Also, there is no lexical scoping (or
+      indeed scoping of any kind) built-in to the language, so there is no issue of evaluating symbols within their own context, etc. The same is true of
+      macros, which decline to evaluate their forms.
+
+      This paradigm makes an anonymous function and a macro much more similar to one another than they are in Common Lisp or Scheme. An anonymous function is,
+      in a way, a code-expander just like a macro is; its form is replaced by a combinatory function that serves the same purpose. (In fact, the identity
+      function and the identity macro are equivalent.) This transformation is done at interpretation-time as a macro-expansion. Thus the only internal
+      difference between an anonymous function and a macro is the fact that an anonymous function receives the value of its parameter after evaluation, and a
+      macro has no way of obtaining this value. Also, the output of a function is considered to have already been evaluated, whereas the output of a macro will
+      be evaluated again. (See {\tt section::c2} for the definitions of {\tt macro} and {\tt lambda}.)
+
+      ::
+      deftype 'placeholder',
+        new       => sub {\$_[0]},
+        eval      => sub {${$_[0]}},
+        call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
+        serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
+
+      sub map_form {
+        my ($f, $x) = @_;
+        return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
+        return $f->($x);
+      }
+
+      deftype 'expander', new => sub {[@_]},
+                          eval => $id,
+                          call => sub {
+                            my ($placeholder, $form) = @{$_[0]};
+                            my $value                = $_[1];
+                            map_form(sub {$_[0] == $placeholder ? $value : $_[0]}, $form);
+                          },
+                          serialize => sub {
+                            my ($placeholder, $form) = @{$_[0]};
+                            '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
+                          };
+
+      deftype 'counter', new => sub {\$_[0]},
+                         eval => sub {counter(${$_[0]} + 1)},
+                         call => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
+                         serialize => sub {"[counter +${$_[0]}]"};
+
+      symbol('counter')->bind(counter(0));
+
+      symbol('beta')->bind(lambda('[beta]', sub {
+        my $symbol = $_[0];
+        die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
+        lambda('[beta ' . $symbol->serialize() . ' -> ...]', sub {
+          my $body        = $_[0];
+          my $beta_symbol = symbol("\x{03b2}");         # Escaped so that TeX doesn't chuck a wobbly
+          my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
+          expander($placeholder,
+                   map_form(sub {$symbol->equals($_[0]) ? $placeholder : $_[0]}, $body));
+        });
+      }));
+
+      symbol('eval')->bind(lambda('[eval]', sub {$_[0]->eval()->eval()}));
+      symbol('compose\'')->bind(lambda('[compose\']', sub {
+        my $f = $_[0]->eval();
+        lambda('(' . $f->serialize() . ' o\' ...)', sub {
+          my $g = $_[0]->eval();
+          lambda('(' . $f->serialize() . ' o\' ' . $g->serialize() . ')', sub {
+            $f->call($g->call($_[0]));
+          });
+        });
+      }));
+      :.
+
+    - Cons Cells
+      In the spirit of Lisp, expressions are consed into pairs. However, unlike Lisp the pairs are consed in reverse; that is, a list entered as {\tt (1 2 3)}
+      will be consed as {\tt (((nil . 1) . 2) . 3)}. This allows for the unary cons-evaluation rule that $E[(a~.~b)] = E[a](b)$, provided that {\tt nil} behaves
+      as the identity function (which it does).
+
+      ::
+      deftype 'cons', new       => sub {[$_[0], $_[1]]},
+                      eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
+                      head      => sub {$_[0][0]},
+                      tail      => sub {$_[0][1]},
+                      call      => sub {
+                        if (ref $_[1] eq 'symbol') {
+                          return $_[0]->head() if $_[1]->equals('head');
+                          return $_[0]->tail() if $_[1]->equals('tail');
+                        } else {
+                          die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
+                        }
+                      },
+                      serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
+
+      symbol('cons')->bind(lambda('[cons]', sub {
+        my $head = $_[0];
+        lambda('(cons ' . $head->serialize() . ')', sub {
+          cons($head->eval(), $_[0]->eval());
+        });
+      }));
+
+      my $nil = '';
+      deftype 'nil', new       => sub {\$nil},
+                     eval      => $id,
+                     call      => sub {$_[1]->eval()},
+                     serialize => sub {':'};
+
+      symbol(':')->bind(nil());
+      :.
+
+    - Numbers
+      ::
+      deftype 'number', new       => sub {\$_[0]},
+                        eval      => $id,
+                        call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
+                        serialize => sub {${$_[0]}};
+      :.
+__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo
+
+meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
+- Reader
+  The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
+
+  ::
+  sub read_form {
+    sub lex {
+      grep length, split /([()])|\s+/, $_[0];
+    }
+
+    sub parse {
+      my ($value, $xs) = @_;
+      my $x = shift @$xs;
+
+      return $value                                      if $x eq ')' || $x eq '' || $x =~ /^#/;
+      return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
+      return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
+      return parse(cons($value, symbol($x)), $xs);
+    }
+
+    parse nil(), [lex $_[0]];
+  }
+  :.
+
+  Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
+  keeps the reader code very simple, as above.
+__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
+
+meta::session('c2', <<'__+RQwXkBKQXfEfapX5iEExfLOM4EiDs0NKvOO6hV45c0');
+# Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
+beta _ _ quote  bind (beta _ _)
+quote    quote2 bind (beta _ (quote _))
+
+# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
+# the leftmost function. This requires quoting it.
+quote compose bind (compose' eval (beta _ (compose' (compose' _ quote2))))
+
+quote e<  bind (compose eval)
+quote e>  bind (e< (beta _ (compose _ eval)))
+quote q>  bind (e< (beta _ (compose _ quote)))
+
+quote e<' bind (compose' eval)
+quote e>' bind (e< (beta _ (compose' _ eval)))
+quote q>' bind (e< (beta _ (compose' _ quote)))
+
+quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
+
+quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
+quote lambda bind (e>' (macro ev (macro name (macro ev (e< (e1> (beta name ev)))))) (quote (gensym (quote λ))))
+run .tc2
+__+RQwXkBKQXfEfapX5iEExfLOM4EiDs0NKvOO6hV45c0
+
+meta::session('tc2', <<'__T3EY9I8naXGL91vIXB/XkFVduOyoQAdQDFBlLvLC22M');
+# Macro tests
+macro ev
+macro ev ev
+macro name
+macro name name
+macro x (cons x x)
+macro x (cons x x) eval
+macro x (cons (quote x) (quote x))
+macro x (cons (quote x) (quote x)) eval
+
+macro x (macro y (cons x y)) y
+macro x (macro y (cons x y)) y x
+macro x (macro y (cons (quote x) (quote y))) y x
+
+# Lambda tests
+lambda x
+lambda x x
+lambda name
+lambda name name
+lambda expansion
+lambda expansion expansion
+lambda _ _ (quote foo)
+lambda _ (eval _) (quote (quote foo))
+lambda
+lambda x (lambda y (cons x y))
+lambda x (lambda y (cons x y)) 5 6
+lambda x (lambda y (cons x y)) (quote foo) (quote bar)
+lambda x (lambda y (cons x y)) (quote x) (quote y)
+lambda x (lambda y (cons x y)) (quote y) (quote x)
+lambda name
+lambda x
+lambda ev
+__T3EY9I8naXGL91vIXB/XkFVduOyoQAdQDFBlLvLC22M
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
