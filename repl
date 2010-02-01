@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-use utf8;
-
-binmode STDOUT, ':utf8';
-
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
@@ -152,12 +148,8 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__gDfHG7WDQe2cjOY3Un76S6L3cQOU/LSNcwNYL3Lz8eU');
+meta::bootstrap('initialization', <<'__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8');
 #!/usr/bin/perl
-
-use utf8;
-
-binmode STDOUT, ':utf8';
 
 use File::Temp  'tempfile';
 use Carp        'carp';
@@ -189,7 +181,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__gDfHG7WDQe2cjOY3Un76S6L3cQOU/LSNcwNYL3Lz8eU
+__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -1837,7 +1829,7 @@ meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
   keeps the reader code very simple, as above.
 __uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
 
-meta::session('c2', <<'__+RQwXkBKQXfEfapX5iEExfLOM4EiDs0NKvOO6hV45c0');
+meta::session('c2', <<'__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U');
 # Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
 beta _ _ quote  bind (beta _ _)
 quote    quote2 bind (beta _ (quote _))
@@ -1858,8 +1850,7 @@ quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
 
 quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
 quote lambda bind (e>' (macro ev (macro name (macro ev (e< (e1> (beta name ev)))))) (quote (gensym (quote λ))))
-run .tc2
-__+RQwXkBKQXfEfapX5iEExfLOM4EiDs0NKvOO6hV45c0
+__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U
 
 meta::session('tc2', <<'__T3EY9I8naXGL91vIXB/XkFVduOyoQAdQDFBlLvLC22M');
 # Macro tests
