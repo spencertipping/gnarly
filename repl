@@ -4,8 +4,6 @@ use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
 
-binmode STDOUT, ':utf8';
-
 my %data;
 my %transient;
 my %externalized_functions;
@@ -150,14 +148,12 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__ucs62GkyXEBmu/Vy2W7EZIps+9O9PIqb8fjhPvc28EA');
+meta::bootstrap('initialization', <<'__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8');
 #!/usr/bin/perl
 
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
-
-binmode STDOUT, ':utf8';
 
 my %data;
 my %transient;
@@ -185,7 +181,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__ucs62GkyXEBmu/Vy2W7EZIps+9O9PIqb8fjhPvc28EA
+__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -1608,7 +1604,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo');
+meta::section('01-interpreter', <<'__IvVNZWhBLjryhgrexBDd1J4OFbVrXN1YcaOfWci74xI');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1742,7 +1738,7 @@ meta::section('01-interpreter', <<'__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo
         die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
         lambda('[beta ' . $symbol->serialize() . ' -> ...]', sub {
           my $body        = $_[0];
-          my $beta_symbol = symbol("\x{03b2}");         # Escaped so that TeX doesn't chuck a wobbly
+          my $beta_symbol = symbol("β");
           my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
           expander($placeholder,
                    map_form(sub {$symbol->equals($_[0]) ? $placeholder : $_[0]}, $body));
@@ -1804,7 +1800,7 @@ meta::section('01-interpreter', <<'__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__90kkN0knxPM9jxKBLQFQ/gzCfSIvIOOA4Lc2SItxoSo
+__IvVNZWhBLjryhgrexBDd1J4OFbVrXN1YcaOfWci74xI
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1857,7 +1853,7 @@ quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name e
 quote lambda bind (e>' (macro ev (macro name (macro ev (e< (e1> (beta name ev)))))) (quote (gensym (quote λ))))
 __leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U
 
-meta::session('tc2', <<'__T3EY9I8naXGL91vIXB/XkFVduOyoQAdQDFBlLvLC22M');
+meta::session('tc2', <<'__MKN2l/Pd50tsFp/OZS3IdAkt36/H+bLEFqc97LhiI3c');
 # Macro tests
 macro ev
 macro ev ev
@@ -1881,7 +1877,6 @@ lambda expansion
 lambda expansion expansion
 lambda _ _ (quote foo)
 lambda _ (eval _) (quote (quote foo))
-lambda
 lambda x (lambda y (cons x y))
 lambda x (lambda y (cons x y)) 5 6
 lambda x (lambda y (cons x y)) (quote foo) (quote bar)
@@ -1890,7 +1885,11 @@ lambda x (lambda y (cons x y)) (quote y) (quote x)
 lambda name
 lambda x
 lambda ev
-__T3EY9I8naXGL91vIXB/XkFVduOyoQAdQDFBlLvLC22M
+
+# Form inspection
+macro
+lambda
+__MKN2l/Pd50tsFp/OZS3IdAkt36/H+bLEFqc97LhiI3c
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
