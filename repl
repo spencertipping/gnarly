@@ -1424,7 +1424,7 @@ lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
 (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
 __myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc
 
-meta::session('c2', <<'__h6ZkBEgr8I17rg7MIW1B1TVRTsV9QemJKreWbIwsMYw');
+meta::session('c2', <<'__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U');
 # Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
 beta _ _ quote  bind (beta _ _)
 quote    quote2 bind (beta _ (quote _))
@@ -1444,8 +1444,8 @@ quote q>' bind (e< (beta _ (compose' _ quote)))
 quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
 
 quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
-quote lambda bind    (macro name (e< (e>' (macro ev (beta ev (e>' (beta name ev))))) (quote (gensym (quote λ)))))
-__h6ZkBEgr8I17rg7MIW1B1TVRTsV9QemJKreWbIwsMYw
+quote lambda bind (e>' (macro ev (macro name (macro ev (e< (e1> (beta name ev)))))) (quote (gensym (quote λ))))
+__leSerxo6WkcvmgpBCzYClAucjp+8lJoKQv+ibjjUF4U
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
@@ -1671,7 +1671,7 @@ beta (quote 5)
 : (quote 5)
 __ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI
 
-meta::session('tc2', <<'__uHcxTH3+rI0+TWvCZf1tPGxV4MvwcDVeBRLMq28DQl8');
+meta::session('tc2', <<'__HM96zz94SnmGi1M83bZNHiYeHI/MKwL8NL9D7zhakvY');
 # Macro tests
 macro ev
 macro ev ev
@@ -1695,7 +1695,15 @@ lambda expansion
 lambda expansion expansion
 lambda _ _ (quote foo)
 lambda
-__uHcxTH3+rI0+TWvCZf1tPGxV4MvwcDVeBRLMq28DQl8
+lambda x (lambda y (cons x y))
+lambda x (lambda y (cons x y)) 5 6
+lambda x (lambda y (cons x y)) (quote foo) (quote bar)
+lambda x (lambda y (cons x y)) (quote x) (quote y)
+lambda x (lambda y (cons x y)) (quote y) (quote x)
+lambda name
+lambda x
+lambda ev
+__HM96zz94SnmGi1M83bZNHiYeHI/MKwL8NL9D7zhakvY
 
 meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
