@@ -624,14 +624,11 @@ meta::function('r', <<'__5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk');
 read_form($_[0])->eval()->serialize();
 __5CeQ2x3gMzUbczPItBKv5K1UZRnQKORZr6XbUudjDqk
 
-meta::function('reload', <<'__dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o');
-for (grep {! (/^internal::/ || /^bootstrap::/)} sort keys %data) {
-  print "Loading $_...\n";
-  execute($_);
-}
-__dxrTO6Gfl5O1HonT9B+OdpLP0uRCRBaCpCfzbwTjE4o
+meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
+execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
+__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__ohS0I+8RYk0ZM3ovU6Uyr+fuZ8auyA2pCwAbhdkGFRI');
+meta::function('repl', <<'__np3+MKzlxM8mvjs+nxiY3aTEjQ2oVqw2+qsQQxx/KsU');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -640,7 +637,6 @@ use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 repl for $name";
 $term->ornaments(0);
-my $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 my $OUT = $term->OUT || \*STDOUT;
 
 my $run_command = sub {
@@ -650,19 +646,38 @@ my $run_command = sub {
   print $@ ? $@ : '', "\n\n";
 };
 
-if ($name) {
-  print "Replaying commands...\n";
-  my @commands = grep length, split /\n/, retrieve("session::$name");
-  $run_command->($_) for @commands;
-}
+my $reload_session = sub {
+  my $name = $_[0];
+  if ($name) {
+    reload();
+    print "Replaying commands...\n";
+    my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
+    $run_command->($_) for @commands;
+  }
+};
+
+$reload_session->($name);
 
 print "Ready.\n";
+my $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
+my @sessions;
+
 while (defined ($_ = $term->readline($prompt))) {
-  $run_command->($_);
-  associate("session::$name", retrieve("session::$name") . "\n$_") if $name;
-  save() if $name;
+  if (s/^\.//) {
+    edit("session::$name"), $reload_session->($name)      if /^edit\s*$/;
+    push(@sessions, $name), $reload_session->($name = $_) if /^load\s*(.*)$/ && s/^load\s*//;
+    $reload_session->($name = pop @sessions)              if /^back\s*$/ && @sessions;
+  } else {
+    $run_command->($_) unless /^\s*#/;
+    if ($name) {
+      associate("session::$name", retrieve("session::$name") . "\n$_");
+      save();
+    }
+  }
+
+  $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__ohS0I+8RYk0ZM3ovU6Uyr+fuZ8auyA2pCwAbhdkGFRI
+__np3+MKzlxM8mvjs+nxiY3aTEjQ2oVqw2+qsQQxx/KsU
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -935,6 +950,16 @@ if ($line =~ /^(\s*)- (.*)$/) {
 }
 __lmhXPw+0a86ufxG3kCALtSl8Raqrt+7YZomx7zISUbw
 
+meta::note('debruijn', <<'__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw');
+Using De Bruijn Indices
+This has the problem that beta-reduction requires value conversion. "Free" references, that is, references which reach beyond immediate closures, need to have
+their values incremented depending on the destination context of a substitution. So, for example:
+
+  (λ λ 1 2) (λ 3)  =>  (λ (λ 4) ...)
+
+or some such. In any case, this is far too counterintuitive for practical use and requires the β-expander to know something about lambdas.
+__hE0jP/m0q08OBpEKT/ZLNC1Avae9X24xyVUdT5I2/Mw
+
 meta::note('macro', <<'__tbvmRqMrTORgyvH1tB2Dcg+LjbrhwtlvEwyl+Wa1L5A');
 Macros don't do quite what you might expect. Because the body of a macro is unevaluated, currying macros is not very useful in most cases. Here's an example:
 
@@ -1034,7 +1059,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY');
+meta::section('01-interpreter', <<'__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1126,7 +1151,17 @@ meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
         },
         serialize => sub {${$_[0]}};
 
-      symbol('[type]')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
+      symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
+
+      my $gensym_count = 0;
+      sub gensym {
+        my $value = $_[0]->eval();
+        die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
+        ++$gensym_count;
+        symbol("#$$value$gensym_count");
+      }
+
+      symbol('gensym')->bind(lambda('[gensym]', \&gensym));
       :.
 
     - Functions and Macros
@@ -1160,7 +1195,7 @@ meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
       ::
       deftype 'placeholder',
         new       => sub {\$_[0]},
-        eval      => sub {die 'Cannot evaluate beta-expansion placeholder ' . $_[0]->serialize()},
+        eval      => sub {${$_[0]}},
         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
         serialize => sub {'[-> ' . ${$_[0]}->serialize() . ']'};
 
@@ -1182,25 +1217,34 @@ meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
                             '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
                           };
 
-      symbol('[e]')->bind(lambda('[e]', sub {
-        my $f = $_[0]->eval();
-        lambda('[e ' . $f->serialize() . ']', sub {$f->call($_[0])->eval()});
-      }));
+      deftype 'counter', new => sub {\$_[0]},
+                         eval => sub {counter(${$_[0]} + 1)},
+                         call => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
+                         serialize => sub {"[counter +${$_[0]}]"};
 
-      symbol('[beta]')->bind(lambda('[beta]', sub {
+      symbol('counter')->bind(counter(0));
+
+      symbol('beta')->bind(lambda('[beta]', sub {
         my $symbol = $_[0];
-        lambda('[' . $symbol->serialize() . ' -> ...]', sub {
+        die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
+        lambda('[beta ' . $symbol->serialize() . ' -> ...]', sub {
           my $body        = $_[0];
-          my $placeholder = placeholder($symbol);
+          my $placeholder = placeholder(gensym(placeholder(symbol('β'))));
           expander($placeholder,
                    map_form(sub {$symbol->equals($_[0]) ? $placeholder : $_[0]}, $body));
         });
       }));
-      :.
 
-    - Quoting
-      ::
-      symbol('[quote]')->bind(lambda('[quote]', $id));
+      symbol('eval')->bind(lambda('[eval]', sub {$_[0]->eval()->eval()}));
+      symbol('compose')->bind(lambda('[compose]', sub {
+        my $f = $_[0]->eval();
+        lambda('(' . $f->serialize() . ' o ...)', sub {
+          my $g = $_[0]->eval();
+          lambda('(' . $f->serialize() . ' o ' . $g->serialize() . ')', sub {
+            $f->call(placeholder($g->call($_[0])));
+          });
+        });
+      }));
       :.
 
     - Cons Cells
@@ -1240,9 +1284,9 @@ meta::section('01-interpreter', <<'__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__EpDb8TmPzyhLY7MnitgZwTeQlQ42SDrYu+ifdRG4LFY
+__B3OTNpZPNKVsN9eu4aXEctrQnXy6sEWDLHuGYYjMCis
 
-meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
+meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
@@ -1256,7 +1300,7 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
       my ($value, $xs) = @_;
       my $x = shift @$xs;
 
-      return $value                                      if $x eq ')' || $x eq '';
+      return $value                                      if $x eq ')' || $x eq '' || $x =~ /^#/;
       return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
       return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
       return parse(cons($value, symbol($x)), $xs);
@@ -1268,7 +1312,7 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
-__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
+__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
 
 meta::session('beta', <<'__myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc');
 [quote] macro bind ([e] ([e] ([beta] x) ([e] ([e] ([beta] f) ([e] ([beta] x f))))))
@@ -1355,6 +1399,101 @@ let l (c 1 (c 2 (c 3 (c 4 :
 def count xs (? xs (c : (count (t xs))) :)
 count l
 __t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4
+
+meta::session('compose', <<'__G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo');
+beta x x quote bind (beta x x)
+quote e2 bind (compose eval eval)
+quote e< bind (compose eval)
+quote macro1 bind (e< (beta name (e< (beta expansion (compose eval (beta name expansion))))))
+quote lambda1 bind (macro1 name (compose eval (compose (beta name) (compose quote eval))
+lambda1
+lambda1 x
+lambda1 x x
+quote lambda1 bind (macro1 name (beta expansion (compose eval (compose (beta name expansion) (compose quote eval))
+lambda1 x x
+quote lambda1 bind (macro1 name (macro1 expansion (compose eval (compose (beta name expansion) (compose quote eval))
+lambda1 x x
+quote lambda1 bind (macro1 expansion (compose eval (compose (beta _ expansion) (compose quote eval))
+quote lambda1 bind (macro1 e (compose eval (compose (beta _ e) (compose quote eval))
+quote (x (y x))
+quote (x (y (x)))
+quote (cons x x x)
+quote ((cons x x) x)
+(compose compose compose)
+(compose compose compose) quote
+(compose compose compose) quote quote quote
+(compose compose compose) quote quote
+(compose compose compose) quote quote quote
+(compose compose compose) quote quote quote quote
+(compose compose compose) quote quote quote quote quote
+(compose compose compose)
+(compose compose)
+__G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo
+
+meta::session('compose2', <<'__iVK6YQTuW61GfMTc7EgRabSukYL+Sj6PMpotk2oBbaI');
+# Define quote. This is a rewrite from a form to itself, which will absorb one eval.
+beta x x quote bind (beta x x)
+
+# Eval forms are tricky. Normally, the eval function evals its argument (as functions do) and then evals that value, returning it. However, there are cases
+# where this behavior is not useful. For these cases, eval1 is defined as a function that triggers only one evaluation on its parameter.
+quote eval1 bind (compose eval quote)
+quote e< bind (compose eval)
+quote e> bind (e< (beta f (compose f eval)
+quote e1< bind (compose eval1)
+quote e1> bind (e< (beta f (compose f eval1)))
+quote q> bind (e< (beta f (compose f quote
+
+# Macros.
+quote macro bind (e< (beta name (e> (e< (beta ev (beta ev (e< (beta name ev))))) (gensym (quote γ))
+macro foo
+macro foo foo
+macro foo foo eval
+__iVK6YQTuW61GfMTc7EgRabSukYL+Sj6PMpotk2oBbaI
+
+meta::session('ebqe', <<'__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM');
+
+quote ec bind (ebqe f (ebqe x (eval (f x
+quote macro bind (eval (beta x (ec (beta f
+quote macro bind (eval (beta x (eval (beta f (eval (beta arg (eval (beta f x arg))
+macro x x
+quote macro bind (eval (beta x (beta f (beta arg (eval (beta f x arg))
+macro x x
+quote macro bind (eval (beta x (beta f (beta arg (beta f x arg))
+macro x x
+quote macro bind (beta x (eval (beta f (beta arg (beta f x arg))
+macro x x
+quote macro bind (beta x (beta f (beta arg (beta f x arg))
+macro x x
+quote macro bind (beta x (beta f (beta arg (beta x f arg
+macro x x
+quote macro bind (beta x (beta f (beta arg (beta x f arg
+macro
+macro x
+quote macro bind (ec (beta x) (ec (beta f) (beta arg (beta x f arg
+macro x
+macro x x
+quote macro bind (ec (ec beta))
+macro x
+macro
+quote ec bind (ebqe f (eval ((beta x) (eval (f x
+ec (beta x x)
+ec (beta x x) 5
+quote ec bind (ebqe f (eval (beta x)
+ec (beta x x) 5
+quote ec bind (ebqe f (eval (beta x x)
+ec (beta x x) 5
+ec (beta x x) y
+quote ec bind (ebqe f (eval (eval (beta x x)
+ec (beta x x) y
+ec (ec (beta x x)) y
+ec (ec (beta x)) x y
+quote ec bind (ebqe f (eval (eval (beta x (f x)
+ec (beta x x) y
+quote ec bind (ebqe f (eval (beta x (eval (f x)
+ec (beta x x) y
+quote ec bind (ebqe f (eval (eval (beta x (eval (f x)
+ec (beta x x) y
+__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM
 
 meta::session('lambda', <<'__OI2fhJMiOIB+c4zEYXrG8t12DM2DNgdnhg2lqgFnY70');
 
