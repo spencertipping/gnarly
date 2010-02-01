@@ -1093,7 +1093,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E');
+meta::section('01-interpreter', <<'__qdsoyhvZXuGbSNIoUWeIeqWU2Rk03hpdIrRkU1GQzO0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt [e]} and {\tt [beta]} that can be used to construct {\tt lambda} and other macros.
@@ -1231,7 +1231,7 @@ meta::section('01-interpreter', <<'__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E
         new       => sub {\$_[0]},
         eval      => sub {${$_[0]}},
         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
-        serialize => sub {'[-> ' . ${$_[0]}->serialize() . ']'};
+        serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
 
       sub map_form {
         my ($f, $x) = @_;
@@ -1318,7 +1318,7 @@ meta::section('01-interpreter', <<'__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E
                         call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
                         serialize => sub {${$_[0]}};
       :.
-__2h/KTU6OZjq+THSH+YxR6zEo3L3xnzxqe+W+AE81i2E
+__qdsoyhvZXuGbSNIoUWeIeqWU2Rk03hpdIrRkU1GQzO0
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1424,7 +1424,7 @@ lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
 (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
 __myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc
 
-meta::session('c2', <<'__xECfo63tCKIHMqBsvlRuZDinCjMECW18vBr9YhOBT8Q');
+meta::session('c2', <<'__h6ZkBEgr8I17rg7MIW1B1TVRTsV9QemJKreWbIwsMYw');
 # Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
 beta _ _ quote  bind (beta _ _)
 quote    quote2 bind (beta _ (quote _))
@@ -1443,9 +1443,9 @@ quote q>' bind (e< (beta _ (compose' _ quote)))
 
 quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
 
-quote macro  bind (e< (beta name (e< (e>' (beta ev (e< (beta ev (e<  (beta name ev)))))) (quote (gensym (quote γ))))))
+quote macro  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
 quote lambda bind    (macro name (e< (e>' (macro ev (beta ev (e>' (beta name ev))))) (quote (gensym (quote λ)))))
-__xECfo63tCKIHMqBsvlRuZDinCjMECW18vBr9YhOBT8Q
+__h6ZkBEgr8I17rg7MIW1B1TVRTsV9QemJKreWbIwsMYw
 
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
