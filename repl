@@ -659,7 +659,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__np3+MKzlxM8mvjs+nxiY3aTEjQ2oVqw2+qsQQxx/KsU');
+meta::function('repl', <<'__MrnQQWpfDuj+HPKne71Y0qnaBjdIau+aTOpMMzJiK4o');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -678,9 +678,9 @@ my $run_command = sub {
 };
 
 my $reload_session = sub {
-  my $name = $_[0];
+  my ($name, %options) = @_;
   if ($name) {
-    reload();
+    reload() unless $options{'no_reload'};
     print "Replaying commands...\n";
     my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
     $run_command->($_) for @commands;
@@ -695,9 +695,11 @@ my @sessions;
 
 while (defined ($_ = $term->readline($prompt))) {
   if (s/^\.//) {
-    edit("session::$name"), $reload_session->($name)      if /^edit\s*$/;
-    push(@sessions, $name), $reload_session->($name = $_) if /^load\s*(.*)$/ && s/^load\s*//;
-    $reload_session->($name = pop @sessions)              if /^back\s*$/ && @sessions;
+    associate("session::$name", retrieve("session::$name") || '')         if $name;
+    edit("session::$name"), $reload_session->($name, no_reload => 1)      if /^edit\s*$/;
+    push(@sessions, $name), $reload_session->($name = $_, no_reload => 1) if /^load\s*(.*)$/ && s/^load\s*//;
+    $reload_session->($_, no_reload => 1)                                 if /^run\s*(.*)$/  && s/^run\s*//;
+    $reload_session->($name = pop @sessions)                              if /^back\s*$/ && @sessions;
   } else {
     $run_command->($_) unless /^\s*#/;
     if ($name) {
@@ -708,7 +710,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__np3+MKzlxM8mvjs+nxiY3aTEjQ2oVqw2+qsQQxx/KsU
+__MrnQQWpfDuj+HPKne71Y0qnaBjdIau+aTOpMMzJiK4o
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1422,6 +1424,29 @@ lambda x (cons x ([quote] y)) (cons ([quote] a)) head 5
 (lambda x (lambda y (cons x y))) ([quote] y) ([quote] y)
 __myIEOiF7daqBFtiFvPvnxl+4ctOPbRghXEIob3SATbc
 
+meta::session('c2', <<'__xECfo63tCKIHMqBsvlRuZDinCjMECW18vBr9YhOBT8Q');
+# Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
+beta _ _ quote  bind (beta _ _)
+quote    quote2 bind (beta _ (quote _))
+
+# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
+# the leftmost function. This requires quoting it.
+quote compose bind (compose' eval (beta _ (compose' (compose' _ quote2))))
+
+quote e<  bind (compose eval)
+quote e>  bind (e< (beta _ (compose _ eval)))
+quote q>  bind (e< (beta _ (compose _ quote)))
+
+quote e<' bind (compose' eval)
+quote e>' bind (e< (beta _ (compose' _ eval)))
+quote q>' bind (e< (beta _ (compose' _ quote)))
+
+quote e1> bind (e< (beta _ (compose _ (compose eval quote))))
+
+quote macro  bind (e< (beta name (e< (e>' (beta ev (e< (beta ev (e<  (beta name ev)))))) (quote (gensym (quote γ))))))
+quote lambda bind    (macro name (e< (e>' (macro ev (beta ev (e>' (beta name ev))))) (quote (gensym (quote λ)))))
+__xECfo63tCKIHMqBsvlRuZDinCjMECW18vBr9YhOBT8Q
+
 meta::session('combinators', <<'__t6QuV9bMoub9LXIIAdu1Ei5cLLJeoD9JWCsiWoYGkz4');
 <- fn  ->
 <- let <-
@@ -1461,29 +1486,6 @@ quote ((cons x x) x)
 (compose compose compose)
 (compose compose)
 __G6qVDMmEiKW+Mm05eHmJ1LQxkc5I66kCISBhL8lSHdo
-
-meta::session('compose2', <<'__lO3qJIjuKzQn6/tOY5cFKM8h6KjkTKGjRtHAvUyfKyQ');
-# Define quote. This is a rewrite from a form to itself, which will absorb one eval.
-beta _ _ quote bind (beta _ _)
-quote quote2 bind (beta _ (quote _))
-
-# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
-# the leftmost function. This requires quoting it.
-quote compose bind (compose' eval (beta _ (compose' (compose' _ quote2))
-
-# Eval forms are tricky. Normally, the eval function evals its argument (as functions do) and then evals that value, returning it. However, there are cases
-# where this behavior is not useful. For these cases, eval1 is defined as a function that triggers only one evaluation on its parameter.
-quote e<  bind (compose eval)
-quote e>  bind (e< (beta _ (compose _ eval)))
-quote q>  bind (e< (beta _ (compose _ quote)))
-
-quote e<' bind (compose' eval)
-quote e>' bind (e< (beta _ (compose' _ eval)))
-quote q>' bind (e< (beta _ (compose' _ quote)))
-
-quote macro  bind (e< (beta name (e< (e>' (beta ev (e< (beta ev (e< (beta name ev)))))) (quote (gensym (quote γ))))))
-quote lambda bind (macro name (macro expansion (e> (beta name expansion)
-__lO3qJIjuKzQn6/tOY5cFKM8h6KjkTKGjRtHAvUyfKyQ
 
 meta::session('ebqe', <<'__/tHqPlHYmyvK2meWCvRJiNgEAQquH9Ukl/2tDKznhzM');
 
@@ -1668,6 +1670,32 @@ beta (quote 5)
 :
 : (quote 5)
 __ljwh7tQAFuVbdTmNxkuqG9l92UCRcljXo/Z2x2sl/cI
+
+meta::session('tc2', <<'__uHcxTH3+rI0+TWvCZf1tPGxV4MvwcDVeBRLMq28DQl8');
+# Macro tests
+macro ev
+macro ev ev
+macro name
+macro name name
+macro x (cons x x)
+macro x (cons x x) eval
+macro x (cons (quote x) (quote x))
+macro x (cons (quote x) (quote x)) eval
+
+macro x (macro y (cons x y)) y
+macro x (macro y (cons x y)) y x
+macro x (macro y (cons (quote x) (quote y))) y x
+
+# Lambda tests
+lambda x
+lambda x x
+lambda name
+lambda name name
+lambda expansion
+lambda expansion expansion
+lambda _ _ (quote foo)
+lambda
+__uHcxTH3+rI0+TWvCZf1tPGxV4MvwcDVeBRLMq28DQl8
 
 meta::session('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
