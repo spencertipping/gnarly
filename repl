@@ -4,6 +4,8 @@ use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
 
+binmode STDOUT, ':utf8';
+
 my %data;
 my %transient;
 my %externalized_functions;
@@ -148,12 +150,14 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8');
+meta::bootstrap('initialization', <<'__ucs62GkyXEBmu/Vy2W7EZIps+9O9PIqb8fjhPvc28EA');
 #!/usr/bin/perl
 
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
+
+binmode STDOUT, ':utf8';
 
 my %data;
 my %transient;
@@ -181,7 +185,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8
+__ucs62GkyXEBmu/Vy2W7EZIps+9O9PIqb8fjhPvc28EA
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -662,7 +666,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__MrnQQWpfDuj+HPKne71Y0qnaBjdIau+aTOpMMzJiK4o');
+meta::function('repl', <<'__/j0R/Nqu8QbN5i3pVObJtgKa6SRtOoNME+HMBXLJI6A');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -699,7 +703,8 @@ my @sessions;
 while (defined ($_ = $term->readline($prompt))) {
   if (s/^\.//) {
     associate("session::$name", retrieve("session::$name") || '')         if $name;
-    edit("session::$name"), $reload_session->($name, no_reload => 1)      if /^edit\s*$/;
+    edit("session::$name"), $reload_session->($name, no_reload => 1)      if /^edit$/;
+    edit("session::$_")                                                   if /^edit\s+(.*)$/ && s/^edit\s*//;
     push(@sessions, $name), $reload_session->($name = $_, no_reload => 1) if /^load\s*(.*)$/ && s/^load\s*//;
     $reload_session->($_, no_reload => 1)                                 if /^run\s*(.*)$/  && s/^run\s*//;
     $reload_session->($name = pop @sessions)                              if /^back\s*$/ && @sessions;
@@ -713,7 +718,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__MrnQQWpfDuj+HPKne71Y0qnaBjdIau+aTOpMMzJiK4o
+__/j0R/Nqu8QbN5i3pVObJtgKa6SRtOoNME+HMBXLJI6A
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
