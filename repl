@@ -1608,7 +1608,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY');
+meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1634,6 +1634,30 @@ meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
     my $id = sub {$_[0]};
     :.
 
+  - Helper Functions
+    When writing data types we often want to provide methods. These are some helpers that enable easy method definitions:
+
+    ::
+    sub method {
+      my %table = @_;
+      sub {
+        my $self = $_[0];
+        my $lambda_wrap = sub {lambda('(' . $self->serialize() . ' ' . $_[0], $_[1])};
+        for my $k (keys %table) {
+          if (ref $_[1] eq 'symbol' && $_[1]->equals($k)) {
+            # Default behavior -- return the value directly, wrapping it in a serializable lambda
+            # closure only if it's a function.
+            my $v = $table{$k}->($self, $value);
+            return $lambda_wrap->($k, $v) if ref $v eq 'CODE';
+            return $v;
+          }
+        }
+        $table{''} ? $table{''}->($self, $_[1]) :
+                     die 'Cannot apply ' . $self->serialize() . ' to ' . $_[1]->serialize();
+      };
+    }
+    :.
+
   - Primitive Types
     - Church-Encoded Booleans
       These aren't primitives, but they are used throughout the interpreter logic.
@@ -1654,30 +1678,16 @@ meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
       deftype 'symbol',
         new       => sub {\$_[0]},
         eval      => sub {$symbol_table{${$_[0]}} ||
-                          die 'Cannot evaluate symbol ' . $_[0]->serialize() .
-                              ' because it is undefined.'},
+                          warn 'Cannot evaluate symbol ' . $_[0]->serialize() . ' because it is undefined.'},
 
         bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
         unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
         equals    => sub {ref $_[1] eq 'symbol' ? ${$_[0]} eq ${$_[1]} : ${$_[0]} eq $_[1]},
-        call      => sub {
-          my $self = $_[0];
-          if (ref $_[1] eq 'symbol') {
-            $_[1]->equals('bind')   ? lambda('(' . $_[0]->serialize() . ' bind)',
-                                             sub {$self->bind($_[0]->eval())}) :
-            $_[1]->equals('unbind') ? $_[0]->unbind() :
-            $_[1]->equals('value')  ? $_[0]->eval() || nil() :
-            $_[1]->equals('<=')     ? lambda('(' . $_[0]->serialize() . ' <=)',
-                                             sub {
-                                               my $rhs = $_[0];
-                                               ref $rhs eq 'symbol' &&
-                                                   ${$self} le ${rhs} ? $true : $false;
-                                             }) :
-            $_[1]->eval()->call($_[0]);
-          } else {
-            $_[1]->eval()->call($_[0]);
-          }
-        },
+        call      => method(bind     => sub {my $self = $_[0]; sub {$self->bind($_[1]->eval())}},
+                            'bound?' => sub {$symbol_table{${$_[0]}} ? $true : $false},
+                            value    => sub {$_[0]->eval()},
+                            '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[1]} ? $true : $false}},
+                            ''       => sub {$_[1]->eval()->call($_[0])}),
         serialize => sub {${$_[0]}};
 
       symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
@@ -1779,14 +1789,9 @@ meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
                       eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
                       head      => sub {$_[0][0]},
                       tail      => sub {$_[0][1]},
-                      call      => sub {
-                        if (ref $_[1] eq 'symbol') {
-                          return $_[0]->head() if $_[1]->equals('head');
-                          return $_[0]->tail() if $_[1]->equals('tail');
-                        } else {
-                          die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
-                        }
-                      },
+                      call      => method(head => sub {$_[0]->head()},
+                                          tail => sub {$_[0]->tail()},
+                                          call => sub {my $self = $_[0]; sub {$_[1]->eval()->call($self->head())->call($self->tail())}}),
                       serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
       symbol('cons')->bind(lambda('[cons]', sub {
@@ -1809,27 +1814,15 @@ meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
       ::
       deftype 'number', new       => sub {\$_[0]},
                         eval      => $id,
-                        call      => sub {
-                          my $self = $_[0];
-                          if (ref $_[1] eq 'symbol') {
-                            $_[1]->equals('<=') ? lambda('(' . $_[0]->serialize() . ' <= ...)', sub {$$self <= ${$_[0]->eval()} ? $true : $false}) :
-                            $_[1]->equals('+')  ? lambda('(' . $_[0]->serialize() . ' + ...)',  sub {number($$self + ${$_[0]->eval()})}) :
-                            $_[1]->equals('*')  ? lambda('(' . $_[0]->serialize() . ' * ...)',  sub {number($$self * ${$_[0]->eval()})}) :
-                            $_[1]->equals('-')  ? lambda('(' . $_[0]->serialize() . ' - ...)',  sub {number($$self - ${$_[0]->eval()})}) :
-                            $_[1]->equals('/')  ? lambda('(' . $_[0]->serialize() . ' / ...)',  sub {number($$self / ${$_[0]->eval()})}) :
-                            die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
-                          } else {
-                            my $value = $_[1]->eval();
-                            if (ref $value eq 'number') {
-                              number($$self * $$value);
-                            } else {
-                              die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
-                            }
-                          }
-                        },
+                        call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[1]->eval()} ? $true : $false}},
+                                            '+'  => sub {my $self = $_[0]; sub {number($$self + ${$_[0]->eval()})}},
+                                            '-'  => sub {my $self = $_[0]; sub {number($$self - ${$_[0]->eval()})}},
+                                            '*'  => sub {my $self = $_[0]; sub {number($$self * ${$_[0]->eval()})}},
+                                            '/'  => sub {my $self = $_[0]; sub {number($$self / ${$_[0]->eval()})}},
+                                            ''   => sub {number(${$_[0]} * ${$_[1]})}),
                         serialize => sub {${$_[0]}};
       :.
-__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
+__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
