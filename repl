@@ -1608,7 +1608,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__v26co8S2fhfrD5QHjQdD1+Q5IteTQbvvtysnsuqOG/Y');
+meta::section('01-interpreter', <<'__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1819,10 +1819,11 @@ meta::section('01-interpreter', <<'__v26co8S2fhfrD5QHjQdD1+Q5IteTQbvvtysnsuqOG/Y
                                             '-'  => sub {my $self = $_[0]; sub {number($$self - ${$_[0]->eval()})}},
                                             '*'  => sub {my $self = $_[0]; sub {number($$self * ${$_[0]->eval()})}},
                                             '/'  => sub {my $self = $_[0]; sub {number($$self / ${$_[0]->eval()})}},
-                                            ''   => sub {number(${$_[0]} * ${$_[1]})}),
+                                            ''   => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize() unless ref $_[1] eq 'number';
+                                                         number(${$_[0]} * ${$_[1]})}),
                         serialize => sub {${$_[0]}};
       :.
-__v26co8S2fhfrD5QHjQdD1+Q5IteTQbvvtysnsuqOG/Y
+__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1875,6 +1876,11 @@ quote e1> bind (e< (beta _ (compose  _ e1)))
 quote tr bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
 quote fn bind (e>' (tr ev (tr name (tr ev (compose' (e< (beta name ev)) placeholder)))) (quote (gensym (quote λ))))
 __H2XcMWeZdjVLsYhuwspPdZdplYkFTkd1ohWPNsjr680
+
+meta::session('factorial', <<'__GvnhONeTYWKQC/yFXKPGZzOVuthaQCKjmAQA3NedQ2Q');
+quote fact bind (fn x (x <= 0 1 (fact (x - 1))))
+fact 5
+__GvnhONeTYWKQC/yFXKPGZzOVuthaQCKjmAQA3NedQ2Q
 
 meta::session('tc2', <<'__eP5i44shT676QnQwP9eaeY4nRMzD2jMb6BqtCAEAYvM');
 # Macro tests
