@@ -359,7 +359,7 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__0fBqY9Ub1J0e3m1QrDBRdfwS15sbEg9A8+SpNphM1IM');
+meta::data('session-vim-highlighter', <<'__seRQYLfSO3xZAyh/o9B7L2zQ+hLeO9qDWIs7ugzqbpg');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -372,6 +372,7 @@ endif
 
 set iskeyword=33-39,42-126,128-255
 
+syn match   gnarlyReplStuff     /^\.\(\(ru\?n\?\)\|\(lo\?a\?d\?\)\|\(ed\?i\?t\?\)\|\(ba\?c\?k\?\)\|\(ne\?w\?\)\)/
 syn keyword gnarlyBuiltins      compose' eval beta placeholder
 syn keyword gnarlyFunctions     bind gensym counter type <=
 syn keyword gnarlyUserFunctions quote compose tr fn e< e> e<' e>' q> q>' e1 e1> quote2
@@ -385,9 +386,10 @@ hi link gnarlyUserFunctions Identifier
 hi link gnarlyNumber        Number
 hi link gnarlyComments      Comment
 hi link gnarlyParens        Special
+hi link gnarlyReplStuff     PreProc
 
 let b:current_syntax = "gnarly"
-__0fBqY9Ub1J0e3m1QrDBRdfwS15sbEg9A8+SpNphM1IM
+__seRQYLfSO3xZAyh/o9B7L2zQ+hLeO9qDWIs7ugzqbpg
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -662,7 +664,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__XWuWAVMsIQbZTLqm3HaajVTYOpvwqLFFKoubY2STuUA');
+meta::function('repl', <<'__NPPVV42jaWSmQzL32BeRfFUVhG9M9z3z6LNZ9Gew8aY');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -679,15 +681,9 @@ sub run_command {
   if ($command =~ s/^\.//) {
     interpret_metacommand($command, $name);
   } else {
-    if ($options{'short'}) {
-      my $output = eval {read_form($command)->eval()->serialize()};
-      chomp $@;
-      print $@ ? "$command => ## $@\n" : "$command => | $output\n";
-    } else {
-      print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
-      chomp $@;
-      print $@ ? "  # $@" : '', "\n\n";
-    }
+    my $output = eval {read_form($command)->eval()->serialize()};
+    chomp $@;
+    print $@ ? "\033[1;33m$command\033[1;30m => \033[1;31m$@\033[0;0m\n" : "\033[1;32m$command\033[1;30m => \033[1;34m$output\033[0;0m\n";
     $name;
   }
 }
@@ -697,7 +693,7 @@ sub reload_session {
   if ($name) {
     reload() unless $options{'no_reload'};
     my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
-    run_command($_, $name, short => 1) for @commands;
+    run_command($_, $name) for @commands;
   }
 }
 
@@ -727,7 +723,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__XWuWAVMsIQbZTLqm3HaajVTYOpvwqLFFKoubY2STuUA
+__NPPVV42jaWSmQzL32BeRfFUVhG9M9z3z6LNZ9Gew8aY
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1621,7 +1617,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM');
+meta::section('01-interpreter', <<'__Gw83WidpRhEH0u664PLwn/vI6/w2esrMmcN3WZsE3Gw');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1691,7 +1687,7 @@ meta::section('01-interpreter', <<'__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM
       deftype 'symbol',
         new       => sub {\$_[0]},
         eval      => sub {$symbol_table{${$_[0]}} ||
-                          warn 'Cannot evaluate symbol ' . $_[0]->serialize() . ' because it is undefined.'},
+                          die 'Cannot evaluate symbol ' . $_[0]->serialize() . ' because it is undefined.'},
 
         bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
         unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
@@ -1832,11 +1828,11 @@ meta::section('01-interpreter', <<'__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM
                                             '-'  => sub {my $self = $_[0]; sub {number($$self - ${$_[0]->eval()})}},
                                             '*'  => sub {my $self = $_[0]; sub {number($$self * ${$_[0]->eval()})}},
                                             '/'  => sub {my $self = $_[0]; sub {number($$self / ${$_[0]->eval()})}},
-                                            ''   => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize() unless ref $_[1] eq 'number';
-                                                         number(${$_[0]} * ${$_[1]})}),
+                                            ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
+                                                         return $_[1]->eval()->call($_[0])}),
                         serialize => sub {${$_[0]}};
       :.
-__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM
+__Gw83WidpRhEH0u664PLwn/vI6/w2esrMmcN3WZsE3Gw
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
