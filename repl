@@ -1608,7 +1608,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8');
+meta::section('01-interpreter', <<'__v26co8S2fhfrD5QHjQdD1+Q5IteTQbvvtysnsuqOG/Y');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1683,10 +1683,10 @@ meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
         bind      => sub {$symbol_table{${$_[0]}} = $_[1]; $_[0]},
         unbind    => sub {delete $symbol_table{${$_[0]}}; $_[0]},
         equals    => sub {ref $_[1] eq 'symbol' ? ${$_[0]} eq ${$_[1]} : ${$_[0]} eq $_[1]},
-        call      => method(bind     => sub {my $self = $_[0]; sub {$self->bind($_[1]->eval())}},
+        call      => method(bind     => sub {my $self = $_[0]; sub {$self->bind($_[0]->eval())}},
                             'bound?' => sub {$symbol_table{${$_[0]}} ? $true : $false},
                             value    => sub {$_[0]->eval()},
-                            '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[1]} ? $true : $false}},
+                            '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[0]} ? $true : $false}},
                             ''       => sub {$_[1]->eval()->call($_[0])}),
         serialize => sub {${$_[0]}};
 
@@ -1791,7 +1791,7 @@ meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
                       tail      => sub {$_[0][1]},
                       call      => method(head => sub {$_[0]->head()},
                                           tail => sub {$_[0]->tail()},
-                                          call => sub {my $self = $_[0]; sub {$_[1]->eval()->call($self->head())->call($self->tail())}}),
+                                          call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}}),
                       serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
       symbol('cons')->bind(lambda('[cons]', sub {
@@ -1814,7 +1814,7 @@ meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
       ::
       deftype 'number', new       => sub {\$_[0]},
                         eval      => $id,
-                        call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[1]->eval()} ? $true : $false}},
+                        call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[0]->eval()} ? $true : $false}},
                                             '+'  => sub {my $self = $_[0]; sub {number($$self + ${$_[0]->eval()})}},
                                             '-'  => sub {my $self = $_[0]; sub {number($$self - ${$_[0]->eval()})}},
                                             '*'  => sub {my $self = $_[0]; sub {number($$self * ${$_[0]->eval()})}},
@@ -1822,7 +1822,7 @@ meta::section('01-interpreter', <<'__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
                                             ''   => sub {number(${$_[0]} * ${$_[1]})}),
                         serialize => sub {${$_[0]}};
       :.
-__rkuiZ8F14MkPtPf3ECt/ua6ovqHSBnAQjUppiPudNI8
+__v26co8S2fhfrD5QHjQdD1+Q5IteTQbvvtysnsuqOG/Y
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
