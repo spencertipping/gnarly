@@ -1608,7 +1608,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__Llh3j6PHxCa2O5VqjPtOYhHyyjrcYKNUaDPEldeykUU');
+meta::section('01-interpreter', <<'__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1645,8 +1645,8 @@ meta::section('01-interpreter', <<'__Llh3j6PHxCa2O5VqjPtOYhHyyjrcYKNUaDPEldeykUU
                         serialize => sub {$_[0][0]};
 
       my $true  = lambda('true',  sub {my $x = $_[0];
-                                       lambda('(true ' . $x->serialize() . ')', sub {$x})});
-      my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]})});
+                                       lambda('(true ' . $x->serialize() . ')', sub {$x->eval()})});
+      my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]->eval()})});
       :.
 
     - Symbols
@@ -1791,7 +1791,7 @@ meta::section('01-interpreter', <<'__Llh3j6PHxCa2O5VqjPtOYhHyyjrcYKNUaDPEldeykUU
 
       symbol('cons')->bind(lambda('[cons]', sub {
         my $head = $_[0];
-        lambda('(cons ' . $head->serialize() . ')', sub {
+        lambda('(cons ' . $head->serialize() . ' ...)', sub {
           cons($head->eval(), $_[0]->eval());
         });
       }));
@@ -1809,10 +1809,27 @@ meta::section('01-interpreter', <<'__Llh3j6PHxCa2O5VqjPtOYhHyyjrcYKNUaDPEldeykUU
       ::
       deftype 'number', new       => sub {\$_[0]},
                         eval      => $id,
-                        call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize ()},
+                        call      => sub {
+                          my $self = $_[0];
+                          if (ref $_[1] eq 'symbol') {
+                            $_[1]->equals('<=') ? lambda('(' . $_[0]->serialize() . ' <= ...)', sub {$$self <= ${$_[0]->eval()} ? $true : $false}) :
+                            $_[1]->equals('+')  ? lambda('(' . $_[0]->serialize() . ' + ...)',  sub {number($$self + ${$_[0]->eval()})}) :
+                            $_[1]->equals('*')  ? lambda('(' . $_[0]->serialize() . ' * ...)',  sub {number($$self * ${$_[0]->eval()})}) :
+                            $_[1]->equals('-')  ? lambda('(' . $_[0]->serialize() . ' - ...)',  sub {number($$self - ${$_[0]->eval()})}) :
+                            $_[1]->equals('/')  ? lambda('(' . $_[0]->serialize() . ' / ...)',  sub {number($$self / ${$_[0]->eval()})}) :
+                            die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
+                          } else {
+                            my $value = $_[1]->eval();
+                            if (ref $value eq 'number') {
+                              number($$self * $$value);
+                            } else {
+                              die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize();
+                            }
+                          }
+                        },
                         serialize => sub {${$_[0]}};
       :.
-__Llh3j6PHxCa2O5VqjPtOYhHyyjrcYKNUaDPEldeykUU
+__3Wk+0No6EtyQUvgkFbuhwEbyZfup/uLaVJa66G5mZrY
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
