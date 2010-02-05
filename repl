@@ -662,7 +662,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__MuP34osIn0035wVXToKB60NwftCbEw7+NwaQi9Tzm4A');
+meta::function('repl', <<'__XWuWAVMsIQbZTLqm3HaajVTYOpvwqLFFKoubY2STuUA');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -674,14 +674,21 @@ $term->ornaments(0);
 my $OUT = $term->OUT || \*STDOUT;
 
 sub run_command {
-  my ($command, $name) = @_;
+  my ($command, $name, %options) = @_;
   return if $command =~ /^\s*#/;
   if ($command =~ s/^\.//) {
     interpret_metacommand($command, $name);
   } else {
-    print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
-    chomp $@;
-    print $@ ? "  # $@" : '', "\n\n";
+    if ($options{'short'}) {
+      my $output = eval {read_form($command)->eval()->serialize()};
+      chomp $@;
+      print $@ ? "$command => ## $@\n" : "$command => | $output\n";
+    } else {
+      print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
+      chomp $@;
+      print $@ ? "  # $@" : '', "\n\n";
+    }
+    $name;
   }
 }
 
@@ -689,9 +696,8 @@ sub reload_session {
   my ($name, %options) = @_;
   if ($name) {
     reload() unless $options{'no_reload'};
-    print "Replaying commands...\n";
     my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
-    run_command($_, $name) for @commands;
+    run_command($_, $name, short => 1) for @commands;
   }
 }
 
@@ -699,11 +705,12 @@ my @sessions;
 sub interpret_metacommand {
   my ($command, $name) = @_;
   associate("session::$name", retrieve("session::$name") || '')            if $name;
-  edit("session::$name"), reload_session($name, no_reload => 1)            if $command =~ /^edit$/;
-  edit("session::$command")                                                if $command =~ s/^edit\s+(.*)$/\1/;
-  push(@sessions, $name), reload_session($name = $command, no_reload => 1) if $command =~ s/^load\s*(.*)$/\1/;
-  reload_session($command, no_reload => 1)                                 if $command =~ s/^run\s*(.*)$/\1/;
-  reload_session($name = pop @sessions)                                    if @sessions && $command =~ /^back\s*$/;
+  edit("session::$name"), reload_session($name, no_reload => 1)            if $command =~ /^ed?i?t?$/;
+  edit("session::$command")                                                if $command =~ s/^ed?i?t?\s+(.*)$/\1/;
+  push(@sessions, $name), reload_session($name = $command, no_reload => 1) if $command =~ s/^lo?a?d?\s+(.*)$/\1/ || $command =~ s/^ne?w?\s*(.*)$/\1/;
+  reload_session($command, no_reload => 1)                                 if $command =~ s/^ru?n?\s+(.*)$/\1/;
+  reload_session($name = pop @sessions)                                    if @sessions && $command =~ /^ba?c?k?\s*$/;
+  $name;
 };
 
 reload_session($name);
@@ -712,15 +719,15 @@ print "Ready.\n";
 my $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 
 while (defined ($_ = $term->readline($prompt))) {
-  run_command($_, $name);
-  if ($name) {
+  $name = run_command($_, $name);
+  if ($name && ! /^\./) {
     associate("session::$name", retrieve("session::$name") . "\n$_");
     save();
   }
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__MuP34osIn0035wVXToKB60NwftCbEw7+NwaQi9Tzm4A
+__XWuWAVMsIQbZTLqm3HaajVTYOpvwqLFFKoubY2STuUA
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1614,7 +1621,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ');
+meta::section('01-interpreter', <<'__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1648,7 +1655,7 @@ meta::section('01-interpreter', <<'__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ
       my %table = @_;
       sub {
         my $self = $_[0];
-        my $lambda_wrap = sub {lambda('(' . $self->serialize() . ' ' . $_[0], $_[1])};
+        my $lambda_wrap = sub {lambda('(' . $self->serialize() . ' ' . $_[0] . ')', $_[1])};
         for my $k (keys %table) {
           if (ref $_[1] eq 'symbol' && $_[1]->equals($k)) {
             # Default behavior -- return the value directly, wrapping it in a serializable lambda
@@ -1829,7 +1836,7 @@ meta::section('01-interpreter', <<'__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ
                                                          number(${$_[0]} * ${$_[1]})}),
                         serialize => sub {${$_[0]}};
       :.
-__B0kobFRNNnCmaHjMZesxpCAAS9c6tW7reESjqRWh/oQ
+__cn3KQeMnLm9UlA0W2KSRuIBA8NduySSQ5PEooMuTkdM
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
