@@ -662,7 +662,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__/j0R/Nqu8QbN5i3pVObJtgKa6SRtOoNME+HMBXLJI6A');
+meta::function('repl', <<'__MuP34osIn0035wVXToKB60NwftCbEw7+NwaQi9Tzm4A');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -673,48 +673,54 @@ my $term = new Term::ReadLine "$0 repl for $name";
 $term->ornaments(0);
 my $OUT = $term->OUT || \*STDOUT;
 
-my $run_command = sub {
-  my ($command) = @_;
-  print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
-  chomp $@;
-  print $@ ? $@ : '', "\n\n";
-};
+sub run_command {
+  my ($command, $name) = @_;
+  return if $command =~ /^\s*#/;
+  if ($command =~ s/^\.//) {
+    interpret_metacommand($command, $name);
+  } else {
+    print "$command\n  | " . eval {read_form($command)->eval()->serialize()};
+    chomp $@;
+    print $@ ? "  # $@" : '', "\n\n";
+  }
+}
 
-my $reload_session = sub {
+sub reload_session {
   my ($name, %options) = @_;
   if ($name) {
     reload() unless $options{'no_reload'};
     print "Replaying commands...\n";
     my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
-    $run_command->($_) for @commands;
+    run_command($_, $name) for @commands;
   }
+}
+
+my @sessions;
+sub interpret_metacommand {
+  my ($command, $name) = @_;
+  associate("session::$name", retrieve("session::$name") || '')            if $name;
+  edit("session::$name"), reload_session($name, no_reload => 1)            if $command =~ /^edit$/;
+  edit("session::$command")                                                if $command =~ s/^edit\s+(.*)$/\1/;
+  push(@sessions, $name), reload_session($name = $command, no_reload => 1) if $command =~ s/^load\s*(.*)$/\1/;
+  reload_session($command, no_reload => 1)                                 if $command =~ s/^run\s*(.*)$/\1/;
+  reload_session($name = pop @sessions)                                    if @sessions && $command =~ /^back\s*$/;
 };
 
-$reload_session->($name);
+reload_session($name);
 
 print "Ready.\n";
 my $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
-my @sessions;
 
 while (defined ($_ = $term->readline($prompt))) {
-  if (s/^\.//) {
-    associate("session::$name", retrieve("session::$name") || '')         if $name;
-    edit("session::$name"), $reload_session->($name, no_reload => 1)      if /^edit$/;
-    edit("session::$_")                                                   if /^edit\s+(.*)$/ && s/^edit\s*//;
-    push(@sessions, $name), $reload_session->($name = $_, no_reload => 1) if /^load\s*(.*)$/ && s/^load\s*//;
-    $reload_session->($_, no_reload => 1)                                 if /^run\s*(.*)$/  && s/^run\s*//;
-    $reload_session->($name = pop @sessions)                              if /^back\s*$/ && @sessions;
-  } else {
-    $run_command->($_) unless /^\s*#/;
-    if ($name) {
-      associate("session::$name", retrieve("session::$name") . "\n$_");
-      save();
-    }
+  run_command($_, $name);
+  if ($name) {
+    associate("session::$name", retrieve("session::$name") . "\n$_");
+    save();
   }
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__/j0R/Nqu8QbN5i3pVObJtgKa6SRtOoNME+HMBXLJI6A
+__MuP34osIn0035wVXToKB60NwftCbEw7+NwaQi9Tzm4A
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1877,10 +1883,11 @@ quote tr bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))
 quote fn bind (e>' (tr ev (tr name (tr ev (compose' (e< (beta name ev)) placeholder)))) (quote (gensym (quote λ))))
 __H2XcMWeZdjVLsYhuwspPdZdplYkFTkd1ohWPNsjr680
 
-meta::session('factorial', <<'__GvnhONeTYWKQC/yFXKPGZzOVuthaQCKjmAQA3NedQ2Q');
-quote fact bind (fn x (x <= 0 1 (fact (x - 1))))
+meta::session('factorial', <<'__0jgcbfnRwuMw8nfApdSqV+21OSxNTV7fCO9yev2akaA');
+.run c2
+quote fact bind (fn x (x <= 0 1 (x * (fact (x - 1)))))
 fact 5
-__GvnhONeTYWKQC/yFXKPGZzOVuthaQCKjmAQA3NedQ2Q
+__0jgcbfnRwuMw8nfApdSqV+21OSxNTV7fCO9yev2akaA
 
 meta::session('tc2', <<'__eP5i44shT676QnQwP9eaeY4nRMzD2jMb6BqtCAEAYvM');
 # Macro tests
