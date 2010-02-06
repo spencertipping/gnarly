@@ -359,7 +359,7 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__O5tbNQ9Vu2xoAsPMbsdLXBl/LrjPVXZqHiB9LihaXCY');
+meta::data('session-vim-highlighter', <<'__SbGhuFhk0e9W+YPAJNcU38p3RkL7QIK+rn3UR4PK3yI');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -375,7 +375,7 @@ set iskeyword=33-39,42-126,128-255
 syn match   gnarlyReplStuff     /^\.\(\(ru\?n\?\)\|\(lo\?a\?d\?\)\|\(ed\?i\?t\?\)\|\(ba\?c\?k\?\)\|\(ne\?w\?\)\)/
 syn keyword gnarlyBuiltins      o' eval beta placeholder
 syn keyword gnarlyFunctions     bind gensym counter type <=
-syn keyword gnarlyUserFunctions quote o tr fn e< e> e<' e>' q> q>' e1 e1> e1>' quote2 == true false let
+syn keyword gnarlyUserFunctions quote o tr fn e< e> e<' e>' q> q>' e1 e1> e1>' quote2 == true false let en qn
 syn region  gnarlyComments      start=/#/ end=/$/
 syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/
 syn match   gnarlyParens        /[()]/
@@ -389,7 +389,7 @@ hi link gnarlyParens        Special
 hi link gnarlyReplStuff     PreProc
 
 let b:current_syntax = "gnarly"
-__O5tbNQ9Vu2xoAsPMbsdLXBl/LrjPVXZqHiB9LihaXCY
+__SbGhuFhk0e9W+YPAJNcU38p3RkL7QIK+rn3UR4PK3yI
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -1617,7 +1617,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__zN0H8I9URPG+9z7Cg89Uc/P1hweCa4a2s+1D6VQHJoY');
+meta::section('01-interpreter', <<'__ZoED0NnrGaWRNGEKu6ojFTkLN0v15xVayV8fnRtMgr0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1802,7 +1802,8 @@ meta::section('01-interpreter', <<'__zN0H8I9URPG+9z7Cg89Uc/P1hweCa4a2s+1D6VQHJoY
                       tail      => sub {$_[0][1]},
                       call      => method(head => sub {$_[0]->head()},
                                           tail => sub {$_[0]->tail()},
-                                          call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}}),
+                                          call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
+                                          ''   => sub {$_[1]->eval()->call($_[0])}),
                       serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
       symbol('cons')->bind(lambda('[cons]', sub {
@@ -1823,18 +1824,29 @@ meta::section('01-interpreter', <<'__zN0H8I9URPG+9z7Cg89Uc/P1hweCa4a2s+1D6VQHJoY
 
     - Numbers
       ::
+      sub number_op(&) {
+        my $implementation = $_[0];
+        sub {my $self = $_[0]; sub {number($implementation->($$self, ${$_[0]->eval()}))}}
+      }
+
       deftype 'number', new       => sub {\$_[0]},
                         eval      => $id,
                         call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[0]->eval()} ? $true : $false}},
-                                            '+'  => sub {my $self = $_[0]; sub {number($$self + ${$_[0]->eval()})}},
-                                            '-'  => sub {my $self = $_[0]; sub {number($$self - ${$_[0]->eval()})}},
-                                            '*'  => sub {my $self = $_[0]; sub {number($$self * ${$_[0]->eval()})}},
-                                            '/'  => sub {my $self = $_[0]; sub {number($$self / ${$_[0]->eval()})}},
+                                            '+'  => number_op {$_[0] + $_[1]},
+                                            '-'  => number_op {$_[0] - $_[1]},
+                                            '*'  => number_op {$_[0] * $_[1]},
+                                            '/'  => number_op {$_[0] / $_[1]},
+                                            '%'  => number_op {$_[0] % $_[1]},
+                                            '&'  => number_op {$_[0] & $_[1]},
+                                            '|'  => number_op {$_[0] | $_[1]},
+                                            '^'  => number_op {$_[0] ^ $_[1]},
+                                            '<<' => number_op {$_[0] << $_[1]},
+                                            '>>' => number_op {$_[0] >> $_[1]},
                                             ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
                                                          return $_[1]->eval()->call($_[0])}),
                         serialize => sub {${$_[0]}};
       :.
-__zN0H8I9URPG+9z7Cg89Uc/P1hweCa4a2s+1D6VQHJoY
+__ZoED0NnrGaWRNGEKu6ojFTkLN0v15xVayV8fnRtMgr0
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1864,7 +1876,25 @@ meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
   keeps the reader code very simple, as above.
 __uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
 
-meta::session('c2', <<'__0Ggo/PWIpT9rXPPVKPbuGZXJQ1uQurm3DxJjIBxEFBo');
+meta::session('booleans', <<'__o8KBGRx6sO38dTgTD6axMTvvRZB+dANVUq5XGPjaX8Q');
+# Boolean and relational/logical operators
+.run c2
+
+def true  (fn x (qn y x))
+def false (qn x (fn y y))
+
+def && (fn b1 (fn b2 (b1 (b2 true false) false)))
+def || (fn b1 (fn b2 (b1 true (b2 true false))))
+def !  (fn b (qn x (qn y (b y x))))
+
+def == (fn x (fn y (&& (x <= y) (y <= x))))
+def <  (fn x (fn y (&& (x <= y) (! (x == y)))))
+def >  (fn x (fn y (&& (y <= x) (! (x <= y)))))
+def >= (fn x (fn y (y <= x)))
+def != (fn x (fn y (! (x == y))))
+__o8KBGRx6sO38dTgTD6axMTvvRZB+dANVUq5XGPjaX8Q
+
+meta::session('c2', <<'__MRnQI+0KK8Jk8GoiUTesozNRkH+6HcsFe1Hr2SqomzM');
 # C2 - the standard library for Gnarly.
 # This includes bootstrapping stuff to get Gnarly off the ground and halfway useful. It gets you to a minimal Lisp-like syntax (minus a bunch of parens), and
 # makes it easy to do things like defining functions, using lexical variables, and creating state.
@@ -1891,8 +1921,11 @@ quote e1>' bind (e< (beta _ (o' _ e1)))
 
 quote tr  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
 quote fn  bind (e>' (tr ev (tr name (tr ev (o' (e< (beta name ev)) placeholder)))) (quote (gensym (quote λ))))
-quote let bind (q> (fn name (fn value (q> (fn expansion ((e1>' (e1>' fn name) expansion) value))))))
-__0Ggo/PWIpT9rXPPVKPbuGZXJQ1uQurm3DxJjIBxEFBo
+quote en  bind (fn name (fn expansion (e1>' (e1>' fn name) expansion)))
+quote qn  bind (q> (fn name (q> (fn expansion (q> (en name expansion))))))
+quote let bind (qn name (fn value (qn expansion ((en name expansion) value))))
+quote def bind (qn name (name bind))
+__MRnQI+0KK8Jk8GoiUTesozNRkH+6HcsFe1Hr2SqomzM
 
 meta::session('factorial', <<'__Fwk+PHCE7kG90o7ElbJ5hCA0zDKKBGP18q7OWicQTGs');
 .run c2
@@ -1907,7 +1940,9 @@ let x 6 x
 let x (fn y (y + 1)) (x 7)
 __Fwk+PHCE7kG90o7ElbJ5hCA0zDKKBGP18q7OWicQTGs
 
-meta::session('let', <<'__rak53+P+QFSqGv4Eal2XeafGH6D40RIrf3XDerUdCiI');
+meta::session('let', <<'__icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY');
+.run c2
+
 let x 5 (quote foo)
 let x 5 x
 let x 5 (x + 1)
@@ -1916,7 +1951,34 @@ let x 5 (let y (x + 1) (y * 5))
 let x 5
 let x 5 x
 let x 5 6
-__rak53+P+QFSqGv4Eal2XeafGH6D40RIrf3XDerUdCiI
+
+qn x (x + 1) 5
+qn x (x head) (foo bar)
+qn x (x tail) (foo bar)
+__icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY
+
+meta::session('numbers', <<'__B0Ov4wth8ejxRQjNOomGZvDWqhcwx/5OUWVU5aNtC/M');
+.run c2
+
+3 + 5
+3 - 5
+3 << 1
+(3 >> 5) & (3 << 1)
+(3 >> 1) & (3 << 1)
+(3 >> 1) & (7 << 1)
+(7 >> 1) & (7 << 1)
+(7 >> 1) (7 << 1)
+(7 >> 1) | (7 << 1)
+def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :))))
+range 1 5
+def * (fn xs (fn f (type xs == (quote nil) nil (cons (f (xs head)) (xs tail * f))))
+def * (fn xs (fn f (type xs == (quote nil) nil (cons (xs head * f) (f (xs tail)))))
+range 1 5 * (1 +)
+__B0Ov4wth8ejxRQjNOomGZvDWqhcwx/5OUWVU5aNtC/M
+
+meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::session('tc2', <<'__eP5i44shT676QnQwP9eaeY4nRMzD2jMb6BqtCAEAYvM');
 # Macro tests
