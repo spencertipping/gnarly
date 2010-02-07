@@ -1618,7 +1618,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0');
+meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1698,6 +1698,8 @@ meta::section('01-interpreter', <<'__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0
                             unbind   => sub {my $self = $_[0]; sub {$self->unbind(); $_[0]->eval()}},
                             value    => sub {$_[0]->eval()},
                             '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[0]->eval()} ? $true : $false}},
+                            '+'      => sub {my $self = $_[0]; sub {symbol($$self . ${$_[0]->eval()})}},
+                            split    => sub {cons_from_array(map {symbol($_)} split //, ${$_[0]})},
                             ''       => sub {$_[1]->eval()->call($_[0])}),
         serialize => sub {${$_[0]}};
 
@@ -1813,6 +1815,12 @@ meta::section('01-interpreter', <<'__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0
         });
       }));
 
+      sub cons_from_array {
+        return nil() unless @_;
+        my $tail = pop @_;
+        return cons(cons_from_array(@_), $tail);
+      }
+
       my $nil = '';
       deftype 'nil', new       => sub {\$nil},
                      eval      => $id,
@@ -1846,7 +1854,27 @@ meta::section('01-interpreter', <<'__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0
                                                          return $_[1]->eval()->call($_[0])}),
                         serialize => sub {${$_[0]}};
       :.
-__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0
+
+    - File I/O
+      I/O can be modeled as an object with methods. For now I'm only interested in writing to files, so the interface can be quite trivial:
+
+      ::
+      deftype 'file', new       => sub {\$_[0]},
+                      eval      => $id,
+                      call      => method(delete => sub {unlink ${$_[0]}->serialize(); $_[0]},
+                                          '<<'   => sub {my $self = $_[0]; sub {
+                                                      my $value = $_[0]->eval();
+                                                      my $output = ref $value eq 'number' ? chr $$value : $value->serialize();
+                                                      open my $fh, '>>', $$self->serialize();
+                                                      print $fh $output;
+                                                      close $fh;
+                                                      $self;
+                                                    }}),
+                      serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
+
+      symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
+      :.
+__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1942,9 +1970,9 @@ meta::session('functions', <<'__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg');
 def _ (fn _)
 __c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg
 
-meta::session('generics', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
-
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+meta::session('generics', <<'__LOg2oKlGf8ptcQrk40KyrJjMalb3SoLy9wOazg0d/kU');
+# Attribute session::generics
+__LOg2oKlGf8ptcQrk40KyrJjMalb3SoLy9wOazg0d/kU
 
 meta::session('let', <<'__WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI');
 .run c3
