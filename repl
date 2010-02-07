@@ -1908,13 +1908,16 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
   keeps the reader code very simple, as above.
 __qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('booleans', <<'__B72WR93sQUiUZrTMdgcF2LmCepLa+AhGXqJTfzOgE8s');
-def true  (fn x (qn y x)).
-def false (qn x (fn y y)).
+meta::session('booleans', <<'__4+FRj/Xy4PBuN6G3B7Ev3n078xD02OfyJgvUzaI2IDc');
+def k  (fn x (qn y x)).
+def k' (qn x (fn y y)).
 
-def && (fn b1 (fn b2 (b1 (b2 true false) false))).
-def || (fn b1 (fn b2 (b1 true (b2 true false)))).
-def !  (fn b (b false true)).
+def k:  (fn x (fn y x)).
+def k:' (fn x (fn y y)).
+
+def && (fn b1 (fn b2 (b1 (b2 k k') k'))).
+def || (fn b1 (fn b2 (b1 k (b2 k k')))).
+def !  (fn b (b k' k)).
 
 def == (fn x (fn y (&& (x <= y) (y <= x)))).
 def <  (fn x (fn y (&& (x <= y) (! (y <= x))))).
@@ -1925,7 +1928,7 @@ def != (fn x (fn y (! (x == y)))).
 # title  (Boolean and relational/logical operators)
   author (Spencer Tipping)
   .
-__B72WR93sQUiUZrTMdgcF2LmCepLa+AhGXqJTfzOgE8s
+__4+FRj/Xy4PBuN6G3B7Ev3n078xD02OfyJgvUzaI2IDc
 
 meta::session('c3', <<'__JmxdCNux5REZtrUawhKGalLt4sAjn+4VZN/vIyDt/Oo');
 beta _ _ '  bind (beta _ _).
@@ -1970,13 +1973,13 @@ meta::session('cond', <<'__aDBbcQCHJd7ANnJ79l0epIs9vCCfAniRjzDCx5PifYw');
 def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail)).
 __aDBbcQCHJd7ANnJ79l0epIs9vCCfAniRjzDCx5PifYw
 
-meta::session('factorial', <<'__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A');
-.run c3
+meta::session('factorial', <<'__RtYHXuYjSr97KzMQlz7r0Wk4xggVnQ9J3uk2n22CUQc');
+.run c3.
 
-def fact (fn x (x <= 0 1 (x * (fact (x - 1)))))
-fact 5
-fact 10
-__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A
+def fact (fn x (x <= 0 1 (x * (fact (x - 1))))).
+fact 5.
+fact 10.
+__RtYHXuYjSr97KzMQlz7r0Wk4xggVnQ9J3uk2n22CUQc
 
 meta::session('functions', <<'__EVrkkkwdA0/PiySqZYO/F69Rtvi6YW4NGkI4F+Gmv5Y');
 def _ (fn _).
@@ -2028,18 +2031,26 @@ meta::session('objects', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+meta::session('state', <<'__560OCaim1DDOPxsM+zdf1db9VGOvL8Hb1BgWj6q5ty4');
+def state (fn iv (let s  (gensym (' state))
+                 (let s' (gensym (' state-ref))
+                 (let _  (s bind iv)
+                 (k:' (s' bind (qn method (cond (((== method (' >>))     (s value))
+                                                 ((== method (' <<))     (fn v (k:' (s bind v) (s' value))))
+                                                 ((== method (' symbol)) s)
+                                                 ((== method (' delete)) (s unbind (s' unbind :)))))))
+                      (s' value)))))).
+__560OCaim1DDOPxsM+zdf1db9VGOvL8Hb1BgWj6q5ty4
 
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
-
-meta::session('stdlib', <<'__18DOULRhtiVOZolxw8VXKZh0bFuYBZLEe60sJ4ArYmE');
+meta::session('stdlib', <<'__21slu0vITlLb6aMVttfJWu8ec/yQde0w73cvTiZrGxY');
 .run c3.
 .run booleans.
 .run functions.
 .run numbers.
 .run lists.
 .run cond.
-__18DOULRhtiVOZolxw8VXKZh0bFuYBZLEe60sJ4ArYmE
+.run state.
+__21slu0vITlLb6aMVttfJWu8ec/yQde0w73cvTiZrGxY
 
 meta::session('streams', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
