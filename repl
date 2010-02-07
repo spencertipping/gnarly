@@ -664,7 +664,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__NPPVV42jaWSmQzL32BeRfFUVhG9M9z3z6LNZ9Gew8aY');
+meta::function('repl', <<'__ivJdbeecwbcDgE9X0XIzaD6GNJmKppOOM2zDxuEyau4');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -700,13 +700,14 @@ sub reload_session {
 my @sessions;
 sub interpret_metacommand {
   my ($command, $name) = @_;
-  associate("session::$name", retrieve("session::$name") || '')            if $name;
-  edit("session::$name"), reload_session($name, no_reload => 1)            if $command =~ /^ed?i?t?$/;
-  edit("session::$command")                                                if $command =~ s/^ed?i?t?\s+(.*)$/\1/;
-  push(@sessions, $name), reload_session($name = $command, no_reload => 1) if $command =~ s/^lo?a?d?\s+(.*)$/\1/ || $command =~ s/^ne?w?\s*(.*)$/\1/;
-  reload_session($command, no_reload => 1)                                 if $command =~ s/^ru?n?\s+(.*)$/\1/;
-  reload_session($name = pop @sessions)                                    if @sessions && $command =~ /^ba?c?k?\s*$/;
-  $name;
+  associate("session::$name", retrieve("session::$name") || '')                      if $name;
+  edit("session::$name"), reload_session($name, no_reload => 1),            goto end if $command =~ /^ed?i?t?$/;
+  edit("session::$command"),                                                goto end if $command =~ s/^ed?i?t?\s+(.*)$/\1/;
+  push(@sessions, $name), reload_session($name = $command, no_reload => 1), goto end if $command =~ s/^lo?a?d?\s+(.*)$/\1/ || $command =~ s/^ne?w?\s*(.*)$/\1/;
+  reload_session($command, no_reload => 1),                                 goto end if $command =~ s/^ru?n?\s+(.*)$/\1/;
+  reload_session($name = pop @sessions),                                    goto end if @sessions && $command =~ /^ba?c?k?\s*$/;
+
+  end: $name;
 };
 
 reload_session($name);
@@ -723,7 +724,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
 }
-__NPPVV42jaWSmQzL32BeRfFUVhG9M9z3z6LNZ9Gew8aY
+__ivJdbeecwbcDgE9X0XIzaD6GNJmKppOOM2zDxuEyau4
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1924,6 +1925,11 @@ beta _ _ '  bind (beta _ _)
 ' def bind (qn name (name bind))
 __Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs
 
+meta::session('cond', <<'__ZzooVvkG6rYzpRxugiajjyfJWg/+qEMRImsWj5jGZdo');
+# Cond as in Lisp
+def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail))
+__ZzooVvkG6rYzpRxugiajjyfJWg/+qEMRImsWj5jGZdo
+
 meta::session('factorial', <<'__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A');
 .run c3
 
@@ -1935,6 +1941,10 @@ __KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A
 meta::session('functions', <<'__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg');
 def _ (fn _)
 __c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg
+
+meta::session('generics', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::session('let', <<'__WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI');
 .run c3
@@ -1955,28 +1965,49 @@ en (' foo) (' foo)
 en (' foo) (' foo) 5
 __WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI
 
-meta::session('lists', <<'__krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4');
-.run c3
-.run booleans
-.run numbers
-.run functions
-
+meta::session('lists', <<'__hp7ynFcWkmXYemu2Z3NPtpZBcpNxOfVsVrJ6fr/PgfE');
 def :? (fn xs (== (type xs) (' nil)))
 
 def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail))))))
 def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head))))))
 def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail)))))
 def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail)))))
-__krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4
 
-meta::session('numbers', <<'__6Wm2HI2/wjXuOiyQhPQP1F7s7n3CG/w/hH9lFozmGtQ');
+def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head)))))
+def reverse  (reverse' :)
+__hp7ynFcWkmXYemu2Z3NPtpZBcpNxOfVsVrJ6fr/PgfE
+
+meta::session('numbers', <<'__oTuEEaEX15g7lnBsr9RO/nOE5sAZGRvAqeuqWpoLVz4');
 def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :))))
 def times (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f)))))
-__6Wm2HI2/wjXuOiyQhPQP1F7s7n3CG/w/hH9lFozmGtQ
+
+def times_ (fn n (o (times n) _))
+__oTuEEaEX15g7lnBsr9RO/nOE5sAZGRvAqeuqWpoLVz4
+
+meta::session('objects', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+
+meta::session('stdlib', <<'__jQmH/ct/8zyNJ2YGpwbi6tA10ubdTrV2sq+RGNnHjY4');
+.run c3
+.run booleans
+.run functions
+.run numbers
+.run lists
+.run cond
+__jQmH/ct/8zyNJ2YGpwbi6tA10ubdTrV2sq+RGNnHjY4
+
+meta::session('streams', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+
+meta::session('umbers', <<'__a0Z59b6KP9LyKH9ASzcbKM8cewC+4qPTSESkdRbWldw');
+# Attribute session::umbers
+__a0Z59b6KP9LyKH9ASzcbKM8cewC+4qPTSESkdRbWldw
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
