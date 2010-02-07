@@ -359,7 +359,7 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__VHW0ueAfAm65VgIqgbb+1gvi8kqasjiWvVuUV2Q5Zxk');
+meta::data('session-vim-highlighter', <<'__JoHEqNzssmRmrZEeh2WdrqMXPl1/wqfdmnN9Fti3Grc');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -376,7 +376,7 @@ syn match   gnarlyReplStuff     /^\.\(\(ru\?n\?\)\|\(lo\?a\?d\?\)\|\(ed\?i\?t\?\
 syn keyword gnarlyBuiltins      o' beta placeholder
 syn keyword gnarlyFunctions     bind gensym counter type <= :
 syn keyword gnarlyUserFunctions ' '' :: o tr fn :< :> :<' :>' ::< ::> '< '> '>' == < > >= != true false let en qn def
-syn region  gnarlyComments      start=/#/ end=/$/
+syn region  gnarlyComments      start=/#/ end=/\.$/
 syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/
 syn match   gnarlyParens        /[()]/
 
@@ -387,9 +387,10 @@ hi link gnarlyNumber        Number
 hi link gnarlyComments      Comment
 hi link gnarlyParens        Special
 hi link gnarlyReplStuff     PreProc
+hi link gnarlyDocs          Special
 
 let b:current_syntax = "gnarly"
-__VHW0ueAfAm65VgIqgbb+1gvi8kqasjiWvVuUV2Q5Zxk
+__JoHEqNzssmRmrZEeh2WdrqMXPl1/wqfdmnN9Fti3Grc
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -664,7 +665,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__ivJdbeecwbcDgE9X0XIzaD6GNJmKppOOM2zDxuEyau4');
+meta::function('repl', <<'__8PiTYiyE8yDW4BayO2VwEvE7fe4KUbsOjiDfgrF3OUY');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -677,7 +678,8 @@ my $OUT = $term->OUT || \*STDOUT;
 
 sub run_command {
   my ($command, $name, %options) = @_;
-  return if $command =~ /^\s*#/;
+  $command =~ s/^\s*//;
+  $command =~ s/\.$//;
   if ($command =~ s/^\.//) {
     interpret_metacommand($command, $name);
   } else {
@@ -692,7 +694,7 @@ sub reload_session {
   my ($name, %options) = @_;
   if ($name) {
     reload() unless $options{'no_reload'};
-    my @commands = grep ! /^\s*#/, grep length, split /\n/, retrieve("session::$name");
+    my @commands = grep length, split /\.\n/, retrieve("session::$name");
     run_command($_, $name) for @commands;
   }
 }
@@ -714,17 +716,19 @@ reload_session($name);
 
 print "Ready.\n";
 my $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
+my $buffer = '';
 
 while (defined ($_ = $term->readline($prompt))) {
-  $name = run_command($_, $name);
+  $buffer .= " $_";
+  $name = run_command($buffer, $name), $buffer = '' if /\.$/ || /^\./;
   if ($name && ! /^\./) {
-    associate("session::$name", retrieve("session::$name") . "\n$_");
+    associate("session::$name", retrieve("session::$name") . "\n$buffer");
     save();
   }
 
-  $prompt = $name ? $name . ' (repl)> ' : 'transient repl> ';
+  $prompt = ($name ? $name . ' (repl)> ' : 'transient repl> ') . ($buffer ? '| ' : '');
 }
-__ivJdbeecwbcDgE9X0XIzaD6GNJmKppOOM2zDxuEyau4
+__8PiTYiyE8yDW4BayO2VwEvE7fe4KUbsOjiDfgrF3OUY
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1876,7 +1880,7 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
       :.
 __ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
 
-meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
+meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
@@ -1890,7 +1894,7 @@ meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
       my ($value, $xs) = @_;
       my $x = shift @$xs;
 
-      return $value                                      if $x eq ')' || $x eq '' || $x =~ /^#/;
+      return $value                                      if $x eq ')' || $x eq '';
       return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
       return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
       return parse(cons($value, symbol($x)), $xs);
@@ -1902,61 +1906,69 @@ meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
-__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
+__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
 
-meta::session('booleans', <<'__Xu7A5hWvYQ/0WmAZx9srXXzhhELG1noxc29gCCzRlGA');
-# Boolean and relational/logical operators
-def true  (fn x (qn y x))
-def false (qn x (fn y y))
+meta::session('booleans', <<'__B72WR93sQUiUZrTMdgcF2LmCepLa+AhGXqJTfzOgE8s');
+def true  (fn x (qn y x)).
+def false (qn x (fn y y)).
 
-def && (fn b1 (fn b2 (b1 (b2 true false) false)))
-def || (fn b1 (fn b2 (b1 true (b2 true false))))
-def !  (fn b (b false true))
+def && (fn b1 (fn b2 (b1 (b2 true false) false))).
+def || (fn b1 (fn b2 (b1 true (b2 true false)))).
+def !  (fn b (b false true)).
 
-def == (fn x (fn y (&& (x <= y) (y <= x))))
-def <  (fn x (fn y (&& (x <= y) (! (y <= x)))))
-def >  (fn x (fn y (&& (y <= x) (! (x <= y)))))
-def >= (fn x (fn y (y <= x)))
-def != (fn x (fn y (! (x == y))))
-__Xu7A5hWvYQ/0WmAZx9srXXzhhELG1noxc29gCCzRlGA
+def == (fn x (fn y (&& (x <= y) (y <= x)))).
+def <  (fn x (fn y (&& (x <= y) (! (y <= x))))).
+def >  (fn x (fn y (&& (y <= x) (! (x <= y))))).
+def >= (fn x (fn y (y <= x))).
+def != (fn x (fn y (! (x == y)))).
 
-meta::session('c3', <<'__Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs');
-# C2 - the standard library for Gnarly.
-# This includes bootstrapping stuff to get Gnarly off the ground and halfway useful. It gets you to a minimal Lisp-like syntax (minus a bunch of parens), and
-# makes it easy to do things like defining functions, using lexical variables, and creating state.
+# title  (Boolean and relational/logical operators)
+  author (Spencer Tipping)
+  .
+__B72WR93sQUiUZrTMdgcF2LmCepLa+AhGXqJTfzOgE8s
 
-# Define '. This is a rewrite from a form to itself, which will absorb one eval. '' is like ', but useful for functions instead of rewriting.
-beta _ _ '  bind (beta _ _)
-'        '' bind (beta _ (' _))
+meta::session('c3', <<'__JmxdCNux5REZtrUawhKGalLt4sAjn+4VZN/vIyDt/Oo');
+beta _ _ '  bind (beta _ _).
+'        '' bind (beta _ (' _)).
 
-' ::  bind (o' : :)
-' :<  bind (o' :)
-' :>  bind (:< (beta _ (o' _ :)))
-' ::< bind (o' ::)
-' ::> bind (:< (beta _ (o' _ ::)))
-' '<  bind (o' ')
-' '>  bind (:< (beta _ (o' _ '')))
+' ::  bind (o' : :).
+' :<  bind (o' :).
+' :>  bind (:< (beta _ (o' _ :))).
+' ::< bind (o' ::).
+' ::> bind (:< (beta _ (o' _ ::))).
+' '<  bind (o' ').
+' '>  bind (:< (beta _ (o' _ ''))).
 
-# Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
-# the leftmost function. This requires quoting it.
-' o bind (o' : (beta _ (o' (o' _ '))))
+' #   bind (:< (beta _ #)).
 
-' :<'  bind (o' ::)
-' :>'  bind (:< (beta _ (o' _ ::)))
-' '>'  bind (:< (beta _ (o' _ ')))
+' o bind (o' : (beta _ (o' (o' _ ')))).
 
-' tr  bind (:< (:>' (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ))))
-' fn  bind (:>' (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder)))) (' (gensym (' λ))))
-' en  bind (fn name (fn expansion (:> (:> fn name) expansion)))
-' qn  bind ('> (fn name ('> (fn expansion ('> (en name expansion))))))
-' let bind (qn name (fn value (qn expansion ((en name expansion) value))))
-' def bind (qn name (name bind))
-__Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs
+' :<'  bind (o' ::).
+' :>'  bind (:< (beta _ (o' _ ::))).
+' '>'  bind (:< (beta _ (o' _ '))).
 
-meta::session('cond', <<'__ZzooVvkG6rYzpRxugiajjyfJWg/+qEMRImsWj5jGZdo');
-# Cond as in Lisp
-def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail))
-__ZzooVvkG6rYzpRxugiajjyfJWg/+qEMRImsWj5jGZdo
+' tr  bind (:< (:>' (beta ev (:< (beta name (:< (beta ev (:< (beta name ev))))))))
+               (' (gensym (' γ)))).
+
+' fn  bind (:>' (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))
+                (' (gensym (' λ)))).
+
+' en  bind (fn name (fn expansion (:> (:> fn name) expansion))).
+' qn  bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))).
+' let bind (qn name (fn value (qn expansion ((en name expansion) value)))).
+' def bind (qn name (name bind)).
+
+# title  (C3 - the standard library for Gnarly)
+  author (Spencer Tipping)
+  about  (This includes bootstrapping stuff to get Gnarly off the ground and halfway useful. It gets you to a minimal Lisp-like syntax (minus a bunch of
+          parens), and makes it easy to do things like defining functions, using lexical variables, and creating state.)
+  .
+__JmxdCNux5REZtrUawhKGalLt4sAjn+4VZN/vIyDt/Oo
+
+meta::session('cond', <<'__aDBbcQCHJd7ANnJ79l0epIs9vCCfAniRjzDCx5PifYw');
+# This cond macro works just like the one in Lisp.
+def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail)).
+__aDBbcQCHJd7ANnJ79l0epIs9vCCfAniRjzDCx5PifYw
 
 meta::session('factorial', <<'__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A');
 .run c3
@@ -1966,9 +1978,9 @@ fact 5
 fact 10
 __KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A
 
-meta::session('functions', <<'__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg');
-def _ (fn _)
-__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg
+meta::session('functions', <<'__EVrkkkwdA0/PiySqZYO/F69Rtvi6YW4NGkI4F+Gmv5Y');
+def _ (fn _).
+__EVrkkkwdA0/PiySqZYO/F69Rtvi6YW4NGkI4F+Gmv5Y
 
 meta::session('generics', <<'__LOg2oKlGf8ptcQrk40KyrJjMalb3SoLy9wOazg0d/kU');
 # Attribute session::generics
@@ -1993,24 +2005,24 @@ en (' foo) (' foo)
 en (' foo) (' foo) 5
 __WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI
 
-meta::session('lists', <<'__hp7ynFcWkmXYemu2Z3NPtpZBcpNxOfVsVrJ6fr/PgfE');
-def :? (fn xs (== (type xs) (' nil)))
+meta::session('lists', <<'__RVuCF5SBS90xRtJr4gSk6UhCnlVrnOlWb+sWN5cVAlg');
+def :? (fn xs (== (type xs) (' nil))).
 
-def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail))))))
-def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head))))))
-def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail)))))
-def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail)))))
+def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))).
+def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))).
+def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail))))).
+def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail))))).
 
-def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head)))))
-def reverse  (reverse' :)
-__hp7ynFcWkmXYemu2Z3NPtpZBcpNxOfVsVrJ6fr/PgfE
+def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head))))).
+def reverse  (reverse' :).
+__RVuCF5SBS90xRtJr4gSk6UhCnlVrnOlWb+sWN5cVAlg
 
-meta::session('numbers', <<'__oTuEEaEX15g7lnBsr9RO/nOE5sAZGRvAqeuqWpoLVz4');
-def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :))))
-def times (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f)))))
+meta::session('numbers', <<'__GmU9kFmHop+foinbhHIeA11sB/QHPkrfmS0G7TPN2cE');
+def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :)))).
 
-def times_ (fn n (o (times n) _))
-__oTuEEaEX15g7lnBsr9RO/nOE5sAZGRvAqeuqWpoLVz4
+def times  (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f))))).
+def times_ (fn n (o (times n) _)).
+__GmU9kFmHop+foinbhHIeA11sB/QHPkrfmS0G7TPN2cE
 
 meta::session('objects', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
@@ -2020,14 +2032,14 @@ meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::session('stdlib', <<'__jQmH/ct/8zyNJ2YGpwbi6tA10ubdTrV2sq+RGNnHjY4');
-.run c3
-.run booleans
-.run functions
-.run numbers
-.run lists
-.run cond
-__jQmH/ct/8zyNJ2YGpwbi6tA10ubdTrV2sq+RGNnHjY4
+meta::session('stdlib', <<'__18DOULRhtiVOZolxw8VXKZh0bFuYBZLEe60sJ4ArYmE');
+.run c3.
+.run booleans.
+.run functions.
+.run numbers.
+.run lists.
+.run cond.
+__18DOULRhtiVOZolxw8VXKZh0bFuYBZLEe60sJ4ArYmE
 
 meta::session('streams', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
