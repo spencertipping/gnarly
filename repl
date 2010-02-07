@@ -1,4 +1,4 @@
-#!/usr/bin/perl -d:Profile
+#!/usr/bin/perl
 
 use File::Temp  'tempfile';
 use Carp        'carp';
@@ -150,8 +150,8 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__wKUMgYwsls+u1rc1kIKjEOBAARrJM4w89DxiKk5w1MY');
-#!/usr/bin/perl -d:Profile
+meta::bootstrap('initialization', <<'__WreGHERYbRK2O6fsxSLM8zBUR5Hrhv5rmxR8HNLfbxA');
+#!/usr/bin/perl
 
 use File::Temp  'tempfile';
 use Carp        'carp';
@@ -185,7 +185,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__wKUMgYwsls+u1rc1kIKjEOBAARrJM4w89DxiKk5w1MY
+__WreGHERYbRK2O6fsxSLM8zBUR5Hrhv5rmxR8HNLfbxA
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -1913,15 +1913,23 @@ meta::section('02-reader', <<'__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM');
   keeps the reader code very simple, as above.
 __44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM
 
-meta::session('benchmark', <<'__nAxtFdeMXQ1kaKH4N46P6TzmftskWu1t43MS4tsYpc4');
+meta::session('benchmark', <<'__8cENJrMHC5lLC5ZAtYKNydG/RFxbIaRzgZKCeieUC+g');
 .run stdlib.
 
 def x (state 0).
 times_ 20 (x << (x >> + 1)).
 x >>.
 
+def xs (range 1 100).
+* 3 xs.
+% (_ (_ % 7 == 0)) xs.
+
+def primes (range 2 100).
+times 8 (fn i (def primes (% (fn x (|| (x == (i + 1)) (x % (i + 1) != 0))) primes))).
+primes.
+
 .bail.
-__nAxtFdeMXQ1kaKH4N46P6TzmftskWu1t43MS4tsYpc4
+__8cENJrMHC5lLC5ZAtYKNydG/RFxbIaRzgZKCeieUC+g
 
 meta::session('booleans', <<'__4+FRj/Xy4PBuN6G3B7Ev3n078xD02OfyJgvUzaI2IDc');
 def k  (fn x (qn y x)).
