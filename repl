@@ -1875,21 +1875,21 @@ meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
   keeps the reader code very simple, as above.
 __uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro
 
-meta::session('booleans', <<'__7kXIExsZWzxBw2lR4Dd+Lrn3HcgH6waP2VaurqyDBRk');
+meta::session('booleans', <<'__Xu7A5hWvYQ/0WmAZx9srXXzhhELG1noxc29gCCzRlGA');
 # Boolean and relational/logical operators
 def true  (fn x (qn y x))
 def false (qn x (fn y y))
 
 def && (fn b1 (fn b2 (b1 (b2 true false) false)))
 def || (fn b1 (fn b2 (b1 true (b2 true false))))
-def !  (fn b (qn x (qn y (b y x))))
+def !  (fn b (b false true))
 
 def == (fn x (fn y (&& (x <= y) (y <= x))))
-def <  (fn x (fn y (&& (x <= y) (! (x == y)))))
+def <  (fn x (fn y (&& (x <= y) (! (y <= x)))))
 def >  (fn x (fn y (&& (y <= x) (! (x <= y)))))
 def >= (fn x (fn y (y <= x)))
 def != (fn x (fn y (! (x == y))))
-__7kXIExsZWzxBw2lR4Dd+Lrn3HcgH6waP2VaurqyDBRk
+__Xu7A5hWvYQ/0WmAZx9srXXzhhELG1noxc29gCCzRlGA
 
 meta::session('c3', <<'__Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs');
 # C2 - the standard library for Gnarly.
@@ -1936,10 +1936,10 @@ meta::session('functions', <<'__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg');
 def _ (fn _)
 __c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg
 
-meta::session('let', <<'__icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY');
-.run c2
+meta::session('let', <<'__WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI');
+.run c3
 
-let x 5 (quote foo)
+let x 5 (' foo)
 let x 5 x
 let x 5 (x + 1)
 let x 5 (let y (x + 1) y)
@@ -1951,7 +1951,9 @@ let x 5 6
 qn x (x + 1) 5
 qn x (x head) (foo bar)
 qn x (x tail) (foo bar)
-__icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY
+en (' foo) (' foo)
+en (' foo) (' foo) 5
+__WAOmWPup0Ypddmjnt56bg7AgztNWcuH2o48bsKADPwI
 
 meta::session('lists', <<'__krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4');
 .run c3
@@ -1967,11 +1969,16 @@ def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail)))))
 def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail)))))
 __krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4
 
-meta::session('numbers', <<'__ekJR68Agj+r6LC88gk0zxSKb862753gb8Lc3QP1018o');
+meta::session('numbers', <<'__6Wm2HI2/wjXuOiyQhPQP1F7s7n3CG/w/hH9lFozmGtQ');
 def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :))))
-__ekJR68Agj+r6LC88gk0zxSKb862753gb8Lc3QP1018o
+def times (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f)))))
+__6Wm2HI2/wjXuOiyQhPQP1F7s7n3CG/w/hH9lFozmGtQ
 
 meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+
+meta::session('umbers', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
