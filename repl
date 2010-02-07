@@ -1,8 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -d:Profile
 
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
+
+use Memoize;
 
 my %data;
 my %transient;
@@ -148,12 +150,14 @@ meta::meta('internal::runtime', <<'__Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 meta::define_form 'internal', \&meta::meta::implementation;
 __Nd6Dp1A6nL7yAGeoRfeZETeaW8vnPN8HI9Diqo66vDA
 
-meta::bootstrap('initialization', <<'__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8');
-#!/usr/bin/perl
+meta::bootstrap('initialization', <<'__wKUMgYwsls+u1rc1kIKjEOBAARrJM4w89DxiKk5w1MY');
+#!/usr/bin/perl -d:Profile
 
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
+
+use Memoize;
 
 my %data;
 my %transient;
@@ -181,7 +185,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__ynZW5t0TeKZlfH7tCNrNhNwdHJSP7ipCx9cfBgbVth8
+__wKUMgYwsls+u1rc1kIKjEOBAARrJM4w89DxiKk5w1MY
 
 meta::bootstrap('pod', <<'__Bu0JNmB4+PnXErSFUjITydzG9gUH+tOkN6A5eoIdd4A');
 
@@ -665,7 +669,7 @@ meta::function('reload', <<'__xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w');
 execute($_) for grep ! /^internal::/ && ! /^bootstrap::/, sort keys %data;
 __xKHcGZ482kA75f7C1RBqvd9EK/qvWTmQ1XZutdqgY0w
 
-meta::function('repl', <<'__8PiTYiyE8yDW4BayO2VwEvE7fe4KUbsOjiDfgrF3OUY');
+meta::function('repl', <<'__KTD429En8bzDibOn+KG4+Y/C77jtUIv7Tu/CQ82bUrc');
 my ($name) = @_;
 
 print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
@@ -707,6 +711,7 @@ sub interpret_metacommand {
   edit("session::$command"),                                                goto end if $command =~ s/^ed?i?t?\s+(.*)$/\1/;
   push(@sessions, $name), reload_session($name = $command, no_reload => 1), goto end if $command =~ s/^lo?a?d?\s+(.*)$/\1/ || $command =~ s/^ne?w?\s*(.*)$/\1/;
   reload_session($command, no_reload => 1),                                 goto end if $command =~ s/^ru?n?\s+(.*)$/\1/;
+  exit 0                                                                             if $command =~ s/^bail//;
   reload_session($name = pop @sessions),                                    goto end if @sessions && $command =~ /^ba?c?k?\s*$/;
 
   end: $name;
@@ -728,7 +733,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = ($name ? $name . ' (repl)> ' : 'transient repl> ') . ($buffer ? '| ' : '');
 }
-__8PiTYiyE8yDW4BayO2VwEvE7fe4KUbsOjiDfgrF3OUY
+__KTD429En8bzDibOn+KG4+Y/C77jtUIv7Tu/CQ82bUrc
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -1377,9 +1382,10 @@ meta::note('scratchwork', <<'__LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI');
     evaluated into the cons-cell that it represents, and 'eval would be called on it.
 __LW36B2Xspo1k6IrRWwSMYA4V+z0NqpYFmQc6FQtRToI
 
-meta::note('todo', <<'__QuvWyKwqOrlbLHIyGVUVDy5lEBMduQdOeic/GWQ4ujE');
+meta::note('todo', <<'__x1mdkA15+vYUk2Qox1Rc7xdUZu1FKlkRSRvrQQt8qkY');
 Not sure yet
-__QuvWyKwqOrlbLHIyGVUVDy5lEBMduQdOeic/GWQ4ujE
+Performance optimization of map_form
+__x1mdkA15+vYUk2Qox1Rc7xdUZu1FKlkRSRvrQQt8qkY
 
 meta::note('twice', <<'__UjM+HJEP9B4gu5TweZO4pB36/jA4H17gBP55A4aZ39E');
 
@@ -1622,7 +1628,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ');
+meta::section('01-interpreter', <<'__6r7BeUEAmAPDIPz8YVCY6W+fcv6tO15BHE3X38OrKA0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1640,7 +1646,7 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
     ::
     sub deftype {
       my ($name, %members) = @_;
-      *{$name} = sub {bless $members{'new'}->(@_), $name};
+      *{$name} = memoize(sub {bless $members{'new'}->(@_), $name});
       *{"${name}::$_"} = $members{$_} for keys %members;
       $symbol_table{"meta::$name"} = $members{'new'};
     }
@@ -1656,18 +1662,17 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
       my %table = @_;
       sub {
         my $self = $_[0];
-        my $lambda_wrap = sub {lambda('(' . $self->serialize() . ' ' . $_[0] . ')', $_[1])};
-        for my $k (keys %table) {
-          if (ref $_[1] eq 'symbol' && $_[1]->equals($k)) {
-            # Default behavior -- return the value directly, wrapping it in a serializable lambda
-            # closure only if it's a function.
-            my $v = $table{$k}->($self, $value);
-            return $lambda_wrap->($k, $v) if ref $v eq 'CODE';
-            return $v;
-          }
+        my $lambda_wrap = sub {lambda(sub {'(' . $self->serialize() . ' ' . $_[0] . ')'}, $_[1])};
+        if (ref $_[1] eq 'symbol' && $table{${$_[1]}}) {
+          # Default behavior -- return the value directly, wrapping it in a serializable lambda
+          # closure only if it's a function.
+          my $v = $table{${$_[1]}}->($self, $value);
+          return $lambda_wrap->(${$_[1]}, $v) if ref $v eq 'CODE';
+          return $v;
+        } else {
+          $table{''} ? $table{''}->($self, $_[1]) :
+                       die 'Cannot apply ' . $self->serialize() . ' to ' . $_[1]->serialize();
         }
-        $table{''} ? $table{''}->($self, $_[1]) :
-                     die 'Cannot apply ' . $self->serialize() . ' to ' . $_[1]->serialize();
       };
     }
     :.
@@ -1680,11 +1685,10 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
       deftype 'lambda', new       => sub {[@_]},
                         eval      => $id,
                         call      => sub {$_[0][1]->($_[1])},
-                        serialize => sub {$_[0][0]};
+                        serialize => memoize(sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]});
 
-      my $true  = lambda('true',  sub {my $x = $_[0];
-                                       lambda('(true ' . $x->serialize() . ')', sub {$x->eval()})});
-      my $false = lambda('false', sub {lambda('(false ' . $_[0]->serialize() . ')', sub {$_[0]->eval()})});
+      my $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
+      my $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
       :.
 
     - Symbols
@@ -1743,23 +1747,25 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
 
       symbol('placeholder')->bind(lambda('[placeholder]', sub {placeholder($_[0]->eval())}));
 
-      sub map_form {
-        my ($f, $x) = @_;
-        return cons(map_form($f, $x->head()), map_form($f, $x->tail())) if ref $x eq 'cons';
-        return $f->($x);
+      sub replace_in_form {
+        my ($search, $replace, $x) = @_;
+        # print "Replacing " . $search->serialize() . " with " . $replace->serialize() . " in " . $x->serialize() . "\n";
+        return cons(replace_in_form($search, $replace, $x->[0]), replace_in_form($search, $replace, $x->[1])) if ref $x eq 'cons';
+        return $x == $search || (ref $search eq 'symbol' && ref $x eq 'symbol' && $$search eq $$x) ? $replace : $x;
       }
+      memoize('replace_in_form');
 
       deftype 'expander', new => sub {[@_]},
                           eval => $id,
-                          call => sub {
+                          call => memoize(sub {
                             my ($placeholder, $form) = @{$_[0]};
                             my $value                = $_[1];
-                            map_form(sub {$_[0] == $placeholder ? $value : $_[0]}, $form);
-                          },
-                          serialize => sub {
+                            replace_in_form($placeholder, $value, $form);
+                          }),
+                          serialize => memoize(sub {
                             my ($placeholder, $form) = @{$_[0]};
                             '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
-                          };
+                          });
 
       deftype 'counter', new => sub {\$_[0]},
                          eval => sub {counter(${$_[0]} + 1)},
@@ -1773,27 +1779,26 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
         $value;
       }));
 
-      symbol('beta')->bind(lambda('[beta]', sub {
+      symbol('beta')->bind(lambda('[beta]', memoize(sub {
         my $symbol = $_[0];
         die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
-        lambda('[beta ' . $symbol->serialize() . ' -> ...]', sub {
+        lambda("[beta $$symbol -> ...]", memoize(sub {
           my $body        = $_[0];
           my $beta_symbol = symbol("β");
           my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
-          expander($placeholder,
-                   map_form(sub {$symbol->equals($_[0]) ? $placeholder : $_[0]}, $body));
-        });
-      }));
+          expander($placeholder, replace_in_form($symbol, $placeholder, $body));
+        }, NORMALIZER => sub {$$symbol . "\n" . $_[0]->serialize()}));
+      })));
 
-      symbol('o\'')->bind(lambda('[o\']', sub {
+      symbol('o\'')->bind(lambda('[o\']', memoize(sub {
         my $f = $_[0]->eval();
-        lambda('(' . $f->serialize() . ' o\' ...)', sub {
+        lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, memoize(sub {
           my $g = $_[0]->eval();
-          lambda('(' . $f->serialize() . ' o\' ' . $g->serialize() . ')', sub {
+          lambda(sub {'(' . $f->serialize() . ' o\' ' . $g->serialize() . ')'}, sub {
             $f->call($g->call($_[0]));
           });
-        });
-      }));
+        }, NORMALIZER => sub {$f->serialize() . "\n" . $_[0]->serialize()}));
+      }, NORMALIZER => sub {$_[0]->serialize()})));
       :.
 
     - Cons Cells
@@ -1803,19 +1808,19 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
 
       ::
       deftype 'cons', new       => sub {[$_[0], $_[1]]},
-                      eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
+                      eval      => sub {$_[0][0]->eval()->call($_[0][1])},
                       head      => sub {$_[0][0]},
                       tail      => sub {$_[0][1]},
-                      call      => method(head => sub {$_[0]->head()},
-                                          tail => sub {$_[0]->tail()},
+                      call      => method(head => sub {$_[0][0]},
+                                          tail => sub {$_[0][1]},
                                           call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
                                           ''   => sub {$_[1]->eval()->call($_[0])}),
-                      serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
+                      serialize => memoize(sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'});
 
       symbol('cons')->bind(lambda('[cons]', sub {
-        my $head = $_[0];
-        lambda('(cons ' . $head->serialize() . ' ...)', sub {
-          cons($head->eval(), $_[0]->eval());
+        my $head = $_[0]->eval();
+        lambda(sub {'(cons ' . $head->serialize() . ' ...)'}, sub {
+          cons($head, $_[0]->eval());
         });
       }));
 
@@ -1878,16 +1883,16 @@ meta::section('01-interpreter', <<'__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
 
       symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
       :.
-__ucZ537yiNf6KZDIgsnkAsSlN+RiWV1+d05ffp/G2EyQ
+__6r7BeUEAmAPDIPz8YVCY6W+fcv6tO15BHE3X38OrKA0
 
-meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
+meta::section('02-reader', <<'__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
   ::
   sub read_form {
     sub lex {
-      grep length, split /([()])|\s+/, $_[0];
+      grep length, split /([()])|\s+/o, $_[0];
     }
 
     sub parse {
@@ -1896,7 +1901,7 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 
       return $value                                      if $x eq ')' || $x eq '';
       return parse(cons($value, parse(nil(), $xs)), $xs) if $x eq '(';
-      return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/;
+      return parse(cons($value, number($x)), $xs)        if $x =~ /^-?[\d.]+$/o;
       return parse(cons($value, symbol($x)), $xs);
     }
 
@@ -1906,7 +1911,17 @@ meta::section('02-reader', <<'__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04');
 
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
-__qTiKCF9evlwax/R9I6NO6CK+SXRAL+Nx7Pdit1qaT04
+__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM
+
+meta::session('benchmark', <<'__nAxtFdeMXQ1kaKH4N46P6TzmftskWu1t43MS4tsYpc4');
+.run stdlib.
+
+def x (state 0).
+times_ 20 (x << (x >> + 1)).
+x >>.
+
+.bail.
+__nAxtFdeMXQ1kaKH4N46P6TzmftskWu1t43MS4tsYpc4
 
 meta::session('booleans', <<'__4+FRj/Xy4PBuN6G3B7Ev3n078xD02OfyJgvUzaI2IDc');
 def k  (fn x (qn y x)).
