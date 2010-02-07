@@ -359,7 +359,7 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__SbGhuFhk0e9W+YPAJNcU38p3RkL7QIK+rn3UR4PK3yI');
+meta::data('session-vim-highlighter', <<'__VHW0ueAfAm65VgIqgbb+1gvi8kqasjiWvVuUV2Q5Zxk');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -373,9 +373,9 @@ endif
 set iskeyword=33-39,42-126,128-255
 
 syn match   gnarlyReplStuff     /^\.\(\(ru\?n\?\)\|\(lo\?a\?d\?\)\|\(ed\?i\?t\?\)\|\(ba\?c\?k\?\)\|\(ne\?w\?\)\)/
-syn keyword gnarlyBuiltins      o' eval beta placeholder
-syn keyword gnarlyFunctions     bind gensym counter type <=
-syn keyword gnarlyUserFunctions quote o tr fn e< e> e<' e>' q> q>' e1 e1> e1>' quote2 == true false let en qn
+syn keyword gnarlyBuiltins      o' beta placeholder
+syn keyword gnarlyFunctions     bind gensym counter type <= :
+syn keyword gnarlyUserFunctions ' '' :: o tr fn :< :> :<' :>' ::< ::> '< '> '>' == < > >= != true false let en qn def
 syn region  gnarlyComments      start=/#/ end=/$/
 syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/
 syn match   gnarlyParens        /[()]/
@@ -389,7 +389,7 @@ hi link gnarlyParens        Special
 hi link gnarlyReplStuff     PreProc
 
 let b:current_syntax = "gnarly"
-__SbGhuFhk0e9W+YPAJNcU38p3RkL7QIK+rn3UR4PK3yI
+__VHW0ueAfAm65VgIqgbb+1gvi8kqasjiWvVuUV2Q5Zxk
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -1617,7 +1617,7 @@ meta::section('00-unit-test-framework', <<'__jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIA
     :.
 __jQTPs+xmTKvNE4yJQ+puEXddkY+waY2/ZIAOzvIp0E0
 
-meta::section('01-interpreter', <<'__yx5SAZIe0UDEOF1X1/5ol4kwVQK5PuS1Mwdu98mw38I');
+meta::section('01-interpreter', <<'__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0');
 - Interpreter
   The interpreter provides semantics for expressions once they are in list form. Particularly, it does two things. First, it defines a global symbol table and a
   list of data types, and second it defines the two functions {\tt eval} and {\tt beta} that can be used to construct {\tt lambda} and other macros.
@@ -1778,7 +1778,6 @@ meta::section('01-interpreter', <<'__yx5SAZIe0UDEOF1X1/5ol4kwVQK5PuS1Mwdu98mw38I
         });
       }));
 
-      symbol('eval')->bind(lambda('[eval]', sub {$_[0]->eval()->eval()}));
       symbol('o\'')->bind(lambda('[o\']', sub {
         my $f = $_[0]->eval();
         lambda('(' . $f->serialize() . ' o\' ...)', sub {
@@ -1803,7 +1802,7 @@ meta::section('01-interpreter', <<'__yx5SAZIe0UDEOF1X1/5ol4kwVQK5PuS1Mwdu98mw38I
                       call      => method(head => sub {$_[0]->head()},
                                           tail => sub {$_[0]->tail()},
                                           call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
-                                          ''   => sub {$_[1]->eval()->call(placeholder($_[0]))}),
+                                          ''   => sub {$_[1]->eval()->call($_[0])}),
                       serialize => sub {'(' . $_[0]->head()->serialize() . ' . ' . $_[0]->tail()->serialize() . ')'};
 
       symbol('cons')->bind(lambda('[cons]', sub {
@@ -1846,7 +1845,7 @@ meta::section('01-interpreter', <<'__yx5SAZIe0UDEOF1X1/5ol4kwVQK5PuS1Mwdu98mw38I
                                                          return $_[1]->eval()->call($_[0])}),
                         serialize => sub {${$_[0]}};
       :.
-__yx5SAZIe0UDEOF1X1/5ol4kwVQK5PuS1Mwdu98mw38I
+__GtUAk/5vml/iQz5rXBEUruj99cfgsG2lN5v5E3cc3G0
 
 meta::section('02-reader', <<'__uWY6YvyzhY3xXWMIVwuABeLLMHRR7Is6podZsCSToro');
 - Reader
@@ -1892,51 +1891,50 @@ def >= (fn x (fn y (y <= x)))
 def != (fn x (fn y (! (x == y))))
 __7kXIExsZWzxBw2lR4Dd+Lrn3HcgH6waP2VaurqyDBRk
 
-meta::session('c2', <<'__MRnQI+0KK8Jk8GoiUTesozNRkH+6HcsFe1Hr2SqomzM');
+meta::session('c3', <<'__Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs');
 # C2 - the standard library for Gnarly.
 # This includes bootstrapping stuff to get Gnarly off the ground and halfway useful. It gets you to a minimal Lisp-like syntax (minus a bunch of parens), and
 # makes it easy to do things like defining functions, using lexical variables, and creating state.
 
-# Define quote. This is a rewrite from a form to itself, which will absorb one eval. quote2 is like quote, but useful for functions instead of rewriting.
-beta _ _ quote  bind (beta _ _)
-quote    quote2 bind (beta _ (quote _))
+# Define '. This is a rewrite from a form to itself, which will absorb one eval. '' is like ', but useful for functions instead of rewriting.
+beta _ _ '  bind (beta _ _)
+'        '' bind (beta _ (' _))
+
+' ::  bind (o' : :)
+' :<  bind (o' :)
+' :>  bind (:< (beta _ (o' _ :)))
+' ::< bind (o' ::)
+' ::> bind (:< (beta _ (o' _ ::)))
+' '<  bind (o' ')
+' '>  bind (:< (beta _ (o' _ '')))
 
 # Composition of functions. This is different from composition of macros because the output from the rightmost function must be protected from the evaluator on
 # the leftmost function. This requires quoting it.
-quote o bind (o' eval (beta _ (o' (o' _ quote2))))
+' o bind (o' : (beta _ (o' (o' _ '))))
 
-quote e1  bind (o eval quote)
+' :<'  bind (o' ::)
+' :>'  bind (:< (beta _ (o' _ ::)))
+' '>'  bind (:< (beta _ (o' _ ')))
 
-quote e<  bind (o eval)
-quote e>  bind (e< (beta _ (o _ eval)))
-quote q>  bind (e< (beta _ (o _ quote)))
+' tr  bind (:< (:>' (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ))))
+' fn  bind (:>' (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder)))) (' (gensym (' λ))))
+' en  bind (fn name (fn expansion (:> (:> fn name) expansion)))
+' qn  bind ('> (fn name ('> (fn expansion ('> (en name expansion))))))
+' let bind (qn name (fn value (qn expansion ((en name expansion) value))))
+' def bind (qn name (name bind))
+__Y+HIzEnNeWFiutZ7Q7OYdwL+yZhy3nVKRqUrH4/KPNs
 
-quote e<'  bind (o' eval)
-quote e>'  bind (e< (beta _ (o' _ eval)))
-quote q>'  bind (e< (beta _ (o' _ quote)))
-quote e1>  bind (e< (beta _ (o  _ e1)))
-quote e1>' bind (e< (beta _ (o' _ e1)))
+meta::session('factorial', <<'__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A');
+.run c3
 
-quote tr  bind (e< (e>' (beta ev (e< (beta name (e< (beta ev (e< (beta name ev)))))))) (quote (gensym (quote γ))))
-quote fn  bind (e>' (tr ev (tr name (tr ev (o' (e< (beta name ev)) placeholder)))) (quote (gensym (quote λ))))
-quote en  bind (fn name (fn expansion (e1>' (e1>' fn name) expansion)))
-quote qn  bind (q> (fn name (q> (fn expansion (q> (en name expansion))))))
-quote let bind (qn name (fn value (qn expansion ((en name expansion) value))))
-quote def bind (qn name (name bind))
-__MRnQI+0KK8Jk8GoiUTesozNRkH+6HcsFe1Hr2SqomzM
-
-meta::session('factorial', <<'__Fwk+PHCE7kG90o7ElbJ5hCA0zDKKBGP18q7OWicQTGs');
-.run c2
-
-quote fact bind (fn x (x <= 0 1 (x * (fact (x - 1)))))
+def fact (fn x (x <= 0 1 (x * (fact (x - 1)))))
 fact 5
+fact 10
+__KfaJsd4MxUCgMAh20u72m50VbYd6yWO6wLa5c1Xg47A
 
-quote == bind (fn x (fn y (x <= y (y <= x) (1 <= 0))))
-
-quote let bind (tr name (tr value (tr expansion (fn name expansion value))))
-let x 6 x
-let x (fn y (y + 1)) (x 7)
-__Fwk+PHCE7kG90o7ElbJ5hCA0zDKKBGP18q7OWicQTGs
+meta::session('functions', <<'__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg');
+def _ (fn _)
+__c7VgH0pm6xeCmUfvXsk9sSlPAd9TWX+ocf8SO9usEWg
 
 meta::session('let', <<'__icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY');
 .run c2
@@ -1955,71 +1953,27 @@ qn x (x head) (foo bar)
 qn x (x tail) (foo bar)
 __icjWX2xNAF7yx5HD/UhwQMPLUNS2Om2qInSE/3B6pkY
 
-meta::session('lists', <<'__pgHAe3O56e7zllnfAFvVaKsQLQ4I3KLTm3wb1Gdedxc');
-.run c2
+meta::session('lists', <<'__krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4');
+.run c3
 .run booleans
 .run numbers
+.run functions
 
-def *  (fn xs (fn f (== (type xs) (quote nil) : (cons (* (xs head) f) (f (xs tail))))))
-def /  (fn xs (fn f (== (type (xs head)) (quote nil) (xs tail) (f (xs head / f) (xs tail)))))
-def ++ (fn xs (fn ys (== (type ys) (quote nil) xs (cons (xs ++ (ys head)) (ys tail)))))
-quote (1 2 3) ++ (quote (4 5 6))
-__pgHAe3O56e7zllnfAFvVaKsQLQ4I3KLTm3wb1Gdedxc
+def :? (fn xs (== (type xs) (' nil)))
 
-meta::session('numbers', <<'__0lnEmMcBcyUkUIxvpZ0OgQKEFh3YQZB/LH0M5XP6mQE');
-.run c2
-.run booleans
+def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail))))))
+def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head))))))
+def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail)))))
+def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail)))))
+__krBf7oa1cWLU/iaLGU6z2x2Bbfco+FBptv0ZkUFcfa4
 
+meta::session('numbers', <<'__ekJR68Agj+r6LC88gk0zxSKb862753gb8Lc3QP1018o');
 def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :))))
-
-__0lnEmMcBcyUkUIxvpZ0OgQKEFh3YQZB/LH0M5XP6mQE
+__ekJR68Agj+r6LC88gk0zxSKb862753gb8Lc3QP1018o
 
 meta::session('state', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
-
-meta::session('tc2', <<'__eP5i44shT676QnQwP9eaeY4nRMzD2jMb6BqtCAEAYvM');
-# Macro tests
-tr ev
-tr ev ev
-tr name
-tr name name
-tr x (cons x x)
-tr x (cons x x) eval
-tr x (cons (quote x) (quote x))
-tr x (cons (quote x) (quote x)) eval
-
-tr x (tr y (cons x y)) y
-tr x (tr y (cons x y)) y x
-tr x (tr y (cons (quote x) (quote y))) y x
-
-# Lambda tests
-fn _ _ (quote foo)
-fn _ (eval _) (quote (quote foo))
-fn x (fn y (cons x y))
-fn x (fn y (cons x y)) 5 6
-fn x (fn y (cons x y)) (quote foo) (quote bar)
-fn x (fn y (cons x y)) (quote x) (quote y)
-fn x (fn y (cons x y)) (quote y) (quote x)
-fn x
-fn x x
-fn name
-fn name name
-fn ev
-fn ev ev
-
-fn x (fn y (cons x y)) (quote y)
-fn x (fn y (cons x y)) (quote x)
-
-# Form inspection
-tr
-fn
-fn foo foo 5
-fn foo foo counter
-fn x x x
-fn x x (quote x)
-fn x x
-__eP5i44shT676QnQwP9eaeY4nRMzD2jMb6BqtCAEAYvM
 
 meta::test('interpreter', <<'__IiZY1aPMuTta05D2n9j2mPQ7+as2p9p2pnuiXmn4KV0');
 - Interpreter Unit Tests
