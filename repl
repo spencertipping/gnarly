@@ -1953,7 +1953,7 @@ def != (fn x (fn y (! (x == y)))).
   .
 __4+FRj/Xy4PBuN6G3B7Ev3n078xD02OfyJgvUzaI2IDc
 
-meta::session('c3', <<'__JmxdCNux5REZtrUawhKGalLt4sAjn+4VZN/vIyDt/Oo');
+meta::session('c3', <<'__LG1JwWDqks5Awv47GXZ7y6gvNnzN6oQ0L+J8qJre6lk');
 beta _ _ '  bind (beta _ _).
 '        '' bind (beta _ (' _)).
 
@@ -1969,9 +1969,9 @@ beta _ _ '  bind (beta _ _).
 
 ' o bind (o' : (beta _ (o' (o' _ ')))).
 
-' :<'  bind (o' ::).
-' :>'  bind (:< (beta _ (o' _ ::))).
-' '>'  bind (:< (beta _ (o' _ '))).
+' :<' bind (o' ::).
+' :>' bind (:< (beta _ (o' _ ::))).
+' '>' bind (:< (beta _ (o' _ '))).
 
 ' tr  bind (:< (:>' (beta ev (:< (beta name (:< (beta ev (:< (beta name ev))))))))
                (' (gensym (' γ)))).
@@ -1989,7 +1989,7 @@ beta _ _ '  bind (beta _ _).
   about  (This includes bootstrapping stuff to get Gnarly off the ground and halfway useful. It gets you to a minimal Lisp-like syntax (minus a bunch of
           parens), and makes it easy to do things like defining functions, using lexical variables, and creating state.)
   .
-__JmxdCNux5REZtrUawhKGalLt4sAjn+4VZN/vIyDt/Oo
+__LG1JwWDqks5Awv47GXZ7y6gvNnzN6oQ0L+J8qJre6lk
 
 meta::session('cond', <<'__aDBbcQCHJd7ANnJ79l0epIs9vCCfAniRjzDCx5PifYw');
 # This cond macro works just like the one in Lisp.
@@ -2054,16 +2054,22 @@ meta::session('objects', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::session('state', <<'__560OCaim1DDOPxsM+zdf1db9VGOvL8Hb1BgWj6q5ty4');
-def state (fn iv (let s  (gensym (' state))
-                 (let s' (gensym (' state-ref))
-                 (let _  (s bind iv)
-                 (k:' (s' bind (qn method (cond (((== method (' >>))     (s value))
-                                                 ((== method (' <<))     (fn v (k:' (s bind v) (s' value))))
-                                                 ((== method (' symbol)) s)
-                                                 ((== method (' delete)) (s unbind (s' unbind :)))))))
-                      (s' value)))))).
-__560OCaim1DDOPxsM+zdf1db9VGOvL8Hb1BgWj6q5ty4
+meta::session('repl', <<'__4luwWS9QEy+IfQXO+Ya9yCizuByaDy91uEajcMm5bjc');
+
+ repl repl benchmark
+__4luwWS9QEy+IfQXO+Ya9yCizuByaDy91uEajcMm5bjc
+
+meta::session('state', <<'__nzrsnLOOVI6g5Vu9BEtuOVg/T8/eJbnbM9AEOkd8xdM');
+def y (qn name (qn v (let s' (gensym (' y))
+                     (k:' (s' bind ((en name v) s'))
+                          (s' value))))).
+
+def state (fn iv (let s (gensym (' state))
+                 (y self (qn method (cond (((== method (' >>))     (s value))
+                                           ((== method (' <<))     (fn v (k:' (s bind v) self)))
+                                           ((== method (' symbol)) s)
+                                           ((== method (' delete)) (s unbind (self unbind :))))))))).
+__nzrsnLOOVI6g5Vu9BEtuOVg/T8/eJbnbM9AEOkd8xdM
 
 meta::session('stdlib', <<'__21slu0vITlLb6aMVttfJWu8ec/yQde0w73cvTiZrGxY');
 .run c3.
