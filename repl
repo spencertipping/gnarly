@@ -363,7 +363,7 @@ meta::data('pdftex', <<'__aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY');
 pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__
 __aHolEJEGN4wnHiydZyVzwRrETVuJhJOGo/nKL9tsLRY
 
-meta::data('session-vim-highlighter', <<'__JoHEqNzssmRmrZEeh2WdrqMXPl1/wqfdmnN9Fti3Grc');
+meta::data('session-vim-highlighter', <<'__EjKF3pI0o76y7WUwSyykvZAdO8hA7a0bZlwx9eUhmMo');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -376,25 +376,26 @@ endif
 
 set iskeyword=33-39,42-126,128-255
 
-syn match   gnarlyReplStuff     /^\.\(\(ru\?n\?\)\|\(lo\?a\?d\?\)\|\(ed\?i\?t\?\)\|\(ba\?c\?k\?\)\|\(ne\?w\?\)\)/
 syn keyword gnarlyBuiltins      o' beta placeholder
 syn keyword gnarlyFunctions     bind gensym counter type <= :
 syn keyword gnarlyUserFunctions ' '' :: o tr fn :< :> :<' :>' ::< ::> '< '> '>' == < > >= != true false let en qn def
-syn region  gnarlyComments      start=/#/ end=/\.$/
 syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/
 syn match   gnarlyParens        /[()]/
 
+syn cluster gnarlySyntax        add=gnarlyBuiltins,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumber,gnarlyParens
+
+syn region  gnarlyCodeRegion    start=/^\s*(/     end=/^$/ contains=@gnarlySyntax transparent fold
+syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold
+
+hi link gnarlyCommentRegion Comment
 hi link gnarlyBuiltins      Keyword
-hi link gnarlyFunctions     Type
-hi link gnarlyUserFunctions Identifier
+hi link gnarlyFunctions     Keyword
+hi link gnarlyUserFunctions Keyword
 hi link gnarlyNumber        Number
-hi link gnarlyComments      Comment
 hi link gnarlyParens        Special
-hi link gnarlyReplStuff     PreProc
-hi link gnarlyDocs          Special
 
 let b:current_syntax = "gnarly"
-__JoHEqNzssmRmrZEeh2WdrqMXPl1/wqfdmnN9Fti3Grc
+__EjKF3pI0o76y7WUwSyykvZAdO8hA7a0bZlwx9eUhmMo
 
 meta::data('table-of-contents', <<'__a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s');
 1
@@ -1885,7 +1886,7 @@ meta::section('01-interpreter', <<'__6r7BeUEAmAPDIPz8YVCY6W+fcv6tO15BHE3X38OrKA0
       :.
 __6r7BeUEAmAPDIPz8YVCY6W+fcv6tO15BHE3X38OrKA0
 
-meta::section('02-reader', <<'__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM');
+meta::section('02-reader', <<'__zJGx8uIoG6zQUuXwdz24wECkkngeslKWNTagUZiZFb4');
 - Reader
   The reader is actually quite simple. All it needs to do is split its input at two levels and then construct cons cells:
 
@@ -1911,7 +1912,28 @@ meta::section('02-reader', <<'__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM');
 
   Right now there is no notion of read-macros. This is probably sufficient given that we can go through the form after the fact and reconstruct stuff. It also
   keeps the reader code very simple, as above.
-__44sM85eTobLuHvg1txC4cXpoJfw8CHqzhr6Whwl2BxM
+
+  - Paragraph Form
+    Files are read in paragraph form. This format includes code snippets and text interspersed as blank-line-separated paragraphs, where code paragraphs start
+    with an open parenthesis and documentation paragraphs start with other characters. Reading and evaluating such a document, then, first involves splitting it
+    into paragraphs and then involves reading the forms that result and evaluating each.
+
+    ::
+    sub read_paragraph {
+      sub flatten_cons_tree {
+        return () if ref $_[0] eq 'nil';
+        return (flatten_cons_tree($_[0]->head()), $_[0]->tail());
+      }
+
+      return if $_[0] =~ /^\s*[^( ]/o;
+      return flatten_cons_tree read_form $_[0];
+    }
+
+    sub read_document {
+      map {read_paragraph $_} split /^$/o, $_[0];
+    }
+    :.
+__zJGx8uIoG6zQUuXwdz24wECkkngeslKWNTagUZiZFb4
 
 meta::session('benchmark', <<'__8cENJrMHC5lLC5ZAtYKNydG/RFxbIaRzgZKCeieUC+g');
 .run stdlib.
@@ -2059,17 +2081,16 @@ meta::session('repl', <<'__4luwWS9QEy+IfQXO+Ya9yCizuByaDy91uEajcMm5bjc');
  repl repl benchmark
 __4luwWS9QEy+IfQXO+Ya9yCizuByaDy91uEajcMm5bjc
 
-meta::session('state', <<'__nzrsnLOOVI6g5Vu9BEtuOVg/T8/eJbnbM9AEOkd8xdM');
+meta::session('state', <<'__CrowlVBsbhfcOR/5dsogo6Fav3TbvrVS3AssIGYrSgo');
 def y (qn name (qn v (let s' (gensym (' y))
-                     (k:' (s' bind ((en name v) s'))
-                          (s' value))))).
+                     (s' bind ((en name v) s') value)))).
 
 def state (fn iv (let s (gensym (' state))
                  (y self (qn method (cond (((== method (' >>))     (s value))
-                                           ((== method (' <<))     (fn v (k:' (s bind v) self)))
+                                           ((== method (' <<))     (fn v (k:' (s bind v) (self value))))
                                            ((== method (' symbol)) s)
-                                           ((== method (' delete)) (s unbind (self unbind :))))))))).
-__nzrsnLOOVI6g5Vu9BEtuOVg/T8/eJbnbM9AEOkd8xdM
+                                           ((== method (' unbind)) (o (s unbind) (self unbind))))))))).
+__CrowlVBsbhfcOR/5dsogo6Fav3TbvrVS3AssIGYrSgo
 
 meta::session('stdlib', <<'__21slu0vITlLb6aMVttfJWu8ec/yQde0w73cvTiZrGxY');
 .run c3.
