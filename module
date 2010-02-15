@@ -190,7 +190,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__g47Gm8cHnZ/y1bxRGwKhk/Q/zA0RV/hYxHCzdZhvTSM');
+meta::code('source', <<'__d2BnqW0i3Ug5kW6XBA63skb+7OoJIx29lBtGTTY/G/E');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -243,8 +243,8 @@ Definitions for creating functions and macros.
   en = evaluative function. It evaluates the things you pass in as the /name/ and /expansion/.
   qn = quoted function. Just like function, except that its parameter is not evaluated.
 
-  (' tr  bind (:< (:>' (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
-  (' fn  bind (:>' (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
+  (' tr  bind (:< (::> (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
+  (' fn  bind (::> (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
 
   (' en  bind     (fn name     (fn expansion (:> (:> fn name) expansion))))
   (' qn  bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))))
@@ -260,7 +260,59 @@ and def is used to define an entry in the global symbol table, like this:
 
   (' let bind (qn name (fn value (qn expansion ((en name expansion) value)))))
   (' def bind (qn name (name bind)))
-__g47Gm8cHnZ/y1bxRGwKhk/Q/zA0RV/hYxHCzdZhvTSM
+
+Booleans and relational operators.
+
+  (def k  (fn x (qn y x)))
+  (def k' (qn x (fn y y)))
+
+  (def k:  (fn x (fn y x)))
+  (def k:' (fn x (fn y y)))
+
+  (def && (fn b1 (fn b2 (b1 (b2 k k') k'))))
+  (def || (fn b1 (fn b2 (b1 k (b2 k k')))))
+  (def !  (fn b (b k' k)))
+
+  (def == (fn x (fn y (&& (x <= y) (y <= x)))))
+  (def <  (fn x (fn y (&& (x <= y) (! (y <= x))))))
+  (def >  (fn x (fn y (&& (y <= x) (! (x <= y))))))
+  (def >= (fn x (fn y (y <= x))))
+  (def != (fn x (fn y (! (x == y)))))
+
+Lists.
+
+  (def :? (fn xs (== (type xs) (' nil))))
+
+  (def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))))
+  (def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))))
+  (def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail))))))
+  (def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail))))))
+
+  (def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head))))))
+  (def reverse  (reverse' :))
+
+Cond.
+
+  (def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail)))
+
+Numbers.
+
+  (def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :)))))
+
+  (def times  (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f))))))
+  (def times_ (fn n (o (times n) _)))
+
+State.
+
+  (def y (qn name (qn v (let s' (gensym (' y))
+                        (s' bind ((en name v) s') value)))))
+
+  (def state (fn iv (let s (gensym (' state))
+                     (y self (qn method (cond (((== method (' >>))     (s value))
+                                              ((== method (' <<))     (fn v (k:' (s bind v) (self value))))
+                                              ((== method (' symbol)) s)
+                                              ((== method (' unbind)) (o (s unbind) (self unbind))))))))))
+__d2BnqW0i3Ug5kW6XBA63skb+7OoJIx29lBtGTTY/G/E
 
 meta::code('tests', <<'__m6+oJxwoZaK1TMUfaV+FgxyaXqlCLt6Lb4BRNC4oCpw');
 Unit tests for this module. Integration tests should go into code::integration-tests.
