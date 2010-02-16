@@ -143,9 +143,9 @@ meta::attribute('module-api-version', <<'__0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9
 1.0
 __0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9rvgBfY
 
-meta::attribute('module-name', <<'__bhmtqnYh71vFMr2U62YpxfaBvNsPBiSBNLH5p4LuAuo');
-new-module
-__bhmtqnYh71vFMr2U62YpxfaBvNsPBiSBNLH5p4LuAuo
+meta::attribute('module-name', <<'__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw');
+core
+__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw
 
 meta::attribute('module-revision', <<'__X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k');
 0
@@ -484,26 +484,37 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__eaOjbH1kQd3440ehk7CM62fmFCema5/utZmbcL1XhjA');
-my ($name) = @_;
-
-print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
+meta::function('repl', <<'__k/HoqpY+W5No6baZefq+HYL8jLnzLJuSF8PqNed8Apg');
+my ($name, @options) = @_;
 
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 repl for $name";
 $term->ornaments(0);
-my $OUT = $term->OUT || \*STDOUT;
+my $OUT    = $term->OUT || \*STDOUT;
+my $prompt = "[\033[1;32mrepl\033[0;0m] " . &{'api-name'}() . "/$name> ";
 
-my $prompt = &{'api-name'}() . " repl/$name> ";
+terminal::message('repl', 'initializing symbol table');
+types::clear_symbols;
+types::initialize_symbols;
+types::initialize_debugging_symbols if grep /^debug$/, @options;
+types::load_symbols $name;
 
+terminal::message('repl', 'running session');
 run($name);
 
+terminal::message('repl', 'ready');
 while (defined ($_ = $term->readline($prompt))) {
   my $result = eval {reader::read_form($_)->eval()->serialize()};
-  print $OUT $@ ? "[\033[1;31merror\033[0;0m]: $@" : "[\033[1;34mresult\033[0;0m]: $result\n";
+  $@ ? terminal::message('error', $@) : terminal::message('result', $result);
 }
-__eaOjbH1kQd3440ehk7CM62fmFCema5/utZmbcL1XhjA
+
+print "\n";
+terminal::message('repl', 'storing symbol table');
+types::store_symbols $name if $name;
+
+terminal::message('repl', 'exiting');
+__k/HoqpY+W5No6baZefq+HYL8jLnzLJuSF8PqNed8Apg
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -724,7 +735,7 @@ Unit testing framework image
 Alternate symbol tables and environments
 __FSCz3NFg28ce9sd6amypBl2NWzpSY6d37dttfAhbg7A
 
-meta::library('datatypes', <<'__5/WXHaamE9qH4woaWyQnf+cVLgovlr7bUsR3yfN71iA');
+meta::library('datatypes', <<'__6w7gNnehaPIgNxUjoq1lWVh5r9VtDjO6E4V1s047W3Y');
 # Data type definitions for the interpreter.
 
 package types;
@@ -732,6 +743,58 @@ package types;
 use Memoize;
 
 my %symbol_table;
+
+sub clear_symbols {%symbol_table = ()}
+sub store_symbols {my %h = %symbol_table; $transients{$_[0]} = \%h}
+sub load_symbols  {%symbol_table = %{$transients{$_[0]}} if ref $transients{$_[0]} eq 'HASH'}
+
+sub initialize_debugging_symbols {
+  symbol('counter')->bind(counter(0));
+  symbol('trace')->bind(lambda('[trace]', sub {
+    my $value = $_[0]->eval();
+    print "  - \033[1;34m" . $_[0]->serialize() . "\033[0;0m\n";
+    $value;
+  }));
+}
+
+sub initialize_symbols {
+  symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
+
+  symbol('gensym')->bind(lambda('[gensym]', \&gensym));
+  symbol('placeholder')->bind(lambda('[placeholder]', sub {placeholder($_[0]->eval())}));
+
+  symbol('beta')->bind(lambda('[beta]', memoize(sub {
+    my $symbol = $_[0];
+    die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
+    lambda("[beta $$symbol -> ...]", memoize(sub {
+      my $body        = $_[0];
+      my $beta_symbol = symbol("β");
+      my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
+      expander($placeholder, replace_in_form($symbol, $placeholder, $body));
+    }, NORMALIZER => sub {$$symbol . "\n" . $_[0]->serialize()}));
+  })));
+
+  symbol('cons')->bind(lambda('[cons]', sub {
+    my $head = $_[0]->eval();
+    lambda(sub {'(cons ' . $head->serialize() . ' ...)'}, sub {
+      cons($head, $_[0]->eval());
+    });
+  }));
+
+  symbol('o\'')->bind(lambda('[o\']', memoize(sub {
+    my $f = $_[0]->eval();
+    lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, memoize(sub {
+      my $g = $_[0]->eval();
+      lambda(sub {'(' . $f->serialize() . ' o\' ' . $g->serialize() . ')'}, sub {
+        $f->call($g->call($_[0]));
+      });
+    }, NORMALIZER => sub {$f->serialize() . "\n" . $_[0]->serialize()}));
+  }, NORMALIZER => sub {$_[0]->serialize()})));
+
+  symbol(':')->bind(nil());
+
+  symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
+}
 
 sub deftype {
   my ($name, %members) = @_;
@@ -785,8 +848,6 @@ deftype 'symbol',
                       ''       => sub {$_[1]->eval()->call($_[0])}),
   serialize => sub {${$_[0]}};
 
-symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
-
 my $gensym_count = 0;
 sub gensym {
   my $value = $_[0]->eval();
@@ -795,16 +856,12 @@ sub gensym {
   symbol("#$$value$gensym_count");
 }
 
-symbol('gensym')->bind(lambda('[gensym]', \&gensym));
-
 deftype 'placeholder',
   new       => sub {\$_[0]},
   eval      => sub {${$_[0]}},
   call      => sub {method(unpack => sub {${$_[0]}},
                            ''     => sub {$_[1]->eval()->call(${$_[0]})})},
   serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
-
-symbol('placeholder')->bind(lambda('[placeholder]', sub {placeholder($_[0]->eval())}));
 
 sub replace_in_form {
   my ($search, $replace, $x) = @_;
@@ -830,34 +887,6 @@ deftype 'counter', new => sub {\$_[0]},
                    call => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                    serialize => sub {"[counter +${$_[0]}]"};
 
-symbol('counter')->bind(counter(0));
-symbol('trace')->bind(lambda('[trace]', sub {
-  my $value = $_[0]->eval();
-  print "  - \033[1;34m" . $_[0]->serialize() . "\033[0;0m\n";
-  $value;
-}));
-
-symbol('beta')->bind(lambda('[beta]', memoize(sub {
-  my $symbol = $_[0];
-  die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
-  lambda("[beta $$symbol -> ...]", memoize(sub {
-    my $body        = $_[0];
-    my $beta_symbol = symbol("β");
-    my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
-    expander($placeholder, replace_in_form($symbol, $placeholder, $body));
-  }, NORMALIZER => sub {$$symbol . "\n" . $_[0]->serialize()}));
-})));
-
-symbol('o\'')->bind(lambda('[o\']', memoize(sub {
-  my $f = $_[0]->eval();
-  lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, memoize(sub {
-    my $g = $_[0]->eval();
-    lambda(sub {'(' . $f->serialize() . ' o\' ' . $g->serialize() . ')'}, sub {
-      $f->call($g->call($_[0]));
-    });
-  }, NORMALIZER => sub {$f->serialize() . "\n" . $_[0]->serialize()}));
-}, NORMALIZER => sub {$_[0]->serialize()})));
-
 deftype 'cons', new       => sub {[$_[0], $_[1]]},
                 eval      => sub {$_[0][0]->eval()->call($_[0][1])},
                 head      => sub {$_[0][0]},
@@ -867,13 +896,6 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => memoize(sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'});
-
-symbol('cons')->bind(lambda('[cons]', sub {
-  my $head = $_[0]->eval();
-  lambda(sub {'(cons ' . $head->serialize() . ' ...)'}, sub {
-    cons($head, $_[0]->eval());
-  });
-}));
 
 sub cons_from_array {
   return nil() unless @_;
@@ -886,8 +908,6 @@ deftype 'nil', new       => sub {\$nil},
                eval      => $id,
                call      => sub {$_[1]->eval()},
                serialize => sub {':'};
-
-symbol(':')->bind(nil());
 
 sub number_op(&) {
   my $implementation = $_[0];
@@ -929,9 +949,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-
-symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
-__5/WXHaamE9qH4woaWyQnf+cVLgovlr7bUsR3yfN71iA
+__6w7gNnehaPIgNxUjoq1lWVh5r9VtDjO6E4V1s047W3Y
 
 meta::library('reader', <<'__4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE');
 package reader;
@@ -968,6 +986,31 @@ sub read_document {
   map {read_paragraph $_} split /\n\s*\n/o, $_[0];
 }
 __4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE
+
+meta::library('terminal', <<'__3ctzWUIwAT+mFEeNK5/KOeM8a9rqM6ARzWWh6R8NjOQ');
+# Functions for nice-looking terminal output.
+
+package terminal;
+
+use constant black  => "0;0";
+use constant red    => "1;31";
+use constant yellow => "1;33";
+use constant green  => "1;32";
+use constant blue   => "1;34";
+use constant purple => "1;35";
+use constant cyan   => "1;36";
+
+my %default_colors = (repl    => green,
+                      result  => blue,
+                      error   => red,
+                      warning => yellow);
+
+sub message {
+  my ($prefix, $message) = @_;
+  my $color = $default_colors{$prefix};
+  print "[\033[${color}m$prefix\033[0;0m]: $message\n";
+}
+__3ctzWUIwAT+mFEeNK5/KOeM8a9rqM6ARzWWh6R8NjOQ
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
