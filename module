@@ -729,11 +729,10 @@ Static importing
 Document parsing and paragraph type detection
 __MXXSP54qIKQJy0L2vfZ/zMr5qgls+FTPZxXODvE+6ug
 
-meta::issue('todos', <<'__FSCz3NFg28ce9sd6amypBl2NWzpSY6d37dttfAhbg7A');
+meta::issue('todos', <<'__xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ');
 Add dependency processing
 Unit testing framework image
-Alternate symbol tables and environments
-__FSCz3NFg28ce9sd6amypBl2NWzpSY6d37dttfAhbg7A
+__xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ
 
 meta::library('datatypes', <<'__6w7gNnehaPIgNxUjoq1lWVh5r9VtDjO6E4V1s047W3Y');
 # Data type definitions for the interpreter.
