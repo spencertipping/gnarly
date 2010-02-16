@@ -4,6 +4,8 @@ use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
 
+$|++;
+
 my %data;
 my %transient;
 my %externalized_functions;
@@ -149,12 +151,14 @@ meta::attribute('module-revision', <<'__X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7
 0
 __X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k
 
-meta::bootstrap('initialization', <<'__JOi7XAWL9l44hXdl9VDHvfB+GU4VphljkA+MfRDd56g');
+meta::bootstrap('initialization', <<'__plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc');
 #!/usr/bin/perl
 
 use File::Temp  'tempfile';
 use Carp        'carp';
 use Digest::SHA 'sha256_base64';
+
+$|++;
 
 my %data;
 my %transient;
@@ -180,7 +184,7 @@ meta::define_form 'meta', sub {
   carp $@ if $@;
 };
 
-__JOi7XAWL9l44hXdl9VDHvfB+GU4VphljkA+MfRDd56g
+__plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
 meta::code('dependencies', <<'__H5CDOI7uffSvT4dm4LbThmGy2M/0RvwfteMq4JHjRT0');
 This is generated automatically by import-dependencies. You shouldn't put any changes you care about in here.
@@ -190,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__d2BnqW0i3Ug5kW6XBA63skb+7OoJIx29lBtGTTY/G/E');
+meta::code('source', <<'__VL6xU98RMGHqD4HbYlgoMZhC5tG3zHObILkqI5aa6r4');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -257,15 +261,26 @@ let and def are two shorthands for common operations. let is used to define a lo
 and def is used to define an entry in the global symbol table, like this:
 |
 | (def foo (' bar))
+|
+Note that there aren't really any local variables -- they are all constants and get rewritten to placeholder expressions during function application.
 
   (' let bind (qn name (fn value (qn expansion ((en name expansion) value)))))
   (' def bind (qn name (name bind)))
 
+  (def _ (fn _))
+
 Booleans and relational operators.
+Booleans are Church-encoded, and logical operators try to get the result as much evaluated as possible to maximize performance. The meanings of these functions
+correspond to their names, with the first four ultimately rooted in the SK combinator calculus. K is a function that returns a constant-returning function; that
+is, k x y = x. k' returns y; that is, it absorbs its parameter. Normally, k and k' are lazy in that they fail to evaluate their unused parameter. However,
+sometimes it is necessary to evaluate both, so k: and k:' are provided for this purpose.
 
-  (def k  (fn x (qn y x)))
-  (def k' (qn x (fn y y)))
+Relational operators operate on partially or fully ordered things. The only assumption that is made is that the things implement <=, the less-than-or-equal-to
+operator. Deriving the other operators is trivial given this one, and it also provides an indication of whether something is not comparable to something else
+(in this case, x <= y and y <= x are both false).
 
+  (def k   (fn x (qn y x)))
+  (def k'  (qn x (fn y y)))
   (def k:  (fn x (fn y x)))
   (def k:' (fn x (fn y y)))
 
@@ -292,6 +307,8 @@ Lists.
   (def reverse  (reverse' :))
 
 Cond.
+This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
+returned. The internal workings below can be read as the following in English: "evaluate the tail of the first expression whose tail of whose head is true."
 
   (def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail)))
 
@@ -308,11 +325,11 @@ State.
                         (s' bind ((en name v) s') value)))))
 
   (def state (fn iv (let s (gensym (' state))
-                     (y self (qn method (cond (((== method (' >>))     (s value))
+                    (y self (qn method (cond (((== method (' >>))     (s value))
                                               ((== method (' <<))     (fn v (k:' (s bind v) (self value))))
                                               ((== method (' symbol)) s)
                                               ((== method (' unbind)) (o (s unbind) (self unbind))))))))))
-__d2BnqW0i3Ug5kW6XBA63skb+7OoJIx29lBtGTTY/G/E
+__VL6xU98RMGHqD4HbYlgoMZhC5tG3zHObILkqI5aa6r4
 
 meta::code('tests', <<'__m6+oJxwoZaK1TMUfaV+FgxyaXqlCLt6Lb4BRNC4oCpw');
 Unit tests for this module. Integration tests should go into code::integration-tests.
@@ -331,10 +348,6 @@ meta::data('meta-associations', <<'__kVffjc6irPQVBintvaQyaR90XJ4gIZIYiWKMIFPuioA
 ^code:: .gnarly
 ^vim_highlighter:: .vim
 __kVffjc6irPQVBintvaQyaR90XJ4gIZIYiWKMIFPuioA
-
-meta::data('name', <<'__Eglw2BKDbxmIhiVYekYGpa0jzvMchoTmAXcVUlSPxrk');
-module
-__Eglw2BKDbxmIhiVYekYGpa0jzvMchoTmAXcVUlSPxrk
 
 meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
 my ($filename) = @_;
@@ -471,6 +484,27 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
+meta::function('repl', <<'__eaOjbH1kQd3440ehk7CM62fmFCema5/utZmbcL1XhjA');
+my ($name) = @_;
+
+print "This session will not be stored.\nTo create or load a stored session, run repl <name>.\n" unless $name;
+
+use Term::ReadLine;
+
+my $term = new Term::ReadLine "$0 repl for $name";
+$term->ornaments(0);
+my $OUT = $term->OUT || \*STDOUT;
+
+my $prompt = &{'api-name'}() . " repl/$name> ";
+
+run($name);
+
+while (defined ($_ = $term->readline($prompt))) {
+  my $result = eval {reader::read_form($_)->eval()->serialize()};
+  print $OUT $@ ? "[\033[1;31merror\033[0;0m]: $@" : "[\033[1;34mresult\033[0;0m]: $result\n";
+}
+__eaOjbH1kQd3440ehk7CM62fmFCema5/utZmbcL1XhjA
+
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
   messages::warning("$to_be_deleted does not exist") unless grep {$_ eq $to_be_deleted} keys %data;
@@ -514,12 +548,12 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__/NsjIeBGQwrMcuwVJfHPf2kPd3xpzp93JDexqB1o2bk');
+meta::function('shell', <<'__6NZftjRE+lsE0a2W1BkCzwo78/IYQgOmo6CmA0BYozc');
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
-my $prompt = name() . '$ ';
+my $prompt = &{'api-name'}() . '$ ';
 my $OUT = $term->OUT || \*STDOUT;
 
 while (defined ($_ = $term->readline($prompt))) {
@@ -547,9 +581,9 @@ while (defined ($_ = $term->readline($prompt))) {
     print $OUT "Error evaluating watched expression $watch: $@\n" if $@;
   }
 
-  $prompt = name() . '$ ';
+  $prompt = &{'api-name'}() . '$ ';
 }
-__/NsjIeBGQwrMcuwVJfHPf2kPd3xpzp93JDexqB1o2bk
+__6NZftjRE+lsE0a2W1BkCzwo78/IYQgOmo6CmA0BYozc
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -684,14 +718,13 @@ Static importing
 Document parsing and paragraph type detection
 __MXXSP54qIKQJy0L2vfZ/zMr5qgls+FTPZxXODvE+6ug
 
-meta::issue('todos', <<'__aqqg4mzsLz2GSLSmRKgSma3YeMJxBCw2vU2vjnOeJl4');
+meta::issue('todos', <<'__FSCz3NFg28ce9sd6amypBl2NWzpSY6d37dttfAhbg7A');
 Add dependency processing
-REPL shell
 Unit testing framework image
 Alternate symbol tables and environments
-__aqqg4mzsLz2GSLSmRKgSma3YeMJxBCw2vU2vjnOeJl4
+__FSCz3NFg28ce9sd6amypBl2NWzpSY6d37dttfAhbg7A
 
-meta::library('datatypes', <<'__9VdUNxfHSmBAtQZ8d4DQyhiF/OobXC9IsqD4ld7VfHA');
+meta::library('datatypes', <<'__5/WXHaamE9qH4woaWyQnf+cVLgovlr7bUsR3yfN71iA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -864,14 +897,14 @@ sub number_op(&) {
 deftype 'number', new       => sub {\$_[0]},
                   eval      => $id,
                   call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[0]->eval()} ? $true : $false}},
-                                      '+'  => number_op {$_[0] + $_[1]},
-                                      '-'  => number_op {$_[0] - $_[1]},
-                                      '*'  => number_op {$_[0] * $_[1]},
-                                      '/'  => number_op {$_[0] / $_[1]},
-                                      '%'  => number_op {$_[0] % $_[1]},
-                                      '&'  => number_op {$_[0] & $_[1]},
-                                      '|'  => number_op {$_[0] | $_[1]},
-                                      '^'  => number_op {$_[0] ^ $_[1]},
+                                      '+'  => number_op {$_[0]  + $_[1]},
+                                      '-'  => number_op {$_[0]  - $_[1]},
+                                      '*'  => number_op {$_[0]  * $_[1]},
+                                      '/'  => number_op {$_[0]  / $_[1]},
+                                      '%'  => number_op {$_[0]  % $_[1]},
+                                      '&'  => number_op {$_[0]  & $_[1]},
+                                      '|'  => number_op {$_[0]  | $_[1]},
+                                      '^'  => number_op {$_[0]  ^ $_[1]},
                                       '<<' => number_op {$_[0] << $_[1]},
                                       '>>' => number_op {$_[0] >> $_[1]},
                                       ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
@@ -880,19 +913,25 @@ deftype 'number', new       => sub {\$_[0]},
 
 deftype 'file', new       => sub {\$_[0]},
                 eval      => $id,
-                call      => method(delete => sub {unlink ${$_[0]}->serialize(); $_[0]},
+                call      => method(delete => sub {unlink ${$_[0]}->serialize() unless ref ${$_[0]} eq 'nil'; $_[0]},
                                     '<<'   => sub {my $self = $_[0]; sub {
                                                 my $value = $_[0]->eval();
                                                 my $output = ref $value eq 'number' ? chr $$value : $value->serialize();
-                                                open my $fh, '>>', $$self->serialize();
-                                                print $fh $output;
-                                                close $fh;
+
+                                                if (ref $$self eq 'nil') {
+                                                  print STDOUT $output;
+                                                } else {
+                                                  open my $fh, '>>', $$self->serialize();
+                                                  print $fh $output;
+                                                  close $fh;
+                                                }
+
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
 
 symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
-__9VdUNxfHSmBAtQZ8d4DQyhiF/OobXC9IsqD4ld7VfHA
+__5/WXHaamE9qH4woaWyQnf+cVLgovlr7bUsR3yfN71iA
 
 meta::library('reader', <<'__4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE');
 package reader;
@@ -934,7 +973,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__BQFKYPAzwWocfobIZuuHUxcoQvvpjAQu6R43DXeMNDE');
+meta::vim_highlighter('gnarly', <<'__907YJSe4mHsvUaHb4r7lOMbhUzzse46E7X3ozu4wrlQ');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -947,31 +986,40 @@ endif
 
 set iskeyword=33-39,42-126,128-255
 
-syn keyword gnarlyBuiltins      o' beta placeholder contained
-syn keyword gnarlyFunctions     bind unbind value gensym counter trace type <= : contained
-syn keyword gnarlyUserFunctions ' '' :: o tr fn :< :> :<' :>' ::< ::> # '< '> '>' == < > >= != true false let en qn def contained
-syn match   gnarlyNumber        /\<-\?[0-9.]\+\>/ contained
-syn match   gnarlyParens        /[()]/ contained
+syn keyword gnarlyBuiltins         o' beta placeholder contained
+syn keyword gnarlyMethods          bind unbind value head tail contained
+syn keyword gnarlyFunctions        gensym counter trace type cons : contained
+syn keyword gnarlyUserFunctions    ' '' :: o tr fn :< :> :<' :>' ::< ::> # '< '> '>' let en qn def contained
+syn keyword gnarlyBooleans         k k' k: k:'
+syn match   gnarlyNumbers          /\<-\?[0-9.]\+\>/ contained
+syn match   gnarlyParens           /[()]/ contained
 
-syn match   gnarlyCommentHeadings /^\s*- .\{,80\}\.$/ contained
+syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
+syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' contained
+syn keyword gnarlyConditionals     cond contained
 
-syn cluster gnarlySyntax        add=gnarlyBuiltins,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumber,gnarlyParens
+syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
+syn cluster gnarlySyntax add=gnarlyBooleanFunctions,gnarlyListFunctions,gnarlyConditionals
 
 syn region  gnarlyCodeRegion    start=/^\s*(/     end=/^$/ contains=@gnarlySyntax transparent fold
-syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold contains=gnarlyCommentHeadings
+syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold
 
-hi link gnarlyCommentRegion   Comment
-hi link gnarlyCommentHeadings Special
-hi link gnarlyBuiltins        Keyword
-hi link gnarlyFunctions       Keyword
-hi link gnarlyUserFunctions   Keyword
-hi link gnarlyNumber          Number
-hi link gnarlyParens          Special
+hi link gnarlyBooleans         Boolean
+hi link gnarlyBooleanFunctions Operator
+hi link gnarlyListFunctions    Operator
+hi link gnarlyCommentRegion    Comment
+hi link gnarlyBuiltins         Keyword
+hi link gnarlyFunctions        Keyword
+hi link gnarlyConditionals     Keyword
+hi link gnarlyMethods          Keyword
+hi link gnarlyUserFunctions    Keyword
+hi link gnarlyNumbers          Number
+hi link gnarlyParens           Special
 
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__BQFKYPAzwWocfobIZuuHUxcoQvvpjAQu6R43DXeMNDE
+__907YJSe4mHsvUaHb4r7lOMbhUzzse46E7X3ozu4wrlQ
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
