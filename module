@@ -484,7 +484,7 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__k/HoqpY+W5No6baZefq+HYL8jLnzLJuSF8PqNed8Apg');
+meta::function('repl', <<'__A1llyl3atQWwrYpg5FrY5DKtHow/0JquGGmPdOtYfq8');
 my ($name, @options) = @_;
 
 use Term::ReadLine;
@@ -492,13 +492,13 @@ use Term::ReadLine;
 my $term = new Term::ReadLine "$0 repl for $name";
 $term->ornaments(0);
 my $OUT    = $term->OUT || \*STDOUT;
-my $prompt = "[\033[1;32mrepl\033[0;0m] " . &{'api-name'}() . "/$name> ";
+my $prompt = &{'api-name'}() . "/$name> ";
 
 terminal::message('repl', 'initializing symbol table');
 types::clear_symbols;
+types::load_symbols $name if $name;
 types::initialize_symbols;
 types::initialize_debugging_symbols if grep /^debug$/, @options;
-types::load_symbols $name;
 
 terminal::message('repl', 'running session');
 run($name);
@@ -506,15 +506,17 @@ run($name);
 terminal::message('repl', 'ready');
 while (defined ($_ = $term->readline($prompt))) {
   my $result = eval {reader::read_form($_)->eval()->serialize()};
-  $@ ? terminal::message('error', $@) : terminal::message('result', $result);
+  chomp $@ and $@ ? terminal::message('error', $@) : terminal::message('result', $result);
 }
 
 print "\n";
-terminal::message('repl', 'storing symbol table');
-types::store_symbols $name if $name;
+if ($name) {
+  terminal::message('repl', 'storing symbol table');
+  types::store_symbols $name;
+}
 
 terminal::message('repl', 'exiting');
-__k/HoqpY+W5No6baZefq+HYL8jLnzLJuSF8PqNed8Apg
+__A1llyl3atQWwrYpg5FrY5DKtHow/0JquGGmPdOtYfq8
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -724,10 +726,9 @@ meta::issue('bugs', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::issue('test-cases', <<'__MXXSP54qIKQJy0L2vfZ/zMr5qgls+FTPZxXODvE+6ug');
+meta::issue('test-cases', <<'__KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs');
 Static importing
-Document parsing and paragraph type detection
-__MXXSP54qIKQJy0L2vfZ/zMr5qgls+FTPZxXODvE+6ug
+__KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs
 
 meta::issue('todos', <<'__xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ');
 Add dependency processing
@@ -986,7 +987,7 @@ sub read_document {
 }
 __4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE
 
-meta::library('terminal', <<'__3ctzWUIwAT+mFEeNK5/KOeM8a9rqM6ARzWWh6R8NjOQ');
+meta::library('terminal', <<'__0fih0iJ3QGHvDC80P3LSMxLi50NhBrZNbPnVVyuuTog');
 # Functions for nice-looking terminal output.
 
 package terminal;
@@ -1007,9 +1008,9 @@ my %default_colors = (repl    => green,
 sub message {
   my ($prefix, $message) = @_;
   my $color = $default_colors{$prefix};
-  print "[\033[${color}m$prefix\033[0;0m]: $message\n";
+  print "[\033[${color}m$prefix\033[0;0m] $message\n";
 }
-__3ctzWUIwAT+mFEeNK5/KOeM8a9rqM6ARzWWh6R8NjOQ
+__0fih0iJ3QGHvDC80P3LSMxLi50NhBrZNbPnVVyuuTog
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
