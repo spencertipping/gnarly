@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__VL6xU98RMGHqD4HbYlgoMZhC5tG3zHObILkqI5aa6r4');
+meta::code('source', <<'__nOQrertK+u4oWExoHTFShAToWN6PzEvvHkLdkAu9ieA');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -292,7 +292,8 @@ operator. Deriving the other operators is trivial given this one, and it also pr
   (def <  (fn x (fn y (&& (x <= y) (! (y <= x))))))
   (def >  (fn x (fn y (&& (y <= x) (! (x <= y))))))
   (def >= (fn x (fn y (y <= x))))
-  (def != (fn x (fn y (! (x == y)))))
+  (def <= (fn x (fn y (x <= y))))
+  (def != (fn x (fn y (! (== x y)))))
 
 Lists.
 
@@ -306,11 +307,24 @@ Lists.
   (def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head))))))
   (def reverse  (reverse' :))
 
+  (def list ('> (* ::)))
+  (def cons' (cons :))
+
+Strings.
+Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
+isn't too hard either; you can reduce the list under (x + (32 @) + y) -- the 32 @ produces a space. The most common case is wanting to pass a string to a
+function; for this you want to right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that
+folds the list into a string, and $'>, which right-quotes the result of right-composing the string generator onto a function.
+
+  (def $   (o / _ (_ + (32 @) +)))
+  (def $*  (o $ list))
+  (def $'> (fn f (o f ('> $))))
+
 Cond.
 This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
 returned. The internal workings below can be read as the following in English: "evaluate the tail of the first expression whose tail of whose head is true."
 
-  (def cond (qn options (:: (* (_ (_ tail)) (% (_ (:: (_ head tail))) (reverse options)) tail)))
+  (def cond (qn options (:: (o * _ (_ tail) (o % _ (:: (_ head tail)) (reverse options)) tail))))
 
 Numbers.
 
@@ -329,25 +343,57 @@ State.
                                               ((== method (' <<))     (fn v (k:' (s bind v) (self value))))
                                               ((== method (' symbol)) s)
                                               ((== method (' unbind)) (o (s unbind) (self unbind))))))))))
-__VL6xU98RMGHqD4HbYlgoMZhC5tG3zHObILkqI5aa6r4
 
-meta::code('tests', <<'__m6+oJxwoZaK1TMUfaV+FgxyaXqlCLt6Lb4BRNC4oCpw');
-Unit tests for this module. Integration tests should go into code::integration-tests.
-__m6+oJxwoZaK1TMUfaV+FgxyaXqlCLt6Lb4BRNC4oCpw
+Assertions.
+Basic things to assist testing.
+
+  (def fail$  ($'> fail))
+  (def assert (qn predicate (qn e1 (qn e2
+    (cond (((:: (* :: (list (predicate e1 e2)))) :))
+           (k                                    (fail ($ (o (* serialize) list (predicate e1 e2))))))))))
+__nOQrertK+u4oWExoHTFShAToWN6PzEvvHkLdkAu9ieA
+
+meta::code('tests', <<'__6Rm/JZ87noPe4lMrwfsNVKkSJeV0DwS/PArqOCqpsns');
+Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
+If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
+tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
+make sure that the assumptions being made are basically true.
+
+  (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4)) == 10 : fail)
+__6Rm/JZ87noPe4lMrwfsNVKkSJeV0DwS/PArqOCqpsns
+
+meta::configuration(':main', <<'__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg');
+types::clear_symbols;
+types::initialize_symbols;
+types::initialize_debugging_symbols;
+
+run('dependencies', 'source');
+__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg
+
+meta::configuration(':test', <<'__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE');
+&{':main'}();
+run ('tests', 'integration-tests');
+__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE
+
+meta::configuration(':unit', <<'__wND4NViMm/i0ZU0WfTlpxKfM7j6fEcywfS/Khak7i8g');
+&{':main'}();
+run('tests');
+__wND4NViMm/i0ZU0WfTlpxKfM7j6fEcywfS/Khak7i8g
 
 meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('meta-associations', <<'__kVffjc6irPQVBintvaQyaR90XJ4gIZIYiWKMIFPuioA');
+meta::data('meta-associations', <<'__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U');
 ^function:: .pl
 ^library:: .pl
 ^internal_function:: .pl
 ^meta:: .pl
 ^bootstrap:: .pl
+^configuration:: .pl
 ^code:: .gnarly
 ^vim_highlighter:: .vim
-__kVffjc6irPQVBintvaQyaR90XJ4gIZIYiWKMIFPuioA
+__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U
 
 meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
 my ($filename) = @_;
@@ -484,7 +530,7 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__A1llyl3atQWwrYpg5FrY5DKtHow/0JquGGmPdOtYfq8');
+meta::function('repl', <<'__nAwCtE78id76mhk6853U/PECvBwkR+0AtRX59pXFPCg');
 my ($name, @options) = @_;
 
 use Term::ReadLine;
@@ -501,12 +547,12 @@ types::initialize_symbols;
 types::initialize_debugging_symbols if grep /^debug$/, @options;
 
 terminal::message('repl', 'running session');
-run($name);
+run($name) if $name;
 
 terminal::message('repl', 'ready');
 while (defined ($_ = $term->readline($prompt))) {
   my $result = eval {reader::read_form($_)->eval()->serialize()};
-  chomp $@ and $@ ? terminal::message('error', $@) : terminal::message('result', $result);
+  $@ ? chomp $@ && terminal::message('error', $@) : terminal::message('result', $result);
 }
 
 print "\n";
@@ -516,7 +562,7 @@ if ($name) {
 }
 
 terminal::message('repl', 'exiting');
-__A1llyl3atQWwrYpg5FrY5DKtHow/0JquGGmPdOtYfq8
+__nAwCtE78id76mhk6853U/PECvBwkR+0AtRX59pXFPCg
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
@@ -526,9 +572,9 @@ for my $to_be_deleted (@_) {
 delete @data{@_};
 __7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww
 
-meta::function('run', <<'__FMEGtHmllv/VCSDqZoJ72pSAMmn4rqikSbBLvsu8RuM');
-join "\n", map $_->eval()->serialize(), map reader::read_document(retrieve("code::$_")), @_;
-__FMEGtHmllv/VCSDqZoJ72pSAMmn4rqikSbBLvsu8RuM
+meta::function('run', <<'__2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU');
+shell::load_interactively(@_);
+__2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU
 
 meta::function('save', <<'__uWXGnrQr+A7Cl0zcsDuiokbWAw1XdMdjeq9gDcTMJIw');
 my $serialized_data = serialize();
@@ -561,8 +607,10 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__6NZftjRE+lsE0a2W1BkCzwo78/IYQgOmo6CmA0BYozc');
+meta::function('shell', <<'__/ngZPMCrtebnOWOaGCxVrlsYco0Gb8wYrK0HAcv6SpM');
 use Term::ReadLine;
+
+reload();
 
 my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
@@ -596,7 +644,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = &{'api-name'}() . '$ ';
 }
-__6NZftjRE+lsE0a2W1BkCzwo78/IYQgOmo6CmA0BYozc
+__/ngZPMCrtebnOWOaGCxVrlsYco0Gb8wYrK0HAcv6SpM
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -735,24 +783,22 @@ Add dependency processing
 Unit testing framework image
 __xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ
 
-meta::library('datatypes', <<'__6w7gNnehaPIgNxUjoq1lWVh5r9VtDjO6E4V1s047W3Y');
+meta::library('datatypes', <<'__3r8+ZtgXVO0ywdGmd45IhSRGw2G6JD7QNpRiH/JDWME');
 # Data type definitions for the interpreter.
 
 package types;
 
-use Memoize;
-
 my %symbol_table;
 
 sub clear_symbols {%symbol_table = ()}
-sub store_symbols {my %h = %symbol_table; $transients{$_[0]} = \%h}
-sub load_symbols  {%symbol_table = %{$transients{$_[0]}} if ref $transients{$_[0]} eq 'HASH'}
+sub store_symbols {my %h = %symbol_table; $transient{$_[0]} = \%h}
+sub load_symbols  {%symbol_table = %{$transient{$_[0]}} if ref $transient{$_[0]} eq 'HASH'}
 
 sub initialize_debugging_symbols {
   symbol('counter')->bind(counter(0));
   symbol('trace')->bind(lambda('[trace]', sub {
     my $value = $_[0]->eval();
-    print "  - \033[1;34m" . $_[0]->serialize() . "\033[0;0m\n";
+    terminal::message('trace', $_[0]->serialize());
     $value;
   }));
 }
@@ -763,16 +809,16 @@ sub initialize_symbols {
   symbol('gensym')->bind(lambda('[gensym]', \&gensym));
   symbol('placeholder')->bind(lambda('[placeholder]', sub {placeholder($_[0]->eval())}));
 
-  symbol('beta')->bind(lambda('[beta]', memoize(sub {
+  symbol('beta')->bind(lambda('[beta]', sub {
     my $symbol = $_[0];
     die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
-    lambda("[beta $$symbol -> ...]", memoize(sub {
+    lambda("[beta $$symbol -> ...]", sub {
       my $body        = $_[0];
       my $beta_symbol = symbol("β");
       my $placeholder = placeholder(gensym(placeholder($beta_symbol)));
       expander($placeholder, replace_in_form($symbol, $placeholder, $body));
-    }, NORMALIZER => sub {$$symbol . "\n" . $_[0]->serialize()}));
-  })));
+    });
+  }));
 
   symbol('cons')->bind(lambda('[cons]', sub {
     my $head = $_[0]->eval();
@@ -781,24 +827,33 @@ sub initialize_symbols {
     });
   }));
 
-  symbol('o\'')->bind(lambda('[o\']', memoize(sub {
+  symbol('o\'')->bind(lambda('[o\']', sub {
     my $f = $_[0]->eval();
-    lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, memoize(sub {
+    lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, sub {
       my $g = $_[0]->eval();
       lambda(sub {'(' . $f->serialize() . ' o\' ' . $g->serialize() . ')'}, sub {
         $f->call($g->call($_[0]));
       });
-    }, NORMALIZER => sub {$f->serialize() . "\n" . $_[0]->serialize()}));
-  }, NORMALIZER => sub {$_[0]->serialize()})));
+    });
+  }));
 
   symbol(':')->bind(nil());
 
+  symbol('serialize')->bind(lambda('[serialize]', sub {symbol($_[0]->eval()->serialize())}));
+
   symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
+
+  symbol('fail')->bind(lambda('[fail]', sub {
+    my $reason = $_[0]->eval()->serialize();
+    terminal::message('fail', $reason);
+    $transient{'reason-for-failure'} = $reason;
+    nil();
+  }));
 }
 
 sub deftype {
   my ($name, %members) = @_;
-  *{"types::$name"} = memoize(sub {bless $members{'new'}->(@_), $name});
+  *{"types::$name"} = sub {bless $members{'new'}->(@_), $name};
   *{"${name}::$_"} = $members{$_} for keys %members;
 }
 
@@ -825,7 +880,7 @@ sub method {
 deftype 'lambda', new       => sub {[@_]},
                   eval      => $id,
                   call      => sub {$_[0][1]->($_[1])},
-                  serialize => memoize(sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]});
+                  serialize => sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]};
 
 my $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
 my $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
@@ -868,19 +923,18 @@ sub replace_in_form {
   return cons(replace_in_form($search, $replace, $x->[0]), replace_in_form($search, $replace, $x->[1])) if ref $x eq 'cons';
   return $x == $search || (ref $search eq 'symbol' && ref $x eq 'symbol' && $$search eq $$x) ? $replace : $x;
 }
-memoize('replace_in_form');
 
 deftype 'expander', new => sub {[@_]},
                     eval => $id,
-                    call => memoize(sub {
+                    call => sub {
                       my ($placeholder, $form) = @{$_[0]};
                       my $value                = $_[1];
                       replace_in_form($placeholder, $value, $form);
-                    }),
-                    serialize => memoize(sub {
+                    },
+                    serialize => sub {
                       my ($placeholder, $form) = @{$_[0]};
                       '[' . $placeholder->serialize() . ' -> ' . $form->serialize() . ']';
-                    });
+                    };
 
 deftype 'counter', new => sub {\$_[0]},
                    eval => sub {counter(${$_[0]} + 1)},
@@ -895,7 +949,7 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                                     tail => sub {$_[0][1]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
-                serialize => memoize(sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'});
+                serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
 
 sub cons_from_array {
   return nil() unless @_;
@@ -917,6 +971,7 @@ sub number_op(&) {
 deftype 'number', new       => sub {\$_[0]},
                   eval      => $id,
                   call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[0]->eval()} ? $true : $false}},
+                                      '@'  => sub {symbol(chr ${$_[0]})},
                                       '+'  => number_op {$_[0]  + $_[1]},
                                       '-'  => number_op {$_[0]  - $_[1]},
                                       '*'  => number_op {$_[0]  * $_[1]},
@@ -949,7 +1004,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__6w7gNnehaPIgNxUjoq1lWVh5r9VtDjO6E4V1s047W3Y
+__3r8+ZtgXVO0ywdGmd45IhSRGw2G6JD7QNpRiH/JDWME
 
 meta::library('reader', <<'__4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE');
 package reader;
@@ -987,7 +1042,23 @@ sub read_document {
 }
 __4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE
 
-meta::library('terminal', <<'__0fih0iJ3QGHvDC80P3LSMxLi50NhBrZNbPnVVyuuTog');
+meta::library('shell', <<'__qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y');
+package shell;
+
+sub definitions {map reader::read_document(::retrieve("code::$_")), @_}
+
+sub load_interactively {
+  for (definitions @_) {
+    my $result = eval {$_->eval()};
+    chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
+    terminal::message('loader', $result->serialize()) unless $@;
+  }
+}
+
+sub load_quietly {map $_->eval()->serialize(), definitions @_}
+__qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y
+
+meta::library('terminal', <<'__9hRzQ+fI3iU3whG/a+vs5GjPGJgCcR++4XVopBOf+30');
 # Functions for nice-looking terminal output.
 
 package terminal;
@@ -1003,14 +1074,17 @@ use constant cyan   => "1;36";
 my %default_colors = (repl    => green,
                       result  => blue,
                       error   => red,
-                      warning => yellow);
+                      fail    => red,
+                      warning => yellow,
+                      loader  => green,
+                      trace   => cyan);
 
 sub message {
   my ($prefix, $message) = @_;
   my $color = $default_colors{$prefix};
   print "[\033[${color}m$prefix\033[0;0m] $message\n";
 }
-__0fih0iJ3QGHvDC80P3LSMxLi50NhBrZNbPnVVyuuTog
+__9hRzQ+fI3iU3whG/a+vs5GjPGJgCcR++4XVopBOf+30
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
