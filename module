@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__nOQrertK+u4oWExoHTFShAToWN6PzEvvHkLdkAu9ieA');
+meta::code('source', <<'__OIkwK+MV0PuKRiezsFM1lk4SLITyL1+omqvQRd4YBWs');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -334,6 +334,7 @@ Numbers.
   (def times_ (fn n (o (times n) _)))
 
 State.
+This doesn't work right now. Hopefully will get it ironed out soon.
 
   (def y (qn name (qn v (let s' (gensym (' y))
                         (s' bind ((en name v) s') value)))))
@@ -349,9 +350,9 @@ Basic things to assist testing.
 
   (def fail$  ($'> fail))
   (def assert (qn predicate (qn e1 (qn e2
-    (cond (((:: (* :: (list (predicate e1 e2)))) :))
-           (k                                    (fail ($ (o (* serialize) list (predicate e1 e2))))))))))
-__nOQrertK+u4oWExoHTFShAToWN6PzEvvHkLdkAu9ieA
+    (cond (((:: (* :: (list (predicate e1 e2)))) :)
+           (k                                    (o ('> fail) $ (* serialize (list (predicate e1 e2)))))))))))
+__OIkwK+MV0PuKRiezsFM1lk4SLITyL1+omqvQRd4YBWs
 
 meta::code('tests', <<'__6Rm/JZ87noPe4lMrwfsNVKkSJeV0DwS/PArqOCqpsns');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
@@ -1090,7 +1091,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__907YJSe4mHsvUaHb4r7lOMbhUzzse46E7X3ozu4wrlQ');
+meta::vim_highlighter('gnarly', <<'__Mfu8LDEtWULvQxNteSeNvcSKZ7qNFs9lsQ8OlRccN8w');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1105,14 +1106,14 @@ set iskeyword=33-39,42-126,128-255
 
 syn keyword gnarlyBuiltins         o' beta placeholder contained
 syn keyword gnarlyMethods          bind unbind value head tail contained
-syn keyword gnarlyFunctions        gensym counter trace type cons : contained
-syn keyword gnarlyUserFunctions    ' '' :: o tr fn :< :> :<' :>' ::< ::> # '< '> '>' let en qn def contained
+syn keyword gnarlyFunctions        gensym counter trace type cons fail serialize : contained
+syn keyword gnarlyUserFunctions    ' '' :: o tr fn :< :> :<' :>' ::< ::> # '< '> '>' let en qn def fail$ assert contained
 syn keyword gnarlyBooleans         k k' k: k:'
 syn match   gnarlyNumbers          /\<-\?[0-9.]\+\>/ contained
 syn match   gnarlyParens           /[()]/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
-syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' contained
+syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
 syn keyword gnarlyConditionals     cond contained
 
 syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
@@ -1136,7 +1137,7 @@ hi link gnarlyParens           Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__907YJSe4mHsvUaHb4r7lOMbhUzzse46E7X3ozu4wrlQ
+__Mfu8LDEtWULvQxNteSeNvcSKZ7qNFs9lsQ8OlRccN8w
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
