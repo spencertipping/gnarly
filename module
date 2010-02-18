@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__OIkwK+MV0PuKRiezsFM1lk4SLITyL1+omqvQRd4YBWs');
+meta::code('source', <<'__40ksqWYV7CechiYd4ec4iWZrOu0XCgyMUR8AxqTKWwM');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -351,17 +351,17 @@ Basic things to assist testing.
   (def fail$  ($'> fail))
   (def assert (qn predicate (qn e1 (qn e2
     (cond (((:: (* :: (list (predicate e1 e2)))) :)
-           (k                                    (o ('> fail) $ (* serialize (list (predicate e1 e2)))))))))))
-__OIkwK+MV0PuKRiezsFM1lk4SLITyL1+omqvQRd4YBWs
+           (k                                    (o ('> fail) $ (++ (' (Assertion failed:)) (* serialize (list (predicate (:: e1) (:: e2)))))))))))))
+__40ksqWYV7CechiYd4ec4iWZrOu0XCgyMUR8AxqTKWwM
 
-meta::code('tests', <<'__6Rm/JZ87noPe4lMrwfsNVKkSJeV0DwS/PArqOCqpsns');
+meta::code('tests', <<'__jOSH2crVk9Vq65g2O3IOi+No6SveQjfaYwF9bDvpWAo');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
 make sure that the assumptions being made are basically true.
 
-  (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4)) == 10 : fail)
-__6Rm/JZ87noPe4lMrwfsNVKkSJeV0DwS/PArqOCqpsns
+  (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
+__jOSH2crVk9Vq65g2O3IOi+No6SveQjfaYwF9bDvpWAo
 
 meta::configuration(':main', <<'__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg');
 types::clear_symbols;
@@ -1096,7 +1096,7 @@ sub load_interactively {
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
 __qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y
 
-meta::library('terminal', <<'__9hRzQ+fI3iU3whG/a+vs5GjPGJgCcR++4XVopBOf+30');
+meta::library('terminal', <<'__OXdCZNMv5zcrBfRFJjujigP9i5NFYyuKYSUvO/hmOV8');
 # Functions for nice-looking terminal output.
 
 package terminal;
@@ -1109,12 +1109,8 @@ use constant blue   => "1;34";
 use constant purple => "1;35";
 use constant cyan   => "1;36";
 
-my %default_colors = (repl    => green,
-                      result  => blue,
-                      error   => red,
-                      fail    => red,
-                      warning => yellow,
-                      loader  => green,
+my %default_colors = (repl    => green, result  => blue,   error   => red,
+                      fail    => red,   warning => yellow, loader  => green,
                       trace   => cyan);
 
 sub message {
@@ -1122,7 +1118,7 @@ sub message {
   my $color = $default_colors{$prefix};
   print "[\033[${color}m$prefix\033[0;0m] $message\n";
 }
-__9hRzQ+fI3iU3whG/a+vs5GjPGJgCcR++4XVopBOf+30
+__OXdCZNMv5zcrBfRFJjujigP9i5NFYyuKYSUvO/hmOV8
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
