@@ -608,7 +608,7 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__/ngZPMCrtebnOWOaGCxVrlsYco0Gb8wYrK0HAcv6SpM');
+meta::function('shell', <<'__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY');
 use Term::ReadLine;
 
 reload();
@@ -617,6 +617,8 @@ my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
 my $prompt = &{'api-name'}() . '$ ';
 my $OUT = $term->OUT || \*STDOUT;
+
+$term->Attribs->{attempted_completion_function} = \&complete;
 
 while (defined ($_ = $term->readline($prompt))) {
   my $command_line = $_;
@@ -645,7 +647,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = &{'api-name'}() . '$ ';
 }
-__/ngZPMCrtebnOWOaGCxVrlsYco0Gb8wYrK0HAcv6SpM
+__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -691,6 +693,41 @@ my ($name) = @_;
 $name =~ s/^[^:]*:://;
 $name;
 __T4JEqOUYjMzssdVwV/rdgAhvr0Vz9TQUo0noTdeBLxw
+
+meta::internal_function('complete', <<'__lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg');
+my @functions  = sort keys %externalized_functions;
+my @attributes = sort keys %data;
+
+sub match {
+  my ($text, @options) = @_;
+  my @matches = sort grep /^$text/, @options;
+
+  if    (@matches == 0) {return undef;}
+  elsif (@matches == 1) {return $matches [0];}
+  elsif (@matches >  1) {return ((longest ($matches [0], $matches [@matches - 1])), @matches);}
+}
+
+sub longest {
+  my ($s1, $s2) = @_; 
+  return substr ($s1, 0, length $1) if ($s1 ^ $s2) =~ /^(\0*)/;
+  return ''; 
+}
+
+# This is another way to implement autocompletion.
+#
+# my $attribs = $term->Attribs;
+# $attribs->{completion_entry_function} = $attribs->{list_completion_function};
+# $attribs->{completion_word} = [sort keys %data, sort keys %externalized_functions];
+
+my ($text, $line) = @_;
+if ($line =~ / /) {
+  # Start matching attribute names.
+  match ($text, @attributes);
+} else {
+  # Start of line, so it's a function.
+  match ($text, @functions);
+}
+__lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg
 
 meta::internal_function('execute', <<'__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE');
 my ($name, %options) = @_;
