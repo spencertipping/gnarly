@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__3YutL7pi2k3WlbD8YgNJPiNJVxFdA+EToRBmSmb0Fdc');
+meta::code('source', <<'__6V/mWBYzez43NPveTS9DUaSeCjg5Xrfz2T2wOjMV52o');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -296,6 +296,19 @@ operator. Deriving the other operators is trivial given this one, and it also pr
   (def != (fn x (fn y (! (== x y)))))
 
 Lists.
+Here's what these functions are for.
+
+  :? = a null check -- it behaves much like the ternary operator in C, but instead of zero/nonzero it does null/non-null.
+  *  = map    -- usage is * function list. The mnemonic is that functions can distribute across lists via multiplication.
+  %  = filter -- usage is % function list. The idea is that certain elements are inside some equivalence class, and others aren't. (Modulus is one example.)
+  /  = reduce -- usage is / function list. For some reason I thought / felt like a fold operator, but I honestly don't know why.
+  ++ = append -- usage is ++ list1 list2.
+
+  reverse' is a helper function for reverse. It's a hack because right now I don't have letrec or a Y combinator.
+  reverse reverses a list in linear time.
+
+  list is a list constructor that behaves just as it does in Lisp or Scheme, except that it needs extra parens: (list (1 2 3)). It constructs the list in
+  left-cons form, just like all lists in Gnarly: (((: . 1) . 2) . 3)
 
   (def :? (fn xs (== (type xs) (' nil))))
 
@@ -308,13 +321,16 @@ Lists.
   (def reverse  (reverse' :))
 
   (def list ('> (* ::)))
-  (def cons' (cons :))
 
 Strings.
 Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
-isn't too hard either; you can reduce the list under (x + (32 @) + y) -- the 32 @ produces a space. The most common case is wanting to pass a string to a
-function; for this you want to right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that
-folds the list into a string, and $'>, which right-quotes the result of right-composing the string generator onto a function.
+isn't too hard either; you can reduce the list under (x + (' " ") + y). The most common case is wanting to pass a string to a function; for this you want to
+right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that folds the list into a string,
+and $'>, which right-quotes the result of right-composing the string generator onto a function.
+
+Because I'm a softie, you can also use escaped symbol literals in the language. Note, however, that they aren't strings! The expression "foo bar bif" is a
+symbol just as much as foo_bar_bif is, and both will be evaluated if given to a function. (Both will complain, too, if you haven't defined them.) So if you want
+a "string" to behave like a proper string literal, it needs to be quoted, as in (' "foo bar").
 
   (def $   (o / _ (_ + (' " ") +)))
   (def $*  (o $ list))
@@ -340,7 +356,8 @@ those constructors; for a beta expander, !!< gives you the symbol being expanded
 left, function, and !!> gives you the inner.
 
 Don't tell anyone, but these also work for cons cells -- !!< is the head and !!> is the tail. But you shouldn't be using these functions that way, and you
-should forget that I said any of this. If you happen to use these functions on a regular symbol or other atomic value, bad things will happen.
+should forget that I said any of this. So don't use them, or if you must, use them only on expanders and compositions. If you use these functions on a regular
+symbol or other atomic value, bad things will happen.
 
   (defperl !!< "${$_[0]->eval()}[0]")
   (defperl !!> "${$_[0]->eval()}[1]")
@@ -354,17 +371,18 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed: ") (* serialize (list (predicate e1 e2))))))))))))
-__3YutL7pi2k3WlbD8YgNJPiNJVxFdA+EToRBmSmb0Fdc
+__6V/mWBYzez43NPveTS9DUaSeCjg5Xrfz2T2wOjMV52o
 
-meta::code('tests', <<'__XtEuiMZw9Ryts1KQxAOJ3smQdnu0OQg+ipXNavfeFR0');
+meta::code('tests', <<'__a2l1woaJr4QPSMsN8b6UYtWNZcQMXVWXXCpEeoJseFE');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
 make sure that the assumptions being made are basically true.
 
   (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
-  (assert == 1 2)
-__XtEuiMZw9Ryts1KQxAOJ3smQdnu0OQg+ipXNavfeFR0
+
+  (assert == (!!> (beta x y)) (' y))
+__a2l1woaJr4QPSMsN8b6UYtWNZcQMXVWXXCpEeoJseFE
 
 meta::configuration(':main', <<'__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg');
 types::clear_symbols;
@@ -378,11 +396,6 @@ meta::configuration(':test', <<'__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE');
 &{':main'}();
 run ('tests', 'integration-tests');
 __Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE
-
-meta::configuration(':unit', <<'__wND4NViMm/i0ZU0WfTlpxKfM7j6fEcywfS/Khak7i8g');
-&{':main'}();
-run('tests');
-__wND4NViMm/i0ZU0WfTlpxKfM7j6fEcywfS/Khak7i8g
 
 meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
@@ -824,7 +837,7 @@ Add dependency processing
 Unit testing framework image
 __xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ
 
-meta::library('datatypes', <<'__XMrMzPDvaUV+bWJwaHlJAXJj/9rn1FBKii+TUcDsHZU');
+meta::library('datatypes', <<'__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g');
 # Data type definitions for the interpreter.
 
 package types;
@@ -965,8 +978,7 @@ sub gensym {
 deftype 'placeholder',
   new       => sub {\$_[0]},
   eval      => sub {${$_[0]}},
-  call      => sub {method(unpack => sub {${$_[0]}},
-                           ''     => sub {$_[0]->eval()->call(${$_[0]})})},
+  call      => sub {$_[0]->eval()->call($_[1])},
   serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
 
 sub replace_in_form {
@@ -1055,7 +1067,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__XMrMzPDvaUV+bWJwaHlJAXJj/9rn1FBKii+TUcDsHZU
+__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g
 
 meta::library('reader', <<'__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw');
 package reader;
@@ -1097,23 +1109,26 @@ sub read_document {
 }
 __czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
 
-meta::library('shell', <<'__qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y');
+meta::library('shell', <<'__9udSyEa7IJR3ml+JXZPc3AYGwxgPXBw+9lVYpqDLLR4');
 package shell;
 
 sub definitions {map reader::read_document(::retrieve("code::$_")), @_}
 
 sub load_interactively {
-  for (definitions @_) {
-    my $result = eval {$_->eval()};
-    chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
-    terminal::message('loader', $result->serialize()) unless $@;
+  for my $document (@_) {
+    terminal::message('shell', "loading module $document");
+    for (definitions($document)) {
+      my $result = eval {$_->eval()};
+      chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
+      terminal::message('loader', $result->serialize()) unless $@;
+    }
   }
 }
 
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
-__qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y
+__9udSyEa7IJR3ml+JXZPc3AYGwxgPXBw+9lVYpqDLLR4
 
-meta::library('terminal', <<'__ZFI0gbWUaHUIL4JuyJaKZ+M1QBtJVMg0lD9HuJV+LRI');
+meta::library('terminal', <<'__UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs');
 # Functions for nice-looking terminal output.
 
 package terminal;
@@ -1128,14 +1143,19 @@ use constant cyan   => "1;36";
 
 my %default_colors = (repl    => green, result  => blue,   error   => red,
                       fail    => red,   warning => yellow, loader  => green,
-                      trace   => cyan,  eval    => yellow, call    => yellow);
+                      shell   => blue,  trace   => cyan,   eval    => yellow,
+                      call    => yellow);
+
+my $longest_prefix = 0;
+$longest_prefix = $longest_prefix < $_ ? $_ : $longest_prefix for map length, keys %default_colors;
 
 sub message {
   my ($prefix, $message) = @_;
   my $color = $default_colors{$prefix};
-  print "[\033[${color}m$prefix\033[0;0m] $message\n";
+  my $padding = ' ' x ($longest_prefix - length $prefix);
+  print "${padding}[\033[${color}m$prefix\033[0;0m] $message\n";
 }
-__ZFI0gbWUaHUIL4JuyJaKZ+M1QBtJVMg0lD9HuJV+LRI
+__UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
