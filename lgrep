@@ -143,9 +143,9 @@ meta::attribute('module-api-version', <<'__0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9
 1.0
 __0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9rvgBfY
 
-meta::attribute('module-name', <<'__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw');
-core
-__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw
+meta::attribute('module-name', <<'__GbNBRxTUQrsPsWem2WYxujhO/1LnuyhH2j/Sv/BtdcA');
+lgrep
+__GbNBRxTUQrsPsWem2WYxujhO/1LnuyhH2j/Sv/BtdcA
 
 meta::attribute('module-revision', <<'__X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k');
 0
@@ -185,10 +185,6 @@ meta::define_form 'meta', sub {
 };
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
-
-meta::code('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
-
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
@@ -385,30 +381,30 @@ make sure that the assumptions being made are basically true.
   (assert == 2 2)
 __hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ
 
-meta::configuration(':check', <<'__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU');
-shell::initialize_symbol_table;
+meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
+shell::initialize_symbol_table();
 delete $transient{'last-failure'};
 
-eval {shell::load_quietly('dependencies', 'source', 'tests', 'integration-tests')};
+eval {shell::load_quietly('cached-dependencies', 'source', 'tests', 'integration-tests')};
 terminal::message('error', $@) if $@;
 '';     # Return silence on success.
-__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU
+__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o
 
-meta::configuration(':export', <<'__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08');
+meta::configuration(':export', <<'__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg');
 &{':check'}();
-return join "\n", retrieve('code::dependencies', 'code::source') unless $transient{'last-failure'};
+return join("\n", retrieve('code::cached-dependencies', 'code::source')) . "\n\n" unless $transient{'last-failure'};
 return '';
-__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08
+__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg
 
-meta::configuration(':main', <<'__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY');
-shell::initialize_symbol_table;
-run('dependencies', 'source');
-__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY
+meta::configuration(':main', <<'__/vfwogrZnxJ3KpphPp94bXOA6L9YLCBkmxZkE/4LRUc');
+shell::initialize_symbol_table();
+run('cached-dependencies', 'source');
+__/vfwogrZnxJ3KpphPp94bXOA6L9YLCBkmxZkE/4LRUc
 
-meta::configuration(':test', <<'__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE');
+meta::configuration(':test', <<'__LdPLavysWyPM5r4ze8pyazYiWAfGW+7BSHx7ItKQOfI');
 &{':main'}();
-run ('tests', 'integration-tests');
-__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE
+run('tests', 'integration-tests');
+__LdPLavysWyPM5r4ze8pyazYiWAfGW+7BSHx7ItKQOfI
 
 meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
@@ -519,7 +515,7 @@ my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
 
-meta::function('load-dependencies', <<'__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE');
+meta::function('load-dependencies', <<'__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4');
 my $errors = '';
 for (grep length, split /\n/, &{'dependencies'}()) {
   my $output = `$_ :check`;
@@ -528,9 +524,9 @@ for (grep length, split /\n/, &{'dependencies'}()) {
 }
 
 return terminal::message('error', "dependency loading failed:\n$errors") if $errors;
-associate('code::dependencies', join("\n\n", map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
+associate('code::cached-dependencies', join('', map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
 terminal::message('loader', "imported dependencies");
-__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE
+__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -545,17 +541,21 @@ meta::function('ls-a', <<'__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18');
 join("\n", map {"  $_"} sort keys %data) . "\n";
 __6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18
 
-meta::function('mv', <<'__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y');
+meta::function('mv', <<'__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4');
 my ($from, $to) = @_;
 messages::error("The '$from' attribute does not exist.") unless grep $from, keys %data;
-$data{$to} = $data{$from};
-delete $data{$from};
-__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y
+associate($to, retrieve($from));
+rm($from);
+__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4
 
 meta::function('perl', <<'__Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA');
 my $result = eval($_[0]);
 $@ ? $@ : $result;
 __Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA
+
+meta::function('pop-state', <<'__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY');
+%data = %{pop @{$transient{'states'}}} if @{$transient{'states'}};
+__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY
 
 meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
 my ($class_name) = @_;
@@ -568,6 +568,12 @@ for (@attributes) {
   associate(basename($_), `$class_name cat "$_"`);
 }
 __ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg
+
+meta::function('push-state', <<'__ik0ofu7R8gHAKSmMjek79V+yfgdjdK5Jmtwf7h8SpJk');
+push @{$transient{'states'} = $transient{'states'} || []}, {%data};
+my $state_count = scalar @{$transient{'states'}};
+"There are now $state_count states on the stack.";
+__ik0ofu7R8gHAKSmMjek79V+yfgdjdK5Jmtwf7h8SpJk
 
 meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
@@ -650,10 +656,8 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY');
+meta::function('shell', <<'__y24Z0MyfVsS8IjvGqS/aSBwIs2L5yzllPmATpFIhCJg');
 use Term::ReadLine;
-
-reload();
 
 my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
@@ -689,7 +693,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = &{'api-name'}() . '$ ';
 }
-__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY
+__y24Z0MyfVsS8IjvGqS/aSBwIs2L5yzllPmATpFIhCJg
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
@@ -709,6 +713,14 @@ meta::function('unlock', <<'__08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA');
 my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
+
+meta::function('update-from', <<'__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g');
+# Upgrade all attributes that aren't customized. In this case, we want everything except for configuration::, code::, and attribute::.
+die "$_[0] does not seem to be working properly" unless `$_[0] state` =~ /^[A-Za-z0-9\/+]\n?/;
+&{'push-state'}();
+associate($_, `$_[0] cat $_`) for grep ! (/^configuration::/ || /^code::/ || /^attribute::/), split /\n/, `$_[0] ls-a`;
+"Imported from $_[0]. Run pop-state to undo this change.";
+__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
@@ -771,12 +783,12 @@ if ($line =~ / /) {
 }
 __lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg
 
-meta::internal_function('execute', <<'__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE');
+meta::internal_function('execute', <<'__Ge94WTpmLuqsMDappj5G/G2BKILAE0GjeCqAeHLW6fQ');
 my ($name, %options) = @_;
 my $namespace = namespace($name);
 eval {&{"meta::$namespace"}(basename($name), retrieve($name))};
-carp $@ if $@ && $options{'carp'};
-__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE
+warn $@ if $@ && $options{'carp'};
+__Ge94WTpmLuqsMDappj5G/G2BKILAE0GjeCqAeHLW6fQ
 
 meta::internal_function('file::read', <<'__ZxBqZsMZZRuLMQp8Sy//ZsoAvriDebjYLGAX7p7AxXg');
 my $name = shift;
@@ -1187,10 +1199,9 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
+meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
-core
-__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::vim_highlighter('gnarly', <<'__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ');
 " Gnarly

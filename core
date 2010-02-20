@@ -186,10 +186,6 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
-
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
-
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
@@ -385,25 +381,25 @@ make sure that the assumptions being made are basically true.
   (assert == 2 2)
 __hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ
 
-meta::configuration(':check', <<'__93rJQrM1HLXDzjNQ4uwveo63uoPfrbEVxUjMlvErgzU');
+meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
 delete $transient{'last-failure'};
 
-eval {shell::load_quietly('dependencies', 'source', 'tests', 'integration-tests')};
+eval {shell::load_quietly('cached-dependencies', 'source', 'tests', 'integration-tests')};
 terminal::message('error', $@) if $@;
 '';     # Return silence on success.
-__93rJQrM1HLXDzjNQ4uwveo63uoPfrbEVxUjMlvErgzU
+__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o
 
-meta::configuration(':export', <<'__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08');
+meta::configuration(':export', <<'__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg');
 &{':check'}();
-return join "\n", retrieve('code::dependencies', 'code::source') unless $transient{'last-failure'};
+return join("\n", retrieve('code::cached-dependencies', 'code::source')) . "\n\n" unless $transient{'last-failure'};
 return '';
-__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08
+__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg
 
-meta::configuration(':main', <<'__DRlHMG/qL9CuzT3dc0hugVijRagXv85t7D/wI2U6Ot4');
+meta::configuration(':main', <<'__/vfwogrZnxJ3KpphPp94bXOA6L9YLCBkmxZkE/4LRUc');
 shell::initialize_symbol_table();
-run('dependencies', 'source');
-__DRlHMG/qL9CuzT3dc0hugVijRagXv85t7D/wI2U6Ot4
+run('cached-dependencies', 'source');
+__/vfwogrZnxJ3KpphPp94bXOA6L9YLCBkmxZkE/4LRUc
 
 meta::configuration(':test', <<'__LdPLavysWyPM5r4ze8pyazYiWAfGW+7BSHx7ItKQOfI');
 &{':main'}();
@@ -519,7 +515,7 @@ my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
 
-meta::function('load-dependencies', <<'__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE');
+meta::function('load-dependencies', <<'__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4');
 my $errors = '';
 for (grep length, split /\n/, &{'dependencies'}()) {
   my $output = `$_ :check`;
@@ -528,9 +524,9 @@ for (grep length, split /\n/, &{'dependencies'}()) {
 }
 
 return terminal::message('error', "dependency loading failed:\n$errors") if $errors;
-associate('code::dependencies', join("\n\n", map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
+associate('code::cached-dependencies', join('', map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
 terminal::message('loader', "imported dependencies");
-__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE
+__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -545,17 +541,21 @@ meta::function('ls-a', <<'__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18');
 join("\n", map {"  $_"} sort keys %data) . "\n";
 __6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18
 
-meta::function('mv', <<'__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y');
+meta::function('mv', <<'__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4');
 my ($from, $to) = @_;
 messages::error("The '$from' attribute does not exist.") unless grep $from, keys %data;
-$data{$to} = $data{$from};
-delete $data{$from};
-__PY7iwIY+6QtPN4V5hV4MOImRJVAKDkMmEKtkN34cv5Y
+associate($to, retrieve($from));
+rm($from);
+__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4
 
 meta::function('perl', <<'__Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA');
 my $result = eval($_[0]);
 $@ ? $@ : $result;
 __Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA
+
+meta::function('pop-state', <<'__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY');
+%data = %{pop @{$transient{'states'}}} if @{$transient{'states'}};
+__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY
 
 meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
 my ($class_name) = @_;
@@ -568,6 +568,12 @@ for (@attributes) {
   associate(basename($_), `$class_name cat "$_"`);
 }
 __ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg
+
+meta::function('push-state', <<'__ik0ofu7R8gHAKSmMjek79V+yfgdjdK5Jmtwf7h8SpJk');
+push @{$transient{'states'} = $transient{'states'} || []}, {%data};
+my $state_count = scalar @{$transient{'states'}};
+"There are now $state_count states on the stack.";
+__ik0ofu7R8gHAKSmMjek79V+yfgdjdK5Jmtwf7h8SpJk
 
 meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
@@ -707,6 +713,14 @@ meta::function('unlock', <<'__08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA');
 my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
+
+meta::function('update-from', <<'__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g');
+# Upgrade all attributes that aren't customized. In this case, we want everything except for configuration::, code::, and attribute::.
+die "$_[0] does not seem to be working properly" unless `$_[0] state` =~ /^[A-Za-z0-9\/+]\n?/;
+&{'push-state'}();
+associate($_, `$_[0] cat $_`) for grep ! (/^configuration::/ || /^code::/ || /^attribute::/), split /\n/, `$_[0] ls-a`;
+"Imported from $_[0]. Run pop-state to undo this change.";
+__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
