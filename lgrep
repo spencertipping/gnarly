@@ -143,9 +143,9 @@ meta::attribute('module-api-version', <<'__0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9
 1.0
 __0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9rvgBfY
 
-meta::attribute('module-name', <<'__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw');
-core
-__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw
+meta::attribute('module-name', <<'__GbNBRxTUQrsPsWem2WYxujhO/1LnuyhH2j/Sv/BtdcA');
+lgrep
+__GbNBRxTUQrsPsWem2WYxujhO/1LnuyhH2j/Sv/BtdcA
 
 meta::attribute('module-revision', <<'__X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k');
 0
@@ -436,11 +436,6 @@ meta::function('cat', <<'__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk');
 my ($name) = @_;
 $data{$name};
 __h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk
-
-meta::function('check', <<'__BZOv649M3pI5oAM5+r5jM40Sjxr7Tt0KQ+ReZXGiuL4');
-$transient{'failure'} = '';
-&{':test'}();
-__BZOv649M3pI5oAM5+r5jM40Sjxr7Tt0KQ+ReZXGiuL4
 
 meta::function('clone', <<'__qP6xPZE75s9g0XJIiC6FGw0vnj2j0glUzsAHxyA3lvY');
 for (@_) {
@@ -1161,9 +1156,10 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
 
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+core
+__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
 
 meta::vim_highlighter('gnarly', <<'__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ');
 " Gnarly
