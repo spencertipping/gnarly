@@ -373,7 +373,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__ywqgaT592ulakWsOvVBvbrcDMZNTbYSUXPty7ACUsMM');
+meta::code('source', <<'__JMcI+9lEz240RJlgrOtM4h91JmCAl9x5dNgoy2+IqYY');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -387,6 +387,7 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
                          serialize => sub {'{' . join(', ', sort keys %{$_[0]}) . '}'},
                          call      => method('<<'     => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
                                                            lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval(); $self})}},
+                                             '<='     => sub {my $self = $_[0]; sub {$_[0] eq $self ? $true : $false}},
                                              get      => sub {my $self = $_[0]; sub {${$self}{$_[0]->eval()->serialize()}}},
                                              contains => sub {my $self = $_[0]; sub {my $value = $_[0]->eval()->serialize();
                                                            grep($value eq $_, sort keys %{$self}) ? $true : $false}},
@@ -395,6 +396,21 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
          nil()")
 
   (defperl hash "types::hash()")
+
+List matching.
+Some basic list matching predicates.
+
+  *$? = ends-with for lists. *$? l1 l2 returns true iff the elements in l1 match the elements at the end of l2, in that order.
+  *^? = starts-with for lists.
+
+  /$? = ends-with for symbols.
+  /^? = starts-with for symbols.
+
+  (def *$? (fn x (fn xs (:? x k (:? xs k' (&& (== (xs tail) (x tail)) (*$? (x head) (xs head))))))))
+  (def *^? (fn x (fn xs (*$? (reverse x) (reverse xs)))))
+
+  (def /$? (fn p (fn s (*$? (p split) (s split)))))
+  (def /^? (fn p (fn s (*^? (p split) (s split)))))
 
 Binders.
 A binder is just a function that takes a list and produces a hash of bindings. One case where this is useful is destructuring lists. Suppose, for instance, we
@@ -407,14 +423,16 @@ succeed because it respects the invariance of x1. Implementing transformations o
 would require that each function is reversible, something that we can't necessarily guarantee. (Alternatively, we could break down the model and require that
 the variable in question be bound before we make assertions about functions of its value.)
 
-For starters, here is a binder that matches against complete lists with wildcards. You can customize the prefix for symbols that are variables, and the _ is
-treated as a variant wildcard; that is, it can accept multiple values.
+For starters, here is a binder that matches against complete lists with wildcards. You can customize the prefix for symbols that are variables, as well as
+defining a variant wildcard that can bind to multiple values. (Similar to the _ in the examples above.)
 
-  (def ends-with?   (fn x (fn xs (:? x k (:? xs k' (&& (== (xs tail) (x tail)) (ends-with? (x head) (xs head))))))))
-  (def starts-with? (fn x (fn xs (ends-with? (reverse x) (reverse xs)))))
+  =|<< means "either it's equal or bind it" -- it's used as the rule when we encounter a variable matching against a value. It returns k on success, k' on
+       failure.
 
-  (def prefixed-by? (fn p (fn s (starts-with? (p split) (s split)))))
-__ywqgaT592ulakWsOvVBvbrcDMZNTbYSUXPty7ACUsMM
+  (def =|<< (fn bindings (fn name (fn x
+    (cond (((bindings contains name) (== (bindings get name) x))
+           (k                        (k:' (bindings << name x) k))))))))
+__JMcI+9lEz240RJlgrOtM4h91JmCAl9x5dNgoy2+IqYY
 
 meta::code('tests', <<'__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y');
 Association list stuff.
@@ -630,7 +648,7 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg');
+meta::function('repl', <<'__0gcQcyYhbrhjjhxxlOrXqdYD4Scmtqtwj2I3HF/c1Xo');
 my ($name, @options) = @_;
 
 use Term::ReadLine;
@@ -647,6 +665,7 @@ types::initialize_symbols();
 types::initialize_debugging_symbols() if grep /^debug$/, @options;
 
 terminal::message('repl', 'running session');
+run('cached-dependencies') unless grep /^nodeps$/, @options;
 run($name) if $name;
 
 terminal::message('repl', 'ready');
@@ -662,7 +681,7 @@ if ($name) {
 }
 
 terminal::message('repl', 'exiting');
-__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg
+__0gcQcyYhbrhjjhxxlOrXqdYD4Scmtqtwj2I3HF/c1Xo
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {

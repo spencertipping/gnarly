@@ -888,7 +888,7 @@ meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::library('datatypes', <<'__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg');
+meta::library('datatypes', <<'__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1062,6 +1062,12 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                 call      => method(head => sub {$_[0][0]},
                                     tail => sub {$_[0][1]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
+                                    '<=' => sub {my $self = $_[0]; sub {
+                                              my $value = $_[0]->eval();
+                                              ref $value eq 'cons' and
+                                                $self->head()->call(symbol('<='))->call($value->head())->call(
+                                                  $self->tail()->call(symbol('<='))->call($value->tail()))->call($false);
+                                            }},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
 
@@ -1118,7 +1124,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg
+__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
