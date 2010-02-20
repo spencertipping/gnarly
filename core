@@ -390,11 +390,12 @@ terminal::message('error', $@) if $@;
 '';     # Return silence on success.
 __KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o
 
-meta::configuration(':export', <<'__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg');
+meta::configuration(':export', <<'__btFu4SltjXa0eLKiqqrtZ+F3l4l/2XzUEaZXRE0jgyU');
 &{':check'}();
 return join("\n", retrieve('code::cached-dependencies', 'code::source')) . "\n\n" unless $transient{'last-failure'};
+terminal::message('error', $transient{'last-failure'});
 return '';
-__1zAAVRFSjrxwtutBDkCtRYJ1vziYeRk8U6Rmf4k//lg
+__btFu4SltjXa0eLKiqqrtZ+F3l4l/2XzUEaZXRE0jgyU
 
 meta::configuration(':main', <<'__/vfwogrZnxJ3KpphPp94bXOA6L9YLCBkmxZkE/4LRUc');
 shell::initialize_symbol_table();
@@ -537,9 +538,9 @@ meta::function('ls', <<'__M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg');
 join("\n", sort keys %externalized_functions);
 __M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg
 
-meta::function('ls-a', <<'__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18');
-join("\n", map {"  $_"} sort keys %data) . "\n";
-__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18
+meta::function('ls-a', <<'__3Ou+kVmaLIe1oZKBOufKY7pSsksgTSAfNeXRniPFZPk');
+join("\n", sort keys %data);
+__3Ou+kVmaLIe1oZKBOufKY7pSsksgTSAfNeXRniPFZPk
 
 meta::function('mv', <<'__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4');
 my ($from, $to) = @_;
@@ -553,9 +554,10 @@ my $result = eval($_[0]);
 $@ ? $@ : $result;
 __Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA
 
-meta::function('pop-state', <<'__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY');
+meta::function('pop-state', <<'__eqnCLsMapvq2sYSx82KCxh25zmff+JIXFMYUan2kGKM');
 %data = %{pop @{$transient{'states'}}} if @{$transient{'states'}};
-__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY
+reload();
+__eqnCLsMapvq2sYSx82KCxh25zmff+JIXFMYUan2kGKM
 
 meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
 my ($class_name) = @_;
@@ -714,13 +716,22 @@ my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
 
-meta::function('update-from', <<'__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g');
+meta::function('update-from', <<'__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4');
 # Upgrade all attributes that aren't customized. In this case, we want everything except for configuration::, code::, and attribute::.
-die "$_[0] does not seem to be working properly" unless `$_[0] state` =~ /^[A-Za-z0-9\/+]\n?/;
+return "That is a really bad idea." if $0 =~ /\.\/(.*)/ && $_[0] eq $1 || $_[0] eq $0;
+
 &{'push-state'}();
-associate($_, `$_[0] cat $_`) for grep ! (/^configuration::/ || /^code::/ || /^attribute::/), split /\n/, `$_[0] ls-a`;
-"Imported from $_[0]. Run pop-state to undo this change.";
-__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g
+print "Updating... Please be patient as this is an unjustifiably slow process.\n";
+for my $attribute (grep length && ! (/^configuration::/ || /^code::/ || /^attribute::/ || /^function::pop-state$/ ||
+                                     /^list::/ || /^issue::/ || /^data::/), split(/\n/, `$_[0] ls-a`)) {
+  associate($attribute, join('', `$_[0] cat $attribute`));
+  print '.';
+}
+
+print "\nReloading new attributes\n";
+reload();
+"Imported from $_[0]. Run pop-state to undo this change.\n(The value of pop-state wasn't changed during the update.)";
+__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
@@ -869,11 +880,11 @@ meta::issue('test-cases', <<'__KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs');
 Static importing
 __KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs
 
-meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
-Add dependency processing
-__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
+meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
-meta::library('datatypes', <<'__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g');
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+
+meta::library('datatypes', <<'__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg');
 # Data type definitions for the interpreter.
 
 package types;
@@ -952,7 +963,7 @@ sub deftype {
   *{"${name}::$_"} = trace($members{$_}, $_) for qw/eval call/;
 }
 
-my $id = sub {$_[0]};
+our $id = sub {$_[0]};
 
 sub method {
   my %table = @_;
@@ -982,8 +993,8 @@ deftype 'lambda', new       => sub {[@_]},
                   call      => sub {$_[0][1]->($_[1])},
                   serialize => sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]};
 
-my $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
-my $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
+our $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
+our $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
 
 deftype 'symbol',
   new       => sub {\$_[0]},
@@ -1103,14 +1114,14 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g
+__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg
 
-meta::library('reader', <<'__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw');
+meta::library('reader', <<'__+H245BHDId5BsWhVyIo1s0EBRfudSvvmkY8rhKX6tVU');
 package reader;
 
 sub read_form {
   sub lex {
-    grep length, split /([()])|\s+|("[^"\\]*")/o, $_[0];
+    grep length, split /([()])|\s+|("(?:[^"\\]|\\.)*")/o, $_[0];
   }
 
   sub unquote {
@@ -1143,7 +1154,7 @@ sub read_paragraph {
 sub read_document {
   map {read_paragraph $_} split /\n\s*\n/o, $_[0];
 }
-__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
+__+H245BHDId5BsWhVyIo1s0EBRfudSvvmkY8rhKX6tVU
 
 meta::library('shell', <<'__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ');
 package shell;
@@ -1203,7 +1214,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ');
+meta::vim_highlighter('gnarly', <<'__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1225,7 +1236,7 @@ syn keyword gnarlyBooleans         k k' k: k:' contained
 syn match   gnarlyNumbers          /\<-\?[0-9.]\+\>/ contained
 syn match   gnarlyParens           /[()]/ contained
 
-syn match   gnarlyQuoted           /"\([^"\\]\|\\.\)*"/ contained
+syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
@@ -1255,7 +1266,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ
+__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();

@@ -186,11 +186,8 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
-Integration tests. These are run after your code is loaded and the unit tests have been run.
-__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
+meta::code('cached-dependencies', <<'__S/IhFSffnk4uGq/qdX+kf2Xy/Zbn19XZvdm1V7GZKt0');
 
-meta::code('source', <<'__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -367,19 +364,41 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg
 
-meta::code('tests', <<'__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ');
-Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
-If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
-tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
-make sure that the assumptions being made are basically true.
+__S/IhFSffnk4uGq/qdX+kf2Xy/Zbn19XZvdm1V7GZKt0
 
-  (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
+meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
+Integration tests. These are run after your code is loaded and the unit tests have been run.
+__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-  (assert == (!!> (beta x y)) (' y))
-  (assert == 2 2)
-__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ
+meta::code('source', <<'__gxuUygSWKXUMr/DXTPIfOZJ0PQtZY6NmQcqLqXOjtbM');
+List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
+
+Association lists.
+Instead of using proper association lists as in Lisp, I'm writing a faster Perl wrapper. This has some limitations; for instance, you can store arbitrary values
+in the head of the cons cells -- however, doing this in Lisp wouldn't have worked that well either.
+
+  (perl "package types;
+         deftype 'hash', new       => sub {{}},
+                         eval      => $id,
+                         serialize => sub {'{' . join(', ', sort keys %{$_[0]}) . '}'},
+                         call      => method('<<' => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
+                                                       lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval()})}},
+                                             get  => sub {my $self = $_[0]; sub {${$self}{$_[0]}}},
+                                             keys => sub {array_to_cons(map symbol($_), keys %{$_[0]})});")
+
+  (defperl hash "hash()")
+__gxuUygSWKXUMr/DXTPIfOZJ0PQtZY6NmQcqLqXOjtbM
+
+meta::code('tests', <<'__3OxwzVsOf0C6meOI02YK3Qzvs7qNCKZAaRHFXrz0eAQ');
+Association list instantiation.
+
+  (def alist (hash :))
+
+  (alist << (' foo) (' bar))
+  (assert == (alist get (' foo)) (' bar))
+__3OxwzVsOf0C6meOI02YK3Qzvs7qNCKZAaRHFXrz0eAQ
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -537,9 +556,9 @@ meta::function('ls', <<'__M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg');
 join("\n", sort keys %externalized_functions);
 __M3wGXSw8/xm3RiNq0uLWke1dHm2OWQbvJpHkngdPafg
 
-meta::function('ls-a', <<'__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18');
-join("\n", map {"  $_"} sort keys %data) . "\n";
-__6jKXRDXpIkzIOkcLtB2FOSTuZxqjBLyLZsF1vEmVn18
+meta::function('ls-a', <<'__3Ou+kVmaLIe1oZKBOufKY7pSsksgTSAfNeXRniPFZPk');
+join("\n", sort keys %data);
+__3Ou+kVmaLIe1oZKBOufKY7pSsksgTSAfNeXRniPFZPk
 
 meta::function('mv', <<'__ijyNZ8r34FVK0Ki9/Q0Irx5k9U0pZ+/frrdlu+qkEP4');
 my ($from, $to) = @_;
@@ -553,9 +572,10 @@ my $result = eval($_[0]);
 $@ ? $@ : $result;
 __Ojd593Fa9fx1Yx2XuPzK6WTUyxO70Nbmlbl9YRodUWA
 
-meta::function('pop-state', <<'__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY');
+meta::function('pop-state', <<'__eqnCLsMapvq2sYSx82KCxh25zmff+JIXFMYUan2kGKM');
 %data = %{pop @{$transient{'states'}}} if @{$transient{'states'}};
-__uDj4ixgYv7+1PyRhv4yqHPjh7A/jOjzyd4J0h8WhUzY
+reload();
+__eqnCLsMapvq2sYSx82KCxh25zmff+JIXFMYUan2kGKM
 
 meta::function('pull', <<'__ZU6uOu7dBdjjoNdEL/U7yrjicOQR5OLFQAacjrKqSCg');
 my ($class_name) = @_;
@@ -714,13 +734,22 @@ my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
 
-meta::function('update-from', <<'__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g');
+meta::function('update-from', <<'__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4');
 # Upgrade all attributes that aren't customized. In this case, we want everything except for configuration::, code::, and attribute::.
-die "$_[0] does not seem to be working properly" unless `$_[0] state` =~ /^[A-Za-z0-9\/+]\n?/;
+return "That is a really bad idea." if $0 =~ /\.\/(.*)/ && $_[0] eq $1 || $_[0] eq $0;
+
 &{'push-state'}();
-associate($_, `$_[0] cat $_`) for grep ! (/^configuration::/ || /^code::/ || /^attribute::/), split /\n/, `$_[0] ls-a`;
-"Imported from $_[0]. Run pop-state to undo this change.";
-__VyPIJsL/wUDJ5LFa1TbBO2VllYchkYKhG5Fx3iEFM/g
+print "Updating... Please be patient as this is an unjustifiably slow process.\n";
+for my $attribute (grep length && ! (/^configuration::/ || /^code::/ || /^attribute::/ || /^function::pop-state$/ ||
+                                     /^list::/ || /^issue::/ || /^data::/), split(/\n/, `$_[0] ls-a`)) {
+  associate($attribute, join('', `$_[0] cat $attribute`));
+  print '.';
+}
+
+print "\nReloading new attributes\n";
+reload();
+"Imported from $_[0]. Run pop-state to undo this change.\n(The value of pop-state wasn't changed during the update.)";
+__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
@@ -1199,11 +1228,12 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
 
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+core
+__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
 
-meta::vim_highlighter('gnarly', <<'__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ');
+meta::vim_highlighter('gnarly', <<'__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1225,7 +1255,7 @@ syn keyword gnarlyBooleans         k k' k: k:' contained
 syn match   gnarlyNumbers          /\<-\?[0-9.]\+\>/ contained
 syn match   gnarlyParens           /[()]/ contained
 
-syn match   gnarlyQuoted           /"\([^"\\]\|\\.\)*"/ contained
+syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
@@ -1255,7 +1285,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ
+__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
