@@ -385,14 +385,14 @@ make sure that the assumptions being made are basically true.
   (assert == 2 2)
 __hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ
 
-meta::configuration(':check', <<'__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU');
-shell::initialize_symbol_table;
+meta::configuration(':check', <<'__93rJQrM1HLXDzjNQ4uwveo63uoPfrbEVxUjMlvErgzU');
+shell::initialize_symbol_table();
 delete $transient{'last-failure'};
 
 eval {shell::load_quietly('dependencies', 'source', 'tests', 'integration-tests')};
 terminal::message('error', $@) if $@;
 '';     # Return silence on success.
-__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU
+__93rJQrM1HLXDzjNQ4uwveo63uoPfrbEVxUjMlvErgzU
 
 meta::configuration(':export', <<'__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08');
 &{':check'}();
@@ -400,15 +400,15 @@ return join "\n", retrieve('code::dependencies', 'code::source') unless $transie
 return '';
 __Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08
 
-meta::configuration(':main', <<'__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY');
-shell::initialize_symbol_table;
+meta::configuration(':main', <<'__DRlHMG/qL9CuzT3dc0hugVijRagXv85t7D/wI2U6Ot4');
+shell::initialize_symbol_table();
 run('dependencies', 'source');
-__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY
+__DRlHMG/qL9CuzT3dc0hugVijRagXv85t7D/wI2U6Ot4
 
-meta::configuration(':test', <<'__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE');
+meta::configuration(':test', <<'__LdPLavysWyPM5r4ze8pyazYiWAfGW+7BSHx7ItKQOfI');
 &{':main'}();
-run ('tests', 'integration-tests');
-__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE
+run('tests', 'integration-tests');
+__LdPLavysWyPM5r4ze8pyazYiWAfGW+7BSHx7ItKQOfI
 
 meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
@@ -650,10 +650,8 @@ join "\n", $data{'bootstrap::initialization'},
            "__END__";
 __KGiI48MlyG6RAVW5QYRK8y97y8tx+jeAwPlY5eDtMTw
 
-meta::function('shell', <<'__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY');
+meta::function('shell', <<'__y24Z0MyfVsS8IjvGqS/aSBwIs2L5yzllPmATpFIhCJg');
 use Term::ReadLine;
-
-reload();
 
 my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
@@ -689,7 +687,7 @@ while (defined ($_ = $term->readline($prompt))) {
 
   $prompt = &{'api-name'}() . '$ ';
 }
-__Hc56YUxjUwjiG48fH6T/R+64k7dpsVpxMsSihkJiysY
+__y24Z0MyfVsS8IjvGqS/aSBwIs2L5yzllPmATpFIhCJg
 
 meta::function('size', <<'__lDGr6yVnDwcDWLkJH16MNukltjG2ypBSk/ktYb80h80');
 length(serialize());
