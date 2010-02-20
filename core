@@ -190,7 +190,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__utf3EGMLqsu47Jd3GTVvYuxRNomqLuajGUHA7ovjqJs');
+meta::code('source', <<'__v2ovZ3f9UN1aVYerUBzTMEt+H6fx4TmrVBOjbJA1HAc');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -215,17 +215,6 @@ These let you easily put evals or quotes onto existing functions.
   (' :>  bind (:< (beta _ (o' _  :))))
   (' ::> bind (:< (beta _ (o' _ ::))))
   (' '>  bind (:< (beta _ (o' _ ''))))
-
-Inline comments.
-This is used inside other expressions when you want to write a note; the idea is that it returns itself so that you can write whatever symbols you want,
-including function names and properly-formed lists. For example, to comment a function:
-|
-| (def foo (fn x (k' (# This function does x. (Not to say it doesn't do other things as well.))
-|                    (stuff))))
-|
-Notice that we use k' to remove the comment's value. If we didn't, then the comment would eat up the whole rest of the function.
-
-  (' # bind (:< (beta _ #)))
 
 Normal composition.
 This doesn't double-evaluate stuff when there are two functions. This is by virtue of the fact that we quote the result of the first function. If the second
@@ -370,7 +359,7 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__utf3EGMLqsu47Jd3GTVvYuxRNomqLuajGUHA7ovjqJs
+__v2ovZ3f9UN1aVYerUBzTMEt+H6fx4TmrVBOjbJA1HAc
 
 meta::code('tests', <<'__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
