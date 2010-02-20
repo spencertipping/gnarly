@@ -686,6 +686,12 @@ meta::function('run', <<'__2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU');
 shell::load_interactively(@_);
 __2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU
 
+meta::function('run-file', <<'__WceprRaNezbwObGfB9h6pwi0Ly281gdWz8CLtXL1ehY');
+shell::initialize_symbol_table();
+&{':main'}();
+shell::load_from_file(@_);
+__WceprRaNezbwObGfB9h6pwi0Ly281gdWz8CLtXL1ehY
+
 meta::function('save', <<'__uWXGnrQr+A7Cl0zcsDuiokbWAw1XdMdjeq9gDcTMJIw');
 my $serialized_data = serialize();
 my $final_state     = state();
@@ -1226,10 +1232,11 @@ sub read_document {
 }
 __FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo
 
-meta::library('shell', <<'__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ');
+meta::library('shell', <<'__sbRiGMNXhqgt65vHRHrGFknAxvnRwNlctXwzHgwFybo');
 package shell;
 
-sub definitions {map reader::read_document(::retrieve("code::$_")), @_}
+sub definitions           {map reader::read_document(::retrieve("code::$_")), @_}
+sub definitions_from_file {map reader::read_document(file::read($_)), @_}
 
 sub initialize_symbol_table {
   types::clear_symbols;
@@ -1237,19 +1244,25 @@ sub initialize_symbol_table {
   types::initialize_debugging_symbols;
 }
 
-sub load_interactively {
-  for my $document (@_) {
-    terminal::message('shell', "loading $document");
-    for (definitions($document)) {
-      my $result = eval {$_->eval()};
-      chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
-      terminal::message('loader', $result->serialize()) unless $@;
+sub make_loader {
+  my ($loader) = @_;
+  sub {
+    for my $document (@_) {
+      terminal::message('shell', "loading $document");
+      for ($loader->($document)) {
+        my $result = eval {$_->eval()};
+        chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
+        terminal::message('loader', $result->serialize()) unless $@;
+      }
     }
-  }
+  };
 }
 
+*{'load_interactively'} = make_loader(\&definitions);
+*{'load_from_file'}     = make_loader(\&definitions_from_file);
+
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
-__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ
+__sbRiGMNXhqgt65vHRHrGFknAxvnRwNlctXwzHgwFybo
 
 meta::library('terminal', <<'__UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs');
 # Functions for nice-looking terminal output.
