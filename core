@@ -190,7 +190,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg');
+meta::code('source', <<'__utf3EGMLqsu47Jd3GTVvYuxRNomqLuajGUHA7ovjqJs');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -342,8 +342,8 @@ Some Perl interfacing.
 The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
 being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
 
-  (def type (perl "lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
-  (def defperl (qn name (qn contents (name bind (:> perl (' "lambda('[" + name + (' "]', sub {") + contents + (' "})")))))))
+  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) + (' "]', sub {") + contents + (' "})")))))))
 
 Beta and composition disassembly.
 You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
@@ -358,6 +358,9 @@ symbol or other atomic value, bad things will happen.
   (defperl !!< "${$_[0]->eval()}[0]")
   (defperl !!> "${$_[0]->eval()}[1]")
 
+  (defperl r== "my $self = $_[0]->eval(); types::lambda('[' . $self->serialize() . ' r== ...]',
+                  sub {$self eq $_[0]->eval() ? $types::true : $types::false})")
+
 Assertions.
 Basic things to assist testing.
 
@@ -367,7 +370,7 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg
+__utf3EGMLqsu47Jd3GTVvYuxRNomqLuajGUHA7ovjqJs
 
 meta::code('tests', <<'__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
@@ -1116,16 +1119,21 @@ deftype 'file', new       => sub {\$_[0]},
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
 __2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg
 
-meta::library('reader', <<'__+H245BHDId5BsWhVyIo1s0EBRfudSvvmkY8rhKX6tVU');
+meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
 
 sub read_form {
   sub lex {
-    grep length, split /([()])|\s+|("(?:[^"\\]|\\.)*")/o, $_[0];
+    grep length, split /([()])|\s+|("(?:[^"\\]|\\.)*")/so, $_[0];
   }
 
   sub unquote {
-    map {s/^"(.*)"$/\1/o; s/\\n/\n/go; s/\\r/\r/go; s/\\\\/\\/go; s/\\(.)/\1/go; $_} @_;
+    map {if (s/^"(.*)"$/\1/so) {
+           s/\\n/\n/go;
+           s/\\r/\r/go;
+           s/\\(.)/\1/sgo;
+         }
+         $_} @_;
   }
 
   sub parse {
@@ -1152,9 +1160,9 @@ sub read_paragraph {
 }
 
 sub read_document {
-  map {read_paragraph $_} split /\n\s*\n/o, $_[0];
+  map {read_paragraph $_} split /\n(?:\s*\n)+/o, $_[0];
 }
-__+H245BHDId5BsWhVyIo1s0EBRfudSvvmkY8rhKX6tVU
+__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo
 
 meta::library('shell', <<'__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ');
 package shell;

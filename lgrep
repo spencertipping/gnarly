@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__S/IhFSffnk4uGq/qdX+kf2Xy/Zbn19XZvdm1V7GZKt0');
+meta::code('cached-dependencies', <<'__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -339,8 +339,8 @@ Some Perl interfacing.
 The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
 being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
 
-  (def type (perl "lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
-  (def defperl (qn name (qn contents (name bind (:> perl (' "lambda('[" + name + (' "]', sub {") + contents + (' "})")))))))
+  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) + (' "]', sub {") + contents + (' "})")))))))
 
 Beta and composition disassembly.
 You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
@@ -355,6 +355,9 @@ symbol or other atomic value, bad things will happen.
   (defperl !!< "${$_[0]->eval()}[0]")
   (defperl !!> "${$_[0]->eval()}[1]")
 
+  (defperl r== "my $self = $_[0]->eval(); types::lambda('[' . $self->serialize() . ' r== ...]',
+                  sub {$self eq $_[0]->eval() ? $types::true : $types::false})")
+
 Assertions.
 Basic things to assist testing.
 
@@ -365,13 +368,14 @@ Basic things to assist testing.
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
 
-__S/IhFSffnk4uGq/qdX+kf2Xy/Zbn19XZvdm1V7GZKt0
+
+__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__gxuUygSWKXUMr/DXTPIfOZJ0PQtZY6NmQcqLqXOjtbM');
+meta::code('source', <<'__ov/v7pNfG9ivKw9W3194WFSp3EJxKW6X4DAZrIe1UPs');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -384,21 +388,22 @@ in the head of the cons cells -- however, doing this in Lisp wouldn't have worke
                          eval      => $id,
                          serialize => sub {'{' . join(', ', sort keys %{$_[0]}) . '}'},
                          call      => method('<<' => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
-                                                       lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval()})}},
-                                             get  => sub {my $self = $_[0]; sub {${$self}{$_[0]}}},
-                                             keys => sub {array_to_cons(map symbol($_), keys %{$_[0]})});")
+                                                       lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval(); $self})}},
+                                             get  => sub {my $self = $_[0]; sub {${$self}{$_[0]->eval()->serialize()}}},
+                                             keys => sub {array_to_cons(map symbol($_), keys %{$_[0]})});
+         nil()")
 
-  (defperl hash "hash()")
-__gxuUygSWKXUMr/DXTPIfOZJ0PQtZY6NmQcqLqXOjtbM
+  (defperl hash "types::hash()")
+__ov/v7pNfG9ivKw9W3194WFSp3EJxKW6X4DAZrIe1UPs
 
-meta::code('tests', <<'__3OxwzVsOf0C6meOI02YK3Qzvs7qNCKZAaRHFXrz0eAQ');
+meta::code('tests', <<'__W9a4oVibsSqdTm9/grj7Nxxaerno0ukDdkBV6gQMYFk');
 Association list instantiation.
 
   (def alist (hash :))
 
-  (alist << (' foo) (' bar))
+  (assert r== alist (alist << (' foo) (' bar)))
   (assert == (alist get (' foo)) (' bar))
-__3OxwzVsOf0C6meOI02YK3Qzvs7qNCKZAaRHFXrz0eAQ
+__W9a4oVibsSqdTm9/grj7Nxxaerno0ukDdkBV6gQMYFk
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -902,7 +907,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g');
+meta::library('datatypes', <<'__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg');
 # Data type definitions for the interpreter.
 
 package types;
@@ -981,7 +986,7 @@ sub deftype {
   *{"${name}::$_"} = trace($members{$_}, $_) for qw/eval call/;
 }
 
-my $id = sub {$_[0]};
+our $id = sub {$_[0]};
 
 sub method {
   my %table = @_;
@@ -1011,8 +1016,8 @@ deftype 'lambda', new       => sub {[@_]},
                   call      => sub {$_[0][1]->($_[1])},
                   serialize => sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]};
 
-my $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
-my $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
+our $true  = lambda(sub {'true'},  sub {my $x = $_[0]; lambda(sub {'(true ' . $x->serialize() . ')'}, sub {$x->eval()})});
+our $false = lambda(sub {'false'}, sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]->eval()})});
 
 deftype 'symbol',
   new       => sub {\$_[0]},
@@ -1132,18 +1137,23 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g
+__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg
 
-meta::library('reader', <<'__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw');
+meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
 
 sub read_form {
   sub lex {
-    grep length, split /([()])|\s+|("[^"\\]*")/o, $_[0];
+    grep length, split /([()])|\s+|("(?:[^"\\]|\\.)*")/so, $_[0];
   }
 
   sub unquote {
-    map {s/^"(.*)"$/\1/o; s/\\n/\n/go; s/\\r/\r/go; s/\\\\/\\/go; s/\\(.)/\1/go; $_} @_;
+    map {if (s/^"(.*)"$/\1/so) {
+           s/\\n/\n/go;
+           s/\\r/\r/go;
+           s/\\(.)/\1/sgo;
+         }
+         $_} @_;
   }
 
   sub parse {
@@ -1170,9 +1180,9 @@ sub read_paragraph {
 }
 
 sub read_document {
-  map {read_paragraph $_} split /\n\s*\n/o, $_[0];
+  map {read_paragraph $_} split /\n(?:\s*\n)+/o, $_[0];
 }
-__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
+__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo
 
 meta::library('shell', <<'__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ');
 package shell;
