@@ -832,10 +832,9 @@ meta::issue('test-cases', <<'__KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs');
 Static importing
 __KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs
 
-meta::issue('todos', <<'__xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ');
+meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
-Unit testing framework image
-__xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ
+__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
 meta::library('datatypes', <<'__3zbNnbEnPpzBxUWdfWcdJxLYbgnxw2/Iziwoxhj+H7g');
 # Data type definitions for the interpreter.
@@ -1109,14 +1108,14 @@ sub read_document {
 }
 __czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
 
-meta::library('shell', <<'__9udSyEa7IJR3ml+JXZPc3AYGwxgPXBw+9lVYpqDLLR4');
+meta::library('shell', <<'__RDiO/yQ+CFnv/R1y40hjTfkImjoG9hNzqiVHKMwn7Mc');
 package shell;
 
 sub definitions {map reader::read_document(::retrieve("code::$_")), @_}
 
 sub load_interactively {
   for my $document (@_) {
-    terminal::message('shell', "loading module $document");
+    terminal::message('shell', "loading $document");
     for (definitions($document)) {
       my $result = eval {$_->eval()};
       chomp $@ and terminal::message('error', "$@ in " . $_->serialize()) if $@;
@@ -1126,7 +1125,7 @@ sub load_interactively {
 }
 
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
-__9udSyEa7IJR3ml+JXZPc3AYGwxgPXBw+9lVYpqDLLR4
+__RDiO/yQ+CFnv/R1y40hjTfkImjoG9hNzqiVHKMwn7Mc
 
 meta::library('terminal', <<'__UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs');
 # Functions for nice-looking terminal output.
