@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__D44Ql4ehGswEeavniHRoEpRaRHUJ624OVzJ8jUHJAdA');
+meta::code('cached-dependencies', <<'__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -367,7 +367,9 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__D44Ql4ehGswEeavniHRoEpRaRHUJ624OVzJ8jUHJAdA
+
+
+__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
@@ -952,7 +954,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg');
+meta::library('datatypes', <<'__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1126,6 +1128,12 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                 call      => method(head => sub {$_[0][0]},
                                     tail => sub {$_[0][1]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
+                                    '<=' => sub {my $self = $_[0]; sub {
+                                              my $value = $_[0]->eval();
+                                              ref $value eq 'cons' and
+                                                $self->head()->call(symbol('<='))->call($value->head())->call(
+                                                  $self->tail()->call(symbol('<='))->call($value->tail()))->call($false);
+                                            }},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
 
@@ -1182,7 +1190,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__2dD9EZQwls1IGeSz81TfkQ43hs26mg1MNlAixj5DmJg
+__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
