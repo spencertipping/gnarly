@@ -186,15 +186,15 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('dependencies', <<'__H5CDOI7uffSvT4dm4LbThmGy2M/0RvwfteMq4JHjRT0');
-This is generated automatically by import-dependencies. You shouldn't put any changes you care about in here.
-__H5CDOI7uffSvT4dm4LbThmGy2M/0RvwfteMq4JHjRT0
+meta::code('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+
+__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__6V/mWBYzez43NPveTS9DUaSeCjg5Xrfz2T2wOjMV52o');
+meta::code('source', <<'__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -365,15 +365,15 @@ symbol or other atomic value, bad things will happen.
 Assertions.
 Basic things to assist testing.
 
-  (defperl fail "terminal::message('fail', $_[0]->eval()->serialize()); types::nil()")
+  (defperl fail "terminal::message('fail', $transient{'last-failure'} = $_[0]->eval()->serialize()); types::nil()")
 
   (def fail$  ($'> fail))
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
-           (k                    (o ('> fail) $ ('> ++ ("Assertion failed: ") (* serialize (list (predicate e1 e2))))))))))))
-__6V/mWBYzez43NPveTS9DUaSeCjg5Xrfz2T2wOjMV52o
+           (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
+__bU0P/C/ZbJ47hclkf0XB00ghJ6ozmNw9Aq2Temev/Rg
 
-meta::code('tests', <<'__a2l1woaJr4QPSMsN8b6UYtWNZcQMXVWXXCpEeoJseFE');
+meta::code('tests', <<'__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
@@ -382,15 +382,28 @@ make sure that the assumptions being made are basically true.
   (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
 
   (assert == (!!> (beta x y)) (' y))
-__a2l1woaJr4QPSMsN8b6UYtWNZcQMXVWXXCpEeoJseFE
+  (assert == 2 2)
+__hcWNQD6WSEUao2oCrbIGXYNAS/VYK6Uhhhj1JDxnTlQ
 
-meta::configuration(':main', <<'__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg');
-types::clear_symbols;
-types::initialize_symbols;
-types::initialize_debugging_symbols;
+meta::configuration(':check', <<'__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU');
+shell::initialize_symbol_table;
+delete $transient{'last-failure'};
 
+eval {shell::load_quietly('dependencies', 'source', 'tests', 'integration-tests')};
+terminal::message('error', $@) if $@;
+'';     # Return silence on success.
+__zPSLPKjMDxJ2FDx5thTxGhXELqAo9ySLVQFzrpxdwHU
+
+meta::configuration(':export', <<'__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08');
+&{':check'}();
+return join "\n", retrieve('code::dependencies', 'code::source') unless $transient{'last-failure'};
+return '';
+__Rsm2GykPVw4CeII8njKPejJkdChCFlpYbZIcV0nEO08
+
+meta::configuration(':main', <<'__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY');
+shell::initialize_symbol_table;
 run('dependencies', 'source');
-__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg
+__ghqw2cw1WU18KtcQ3r7O2Y7fElNqr444rbMBaYGxnjY
 
 meta::configuration(':test', <<'__Rs2qEArCfXNCIQV1aRisudd/MVAZIE5agM3IfCgqDOE');
 &{':main'}();
@@ -436,11 +449,6 @@ meta::function('cat', <<'__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk');
 my ($name) = @_;
 $data{$name};
 __h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk
-
-meta::function('check', <<'__BZOv649M3pI5oAM5+r5jM40Sjxr7Tt0KQ+ReZXGiuL4');
-$transient{'failure'} = '';
-&{':test'}();
-__BZOv649M3pI5oAM5+r5jM40Sjxr7Tt0KQ+ReZXGiuL4
 
 meta::function('clone', <<'__qP6xPZE75s9g0XJIiC6FGw0vnj2j0glUzsAHxyA3lvY');
 for (@_) {
@@ -510,6 +518,19 @@ meta::function('import', <<'__oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA');
 my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
+
+meta::function('load-dependencies', <<'__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE');
+my $errors = '';
+for (grep length, split /\n/, &{'dependencies'}()) {
+  my $output = `$_ :check`;
+  chomp $output;
+  $errors .= $output ? "module $_\n$output\n" : '';
+}
+
+return terminal::message('error', "dependency loading failed:\n$errors") if $errors;
+associate('code::dependencies', join("\n\n", map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
+terminal::message('loader', "imported dependencies");
+__fhtbkVlfaZHXmcEyrH3+fogyAKyfn3OQaVtJshH2BpE
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -750,12 +771,12 @@ if ($line =~ / /) {
 }
 __lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg
 
-meta::internal_function('execute', <<'__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE');
+meta::internal_function('execute', <<'__Ge94WTpmLuqsMDappj5G/G2BKILAE0GjeCqAeHLW6fQ');
 my ($name, %options) = @_;
 my $namespace = namespace($name);
 eval {&{"meta::$namespace"}(basename($name), retrieve($name))};
-carp $@ if $@ && $options{'carp'};
-__FfzmdPKSa4vnT4WNSN3uCxnwrUFKfkQbS6auoIa/SgE
+warn $@ if $@ && $options{'carp'};
+__Ge94WTpmLuqsMDappj5G/G2BKILAE0GjeCqAeHLW6fQ
 
 meta::internal_function('file::read', <<'__ZxBqZsMZZRuLMQp8Sy//ZsoAvriDebjYLGAX7p7AxXg');
 my $name = shift;
@@ -808,10 +829,9 @@ $name =~ s/::.*$//;
 $name;
 __D7UfKyyYZ1slZZyaS28hIt8a68jkI3ELBaddROXOHug
 
-meta::internal_function('retrieve', <<'__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk');
-my ($name) = @_;
-$data{$name};
-__h2PeSpk/pPmrzLRTTofdLTbhj06IWUw5WWke6ggUsdk
+meta::internal_function('retrieve', <<'__Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvLvsFM');
+@data{@_};
+__Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvLvsFM
 
 meta::internal_function('serialize::single', <<'__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE');
 my $name               = shift || $_;
@@ -1113,10 +1133,16 @@ sub read_document {
 }
 __czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
 
-meta::library('shell', <<'__RDiO/yQ+CFnv/R1y40hjTfkImjoG9hNzqiVHKMwn7Mc');
+meta::library('shell', <<'__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ');
 package shell;
 
 sub definitions {map reader::read_document(::retrieve("code::$_")), @_}
+
+sub initialize_symbol_table {
+  types::clear_symbols;
+  types::initialize_symbols;
+  types::initialize_debugging_symbols;
+}
 
 sub load_interactively {
   for my $document (@_) {
@@ -1130,7 +1156,7 @@ sub load_interactively {
 }
 
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
-__RDiO/yQ+CFnv/R1y40hjTfkImjoG9hNzqiVHKMwn7Mc
+__MKPRCkcMpzNsVD8COsDp12OzOHUEr36dc8eXwOWthyQ
 
 meta::library('terminal', <<'__UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs');
 # Functions for nice-looking terminal output.
