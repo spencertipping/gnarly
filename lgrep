@@ -374,26 +374,48 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__+ADdx4/lecOAZRSqoP/Gf9OJCkft4TMhGQdT9w3dt0w');
+meta::code('source', <<'__ywqgaT592ulakWsOvVBvbrcDMZNTbYSUXPty7ACUsMM');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
 Association lists.
-Instead of using proper association lists as in Lisp, I'm writing a faster Perl wrapper. This has some limitations; for instance, you can store arbitrary values
-in the head of the cons cells -- however, doing this in Lisp wouldn't have worked that well either.
+Instead of using proper association lists as in Lisp, I'm writing a faster Perl wrapper. This has some limitations; for instance, you can't store arbitrary
+values in the head of the cons cells -- however, doing this in Lisp wouldn't have worked that well either.
 
   (perl "package types;
          deftype 'hash', new       => sub {{}},
                          eval      => $id,
                          serialize => sub {'{' . join(', ', sort keys %{$_[0]}) . '}'},
-                         call      => method('<<' => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
-                                                       lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval(); $self})}},
-                                             get  => sub {my $self = $_[0]; sub {${$self}{$_[0]->eval()->serialize()}}},
-                                             keys => sub {cons_from_array(map symbol($_), keys %{$_[0]})});
+                         call      => method('<<'     => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
+                                                           lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval(); $self})}},
+                                             get      => sub {my $self = $_[0]; sub {${$self}{$_[0]->eval()->serialize()}}},
+                                             contains => sub {my $self = $_[0]; sub {my $value = $_[0]->eval()->serialize();
+                                                           grep($value eq $_, sort keys %{$self}) ? $true : $false}},
+                                             unbind   => sub {my $self = $_[0]; sub {delete ${$self}{$_[0]->eval()->serialize()}; $self}},
+                                             keys     => sub {cons_from_array(map symbol($_), keys %{$_[0]})});
          nil()")
 
   (defperl hash "types::hash()")
-__+ADdx4/lecOAZRSqoP/Gf9OJCkft4TMhGQdT9w3dt0w
+
+Binders.
+A binder is just a function that takes a list and produces a hash of bindings. One case where this is useful is destructuring lists. Suppose, for instance, we
+have a list of the form (a (b c) d e) and we want to grab c and d as variables. Rather than digging through the cons cells manually, we could use a binder
+similar to this: (_ (_ x1) x2 _), and we would have the bindings {x1 => c, x2 => d}.
+
+In addition to just matching elements, it's also useful to add consistency to the language. So if x1 maps to c once, then it must always map to c. This is
+useful when you're looking for repeated patterns: (_ (x1 x1) x2 _), for example. The list (a (b c) d e) would fail to match, but the list (a (c c) d e) would
+succeed because it respects the invariance of x1. Implementing transformations of matched values is a useful abstraction but ultimately quite difficult. It
+would require that each function is reversible, something that we can't necessarily guarantee. (Alternatively, we could break down the model and require that
+the variable in question be bound before we make assertions about functions of its value.)
+
+For starters, here is a binder that matches against complete lists with wildcards. You can customize the prefix for symbols that are variables, and the _ is
+treated as a variant wildcard; that is, it can accept multiple values.
+
+  (def ends-with?   (fn x (fn xs (:? x k (:? xs k' (&& (== (xs tail) (x tail)) (ends-with? (x head) (xs head))))))))
+  (def starts-with? (fn x (fn xs (ends-with? (reverse x) (reverse xs)))))
+
+  (def prefixed-by? (fn p (fn s (starts-with? (p split) (s split)))))
+__ywqgaT592ulakWsOvVBvbrcDMZNTbYSUXPty7ACUsMM
 
 meta::code('tests', <<'__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y');
 Association list stuff.

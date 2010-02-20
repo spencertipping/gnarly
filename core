@@ -584,7 +584,7 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__nAwCtE78id76mhk6853U/PECvBwkR+0AtRX59pXFPCg');
+meta::function('repl', <<'__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg');
 my ($name, @options) = @_;
 
 use Term::ReadLine;
@@ -595,10 +595,10 @@ my $OUT    = $term->OUT || \*STDOUT;
 my $prompt = &{'api-name'}() . "/$name> ";
 
 terminal::message('repl', 'initializing symbol table');
-types::clear_symbols;
-types::load_symbols $name if $name;
-types::initialize_symbols;
-types::initialize_debugging_symbols if grep /^debug$/, @options;
+types::clear_symbols();
+types::load_symbols($name) if $name;
+types::initialize_symbols();
+types::initialize_debugging_symbols() if grep /^debug$/, @options;
 
 terminal::message('repl', 'running session');
 run($name) if $name;
@@ -612,11 +612,11 @@ while (defined ($_ = $term->readline($prompt))) {
 print "\n";
 if ($name) {
   terminal::message('repl', 'storing symbol table');
-  types::store_symbols $name;
+  types::store_symbols($name);
 }
 
 terminal::message('repl', 'exiting');
-__nAwCtE78id76mhk6853U/PECvBwkR+0AtRX59pXFPCg
+__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
