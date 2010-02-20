@@ -584,7 +584,7 @@ meta::function('reload', <<'__GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM');
 execute($_) for (grep {! (/^internal::/ || /^bootstrap::/)} keys %data);
 __GwQjnnfuj0xQlervDJ9EVWzdmdz+XL3Gq0i9rdejvzM
 
-meta::function('repl', <<'__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg');
+meta::function('repl', <<'__0gcQcyYhbrhjjhxxlOrXqdYD4Scmtqtwj2I3HF/c1Xo');
 my ($name, @options) = @_;
 
 use Term::ReadLine;
@@ -601,6 +601,7 @@ types::initialize_symbols();
 types::initialize_debugging_symbols() if grep /^debug$/, @options;
 
 terminal::message('repl', 'running session');
+run('cached-dependencies') unless grep /^nodeps$/, @options;
 run($name) if $name;
 
 terminal::message('repl', 'ready');
@@ -616,7 +617,7 @@ if ($name) {
 }
 
 terminal::message('repl', 'exiting');
-__6uMFGFGW7VRMHW1ZWGfi5gZncmHs3Tll2xJ5cDjpZbg
+__0gcQcyYhbrhjjhxxlOrXqdYD4Scmtqtwj2I3HF/c1Xo
 
 meta::function('rm', <<'__7BVECTVo/mcT5+edC70WPc6S1xCbzAeyUCfCjkKWlww');
 for my $to_be_deleted (@_) {
