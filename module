@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__40ksqWYV7CechiYd4ec4iWZrOu0XCgyMUR8AxqTKWwM');
+meta::code('source', <<'__3YutL7pi2k3WlbD8YgNJPiNJVxFdA+EToRBmSmb0Fdc');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -265,7 +265,7 @@ and def is used to define an entry in the global symbol table, like this:
 Note that there aren't really any local variables -- they are all constants and get rewritten to placeholder expressions during function application.
 
   (' let bind (qn name (fn value (qn expansion ((en name expansion) value)))))
-  (' def bind (qn name (name bind)))
+  (' def bind (tr name (' name bind)))
 
   (def _ (fn _))
 
@@ -316,7 +316,7 @@ isn't too hard either; you can reduce the list under (x + (32 @) + y) -- the 32 
 function; for this you want to right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that
 folds the list into a string, and $'>, which right-quotes the result of right-composing the string generator onto a function.
 
-  (def $   (o / _ (_ + (32 @) +)))
+  (def $   (o / _ (_ + (' " ") +)))
   (def $*  (o $ list))
   (def $'> (fn f (o f ('> $))))
 
@@ -326,42 +326,45 @@ returned. The internal workings below can be read as the following in English: "
 
   (def cond (qn options (:: (o * _ (_ tail) (o % _ (:: (_ head tail)) (reverse options)) tail))))
 
-Numbers.
+Some Perl interfacing.
+The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
+being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
 
-  (def range (fn lower (fn upper (lower <= upper (cons (range lower (upper - 1)) upper) :)))))
+  (def type (perl "lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "lambda('[" + name + (' "]', sub {") + contents + (' "})")))))))
 
-  (def times  (fn n (fn f (n <= 0 f (let _ (f n) (times (n - 1) f))))))
-  (def times_ (fn n (o (times n) _)))
+Beta and composition disassembly.
+You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
+at runtime and write new functions based on the ones that you have. The system provides two function constructors, beta and o'. These two operators look inside
+those constructors; for a beta expander, !!< gives you the symbol being expanded and !!> gives you the expansion; for compositions, !!< gives you the outer, or
+left, function, and !!> gives you the inner.
 
-State.
-This doesn't work right now. Hopefully will get it ironed out soon.
+Don't tell anyone, but these also work for cons cells -- !!< is the head and !!> is the tail. But you shouldn't be using these functions that way, and you
+should forget that I said any of this. If you happen to use these functions on a regular symbol or other atomic value, bad things will happen.
 
-  (def y (qn name (qn v (let s' (gensym (' y))
-                        (s' bind ((en name v) s') value)))))
-
-  (def state (fn iv (let s (gensym (' state))
-                    (y self (qn method (cond (((== method (' >>))     (s value))
-                                              ((== method (' <<))     (fn v (k:' (s bind v) (self value))))
-                                              ((== method (' symbol)) s)
-                                              ((== method (' unbind)) (o (s unbind) (self unbind))))))))))
+  (defperl !!< "${$_[0]->eval()}[0]")
+  (defperl !!> "${$_[0]->eval()}[1]")
 
 Assertions.
 Basic things to assist testing.
 
-  (def fail$  ($'> fail))
-  (def assert (qn predicate (qn e1 (qn e2
-    (cond (((:: (* :: (list (predicate e1 e2)))) :)
-           (k                                    (o ('> fail) $ (++ (' (Assertion failed:)) (* serialize (list (predicate (:: e1) (:: e2)))))))))))))
-__40ksqWYV7CechiYd4ec4iWZrOu0XCgyMUR8AxqTKWwM
+  (defperl fail "terminal::message('fail', $_[0]->eval()->serialize()); types::nil()")
 
-meta::code('tests', <<'__jOSH2crVk9Vq65g2O3IOi+No6SveQjfaYwF9bDvpWAo');
+  (def fail$  ($'> fail))
+  (def assert (qn predicate (fn e1 (fn e2
+    (cond (((:: predicate e1 e2) :)
+           (k                    (o ('> fail) $ ('> ++ ("Assertion failed: ") (* serialize (list (predicate e1 e2))))))))))))
+__3YutL7pi2k3WlbD8YgNJPiNJVxFdA+EToRBmSmb0Fdc
+
+meta::code('tests', <<'__XtEuiMZw9Ryts1KQxAOJ3smQdnu0OQg+ipXNavfeFR0');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
 make sure that the assumptions being made are basically true.
 
   (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
-__jOSH2crVk9Vq65g2O3IOi+No6SveQjfaYwF9bDvpWAo
+  (assert == 1 2)
+__XtEuiMZw9Ryts1KQxAOJ3smQdnu0OQg+ipXNavfeFR0
 
 meta::configuration(':main', <<'__Zr0SvSH5kzJPgCLPhIv578W1QQADIVNCC43JPmlafNg');
 types::clear_symbols;
@@ -821,7 +824,7 @@ Add dependency processing
 Unit testing framework image
 __xhX2yoMOlERKqdFcrIvSa6pQC9Gp7e1EEo+4BqHDsVQ
 
-meta::library('datatypes', <<'__3r8+ZtgXVO0ywdGmd45IhSRGw2G6JD7QNpRiH/JDWME');
+meta::library('datatypes', <<'__XMrMzPDvaUV+bWJwaHlJAXJj/9rn1FBKii+TUcDsHZU');
 # Data type definitions for the interpreter.
 
 package types;
@@ -842,8 +845,6 @@ sub initialize_debugging_symbols {
 }
 
 sub initialize_symbols {
-  symbol('type')->bind(lambda('[type]', sub {symbol(ref $_[0]->eval())}));
-
   symbol('gensym')->bind(lambda('[gensym]', \&gensym));
   symbol('placeholder')->bind(lambda('[placeholder]', sub {placeholder($_[0]->eval())}));
 
@@ -867,11 +868,8 @@ sub initialize_symbols {
 
   symbol('o\'')->bind(lambda('[o\']', sub {
     my $f = $_[0]->eval();
-    lambda(sub {'(' . $f->serialize() . ' o\' ...)'}, sub {
-      my $g = $_[0]->eval();
-      lambda(sub {'(' . $f->serialize() . ' o\' ' . $g->serialize() . ')'}, sub {
-        $f->call($g->call($_[0]));
-      });
+    lambda(sub {'[' . $f->serialize() . ' o\' ...]'}, sub {
+      composition($f, $_[0]->eval());
     });
   }));
 
@@ -881,18 +879,28 @@ sub initialize_symbols {
 
   symbol('file')->bind(lambda('[file]', sub {file($_[0]->eval())}));
 
-  symbol('fail')->bind(lambda('[fail]', sub {
-    my $reason = $_[0]->eval()->serialize();
-    terminal::message('fail', $reason);
-    $transient{'reason-for-failure'} = $reason;
-    nil();
+  symbol('perl')->bind(lambda('[perl]', sub {
+    eval $_[0]->serialize();
   }));
+}
+
+sub trace {
+  my ($f, $name) = @_;
+  sub {
+    my ($self, $arg) = @_;
+    my $result = eval {$f->(@_)};
+    terminal::message($name, $self->serialize() . ($arg ? ' invoked on ' . $arg->serialize() : '')) and die $@ if $@;
+    $result;
+  }
 }
 
 sub deftype {
   my ($name, %members) = @_;
   *{"types::$name"} = sub {bless $members{'new'}->(@_), $name};
   *{"${name}::$_"} = $members{$_} for keys %members;
+
+  # Treat eval and call specially. We want to make sure that we have a backtrace of values at the very least.
+  *{"${name}::$_"} = trace($members{$_}, $_) for qw/eval call/;
 }
 
 my $id = sub {$_[0]};
@@ -914,6 +922,11 @@ sub method {
     }
   };
 }
+
+deftype 'composition', new       => sub {[@_]},
+                       eval      => $id,
+                       call      => sub {$_[0][0]->call($_[0][1]->call($_[1]))},
+                       serialize => sub {'[' . $_[0][0]->serialize() . ' o\' ' . $_[0][1]->serialize() . ']'};
 
 deftype 'lambda', new       => sub {[@_]},
                   eval      => $id,
@@ -953,7 +966,7 @@ deftype 'placeholder',
   new       => sub {\$_[0]},
   eval      => sub {${$_[0]}},
   call      => sub {method(unpack => sub {${$_[0]}},
-                           ''     => sub {$_[1]->eval()->call(${$_[0]})})},
+                           ''     => sub {$_[0]->eval()->call(${$_[0]})})},
   serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
 
 sub replace_in_form {
@@ -1009,7 +1022,7 @@ sub number_op(&) {
 deftype 'number', new       => sub {\$_[0]},
                   eval      => $id,
                   call      => method('<=' => sub {my $self = $_[0]; sub {$$self <= ${$_[0]->eval()} ? $true : $false}},
-                                      '@'  => sub {symbol(chr ${$_[0]})},
+                                      '$'  => sub {symbol(chr ${$_[0]})},
                                       '+'  => number_op {$_[0]  + $_[1]},
                                       '-'  => number_op {$_[0]  - $_[1]},
                                       '*'  => number_op {$_[0]  * $_[1]},
@@ -1042,14 +1055,18 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__3r8+ZtgXVO0ywdGmd45IhSRGw2G6JD7QNpRiH/JDWME
+__XMrMzPDvaUV+bWJwaHlJAXJj/9rn1FBKii+TUcDsHZU
 
-meta::library('reader', <<'__4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE');
+meta::library('reader', <<'__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw');
 package reader;
 
 sub read_form {
   sub lex {
-    grep length, split /([()])|\s+/o, $_[0];
+    grep length, split /([()])|\s+|("[^"\\]*")/o, $_[0];
+  }
+
+  sub unquote {
+    map {s/^"(.*)"$/\1/o; s/\\n/\n/go; s/\\r/\r/go; s/\\\\/\\/go; s/\\(.)/\1/go; $_} @_;
   }
 
   sub parse {
@@ -1059,7 +1076,7 @@ sub read_form {
     return $value                                                    if $x eq ')' || $x eq '';
     return parse(types::cons($value, parse(types::nil(), $xs)), $xs) if $x eq '(';
     return parse(types::cons($value, types::number($x)), $xs)        if $x =~ /^-?[\d.]+$/o;
-    return parse(types::cons($value, types::symbol($x)), $xs);
+    return parse(types::cons($value, types::symbol(unquote $x)), $xs);
   }
 
   parse types::nil(), [lex $_[0]];
@@ -1078,7 +1095,7 @@ sub read_paragraph {
 sub read_document {
   map {read_paragraph $_} split /\n\s*\n/o, $_[0];
 }
-__4ziC8LosJk+o5rkVTM9RRiFyyI3ZtkpiIDmOz1M48uE
+__czUtMnlo+U1aO4kCmZRztAakviaB70nkpmGsJwmIlgw
 
 meta::library('shell', <<'__qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y');
 package shell;
@@ -1096,7 +1113,7 @@ sub load_interactively {
 sub load_quietly {map $_->eval()->serialize(), definitions @_}
 __qXdKYKPXdZ2rVpgEOvBHNa2PwvyTYN4IxJbBLolod3Y
 
-meta::library('terminal', <<'__OXdCZNMv5zcrBfRFJjujigP9i5NFYyuKYSUvO/hmOV8');
+meta::library('terminal', <<'__ZFI0gbWUaHUIL4JuyJaKZ+M1QBtJVMg0lD9HuJV+LRI');
 # Functions for nice-looking terminal output.
 
 package terminal;
@@ -1111,20 +1128,20 @@ use constant cyan   => "1;36";
 
 my %default_colors = (repl    => green, result  => blue,   error   => red,
                       fail    => red,   warning => yellow, loader  => green,
-                      trace   => cyan);
+                      trace   => cyan,  eval    => yellow, call    => yellow);
 
 sub message {
   my ($prefix, $message) = @_;
   my $color = $default_colors{$prefix};
   print "[\033[${color}m$prefix\033[0;0m] $message\n";
 }
-__OXdCZNMv5zcrBfRFJjujigP9i5NFYyuKYSUvO/hmOV8
+__ZFI0gbWUaHUIL4JuyJaKZ+M1QBtJVMg0lD9HuJV+LRI
 
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__Mfu8LDEtWULvQxNteSeNvcSKZ7qNFs9lsQ8OlRccN8w');
+meta::vim_highlighter('gnarly', <<'__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1137,20 +1154,23 @@ endif
 
 set iskeyword=33-39,42-126,128-255
 
+syn keyword gnarlyDangerous        perl defperl !!< !!> contained
 syn keyword gnarlyBuiltins         o' beta placeholder contained
 syn keyword gnarlyMethods          bind unbind value head tail contained
 syn keyword gnarlyFunctions        gensym counter trace type cons fail serialize : contained
 syn keyword gnarlyUserFunctions    ' '' :: o tr fn :< :> :<' :>' ::< ::> # '< '> '>' let en qn def fail$ assert contained
-syn keyword gnarlyBooleans         k k' k: k:'
+syn keyword gnarlyBooleans         k k' k: k:' contained
 syn match   gnarlyNumbers          /\<-\?[0-9.]\+\>/ contained
 syn match   gnarlyParens           /[()]/ contained
+
+syn match   gnarlyQuoted           /"\([^"\\]\|\\.\)*"/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
 syn keyword gnarlyConditionals     cond contained
 
 syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
-syn cluster gnarlySyntax add=gnarlyBooleanFunctions,gnarlyListFunctions,gnarlyConditionals
+syn cluster gnarlySyntax add=gnarlyBooleanFunctions,gnarlyListFunctions,gnarlyConditionals,gnarlyQuoted,gnarlyDangerous
 
 syn region  gnarlyCodeRegion    start=/^\s*(/     end=/^$/ contains=@gnarlySyntax transparent fold
 syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold
@@ -1166,11 +1186,14 @@ hi link gnarlyMethods          Keyword
 hi link gnarlyUserFunctions    Keyword
 hi link gnarlyNumbers          Number
 hi link gnarlyParens           Special
+hi link gnarlyQuoted           String
+
+hi link gnarlyDangerous        Special
 
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__Mfu8LDEtWULvQxNteSeNvcSKZ7qNFs9lsQ8OlRccN8w
+__a/CvDQT0OYnWP4OxLPfUQ032kqVsFWE8nmjogW7hjjQ
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
