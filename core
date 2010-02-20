@@ -620,10 +620,11 @@ meta::function('run', <<'__2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU');
 shell::load_interactively(@_);
 __2RluS4s8uRjHD6Vtfi/a01P+Bo8jgpcLILqPCD4icpU
 
-meta::function('run-file', <<'__2J1JmLPa+98qvGSYWNxYu871jHI4OGHmuiHiLWCR8z4');
-shell::clear_symbol_table();
+meta::function('run-file', <<'__WceprRaNezbwObGfB9h6pwi0Ly281gdWz8CLtXL1ehY');
+shell::initialize_symbol_table();
+&{':main'}();
 shell::load_from_file(@_);
-__2J1JmLPa+98qvGSYWNxYu871jHI4OGHmuiHiLWCR8z4
+__WceprRaNezbwObGfB9h6pwi0Ly281gdWz8CLtXL1ehY
 
 meta::function('save', <<'__uWXGnrQr+A7Cl0zcsDuiokbWAw1XdMdjeq9gDcTMJIw');
 my $serialized_data = serialize();
