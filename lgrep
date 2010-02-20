@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE');
+meta::code('cached-dependencies', <<'__FTTTVDliWbgNO9DC7Nhi5hII4kkwjCuahzPHW/Xxtig');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -368,14 +368,13 @@ Basic things to assist testing.
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
 
-
-__Vn+jRjDz7nhvbxTc/pxef8ghCJQ+2HxU5mHX/msibSE
+__FTTTVDliWbgNO9DC7Nhi5hII4kkwjCuahzPHW/Xxtig
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__ov/v7pNfG9ivKw9W3194WFSp3EJxKW6X4DAZrIe1UPs');
+meta::code('source', <<'__+ADdx4/lecOAZRSqoP/Gf9OJCkft4TMhGQdT9w3dt0w');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -390,20 +389,26 @@ in the head of the cons cells -- however, doing this in Lisp wouldn't have worke
                          call      => method('<<' => sub {my $self = $_[0]; sub {my $name = $_[0]->eval()->serialize();
                                                        lambda(\"[associate $name ...]\", sub {${$self}{$name} = $_[0]->eval(); $self})}},
                                              get  => sub {my $self = $_[0]; sub {${$self}{$_[0]->eval()->serialize()}}},
-                                             keys => sub {array_to_cons(map symbol($_), keys %{$_[0]})});
+                                             keys => sub {cons_from_array(map symbol($_), keys %{$_[0]})});
          nil()")
 
   (defperl hash "types::hash()")
-__ov/v7pNfG9ivKw9W3194WFSp3EJxKW6X4DAZrIe1UPs
+__+ADdx4/lecOAZRSqoP/Gf9OJCkft4TMhGQdT9w3dt0w
 
-meta::code('tests', <<'__W9a4oVibsSqdTm9/grj7Nxxaerno0ukDdkBV6gQMYFk');
-Association list instantiation.
+meta::code('tests', <<'__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y');
+Association list stuff.
 
   (def alist (hash :))
 
   (assert r== alist (alist << (' foo) (' bar)))
   (assert == (alist get (' foo)) (' bar))
-__W9a4oVibsSqdTm9/grj7Nxxaerno0ukDdkBV6gQMYFk
+
+  (alist << 4 5 << 5 6 << 6 7)
+  (assert == (alist get 4) 5)
+  (assert == (alist get 5) 6)
+  (assert == (alist get 6) 7)
+  (alist keys)
+__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -1243,7 +1248,7 @@ meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
 core
 __vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
 
-meta::vim_highlighter('gnarly', <<'__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4');
+meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1267,7 +1272,7 @@ syn match   gnarlyParens           /[()]/ contained
 
 syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
-syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
+syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! r== contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
 syn keyword gnarlyConditionals     cond contained
 
@@ -1295,7 +1300,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4
+__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();

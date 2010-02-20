@@ -1222,7 +1222,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4');
+meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1246,7 +1246,7 @@ syn match   gnarlyParens           /[()]/ contained
 
 syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
-syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! contained
+syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! r== contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
 syn keyword gnarlyConditionals     cond contained
 
@@ -1274,7 +1274,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__bHHVEwIMvU2pAKS+8lJ8M5fUan97DHtVDgBlRJRTGr4
+__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
