@@ -883,7 +883,7 @@ meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::library('datatypes', <<'__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA');
+meta::library('datatypes', <<'__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1007,7 +1007,7 @@ deftype 'symbol',
                       'bound?' => sub {$symbol_table{${$_[0]}} ? $true : $false},
                       unbind   => sub {my $self = $_[0]; sub {$self->unbind(); $_[0]->eval()}},
                       value    => sub {$_[0]->eval()},
-                      '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[0]->eval()} ? $true : $false}},
+                      '<='     => sub {my $self = $_[0]; sub {$$self le $_[0]->eval()->serialize() ? $true : $false}},
                       '+'      => sub {my $self = $_[0]; sub {symbol($$self . ${$_[0]->eval()})}},
                       split    => sub {cons_from_array(map {symbol($_)} split //, ${$_[0]})},
                       ''       => sub {$_[1]->eval()->call($_[0])}),
@@ -1059,9 +1059,9 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
                                     '<=' => sub {my $self = $_[0]; sub {
                                               my $value = $_[0]->eval();
-                                              ref $value eq 'cons' and
-                                                $self->head()->call(symbol('<='))->call($value->head())->call(
-                                                  $self->tail()->call(symbol('<='))->call($value->tail()))->call($false);
+                                              ref $value eq 'cons' ?
+                                                $self->head()->call(symbol('<='))->call(placeholder($value->head()))->call(
+                                                  placeholder($self->tail()->call(symbol('<='))->call(placeholder($value->tail()))))->call($false) : $false;
                                             }},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
@@ -1119,7 +1119,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA
+__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;

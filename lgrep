@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__PbqbXUJakZYTXjpOQMpAaLgqq3BPbB1blPOVq4x+yBI');
+meta::code('cached-dependencies', <<'__rj/zWcVREMGTFh+37fLYWLiH9q2TadCOwOvjYGCQuHE');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -356,15 +356,13 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-
-
-__PbqbXUJakZYTXjpOQMpAaLgqq3BPbB1blPOVq4x+yBI
+__rj/zWcVREMGTFh+37fLYWLiH9q2TadCOwOvjYGCQuHE
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__3l5xzTbMCVHLiwrCveH09+2r70ow8Gp79STBoOYZDCU');
+meta::code('source', <<'__E0XGH6DpK5y6d89tZEQU6TTgaRnnhJb9nIAkRICL0EQ');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -424,26 +422,27 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
        take lists in y and bind them to symbols in x where appropriate.
 
   (def =|<< (fn bindings (fn name (fn x
-    (cond (((bindings contains name) (== (bindings get name) x))
+    (cond (((bindings contains name) (&& (== (type (bindings get name)) (type x))
+                                         (== (bindings get name) x)))
            (k                        (k:' (bindings << name x) k))))))))
 
   (def b==? (fn bindings (fn x (fn y
     (cond (((&& (:? x) (:? y))                                k)
-           ((== (type x) (' symbol))                          (cond (((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
+           (('> == symbol (type x))                           (cond (((== x y)                       k)
                                                                      ((== x (bindings get (' _)))    k)
-                                                                     ((== x y)                       k)
+                                                                     ((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
                                                                      (k                              k'))))
            ((&& ('> == cons (type x)) ('> == cons (type y)))  (&& (b==? bindings (x tail) (y tail))
                                                                   (b==? bindings (x head) (y head))))
            (k                                                 k')))))))
 
   (def simple-binder (qn variant (qn prefix
-    (fn x (fn y (let result (hash :) (b==? (result << (' ^) prefix << (' _) variant) x y result :)))))))
+    (fn x (fn y (let result (hash : << (' ^) prefix << (' _) variant) (b==? result x y result :)))))))
 
   (def // (simple-binder _ $))
-__3l5xzTbMCVHLiwrCveH09+2r70ow8Gp79STBoOYZDCU
+__E0XGH6DpK5y6d89tZEQU6TTgaRnnhJb9nIAkRICL0EQ
 
-meta::code('tests', <<'__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y');
+meta::code('tests', <<'__v69c5+Mf94apflKJVmEAQhppKdQNfG+r5bB4mBTKt5w');
 Association list stuff.
 
   (def alist (hash :))
@@ -456,7 +455,18 @@ Association list stuff.
   (assert == (alist get 5) 6)
   (assert == (alist get 6) 7)
   (alist keys)
-__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y
+
+Binders.
+
+  (assert == (type (// (' (a b c)) (' (a b c))))       (' hash))
+  (assert == (type (// (' (a c b)) (' (a b c))))       (' nil))
+  (assert == (type (// (' (a _ c)) (' (a b c))))       (' hash))
+  (assert == (type (// (' ($x $y)) (' (a b))))         (' hash))
+  (assert == (type (// (' ($x $x)) (' (a a))))         (' hash))
+  (assert == (type (// (' ($x $x)) (' (a b))))         (' nil))
+  (assert == (type (// (' ($x $y)) (' ((a b) (c d))))) (' hash))
+  (assert == (type (// (' ($x $x)) (' ((a b) (a b))))) (' hash))
+__v69c5+Mf94apflKJVmEAQhppKdQNfG+r5bB4mBTKt5w
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -967,7 +977,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA');
+meta::library('datatypes', <<'__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1091,7 +1101,7 @@ deftype 'symbol',
                       'bound?' => sub {$symbol_table{${$_[0]}} ? $true : $false},
                       unbind   => sub {my $self = $_[0]; sub {$self->unbind(); $_[0]->eval()}},
                       value    => sub {$_[0]->eval()},
-                      '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[0]->eval()} ? $true : $false}},
+                      '<='     => sub {my $self = $_[0]; sub {$$self le $_[0]->eval()->serialize() ? $true : $false}},
                       '+'      => sub {my $self = $_[0]; sub {symbol($$self . ${$_[0]->eval()})}},
                       split    => sub {cons_from_array(map {symbol($_)} split //, ${$_[0]})},
                       ''       => sub {$_[1]->eval()->call($_[0])}),
@@ -1143,9 +1153,9 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
                                     '<=' => sub {my $self = $_[0]; sub {
                                               my $value = $_[0]->eval();
-                                              ref $value eq 'cons' and
-                                                $self->head()->call(symbol('<='))->call($value->head())->call(
-                                                  $self->tail()->call(symbol('<='))->call($value->tail()))->call($false);
+                                              ref $value eq 'cons' ?
+                                                $self->head()->call(symbol('<='))->call(placeholder($value->head()))->call(
+                                                  placeholder($self->tail()->call(symbol('<='))->call(placeholder($value->tail()))))->call($false) : $false;
                                             }},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
@@ -1203,7 +1213,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__EJlOXY4PPrxnsjRm45ZCCIw35pN8/WuUlFb5jsviXqA
+__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
