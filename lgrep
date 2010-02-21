@@ -362,7 +362,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__E0XGH6DpK5y6d89tZEQU6TTgaRnnhJb9nIAkRICL0EQ');
+meta::code('source', <<'__rtcE9WQM1xx4kdW2JMKKEPkkpp/eUfDGMYQr44zKH3E');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -395,11 +395,22 @@ Some basic list matching predicates.
   /$? = ends-with for symbols.
   /^? = starts-with for symbols.
 
-  (def *$? (fn x (fn xs (:? x k (:? xs k' (&& (== (xs tail) (x tail)) (*$? (x head) (xs head))))))))
+  (def ==? (fn x (fn y (&& (== (type x) (type y)) (== x y)))))
+
+  (def *$? (fn x (fn xs (:? x k (:? xs k' (&& (==? (xs tail) (x tail)) (*$? (x head) (xs head))))))))
   (def *^? (fn x (fn xs (*$? (reverse x) (reverse xs)))))
 
   (def /$? (fn p (fn s (*$? (p split) (s split)))))
   (def /^? (fn p (fn s (*^? (p split) (s split)))))
+
+Type identifiers.
+Shorthands for type detection.
+
+  *? = detect whether a value is a cons cell.
+  /? = detect whether a value is a symbol.
+
+  (def *? (fn x ('> == cons   (type x))))
+  (def /? (fn x ('> == symbol (type x))))
 
 Binders.
 A binder is just a function that takes a list and produces a hash of bindings. One case where this is useful is destructuring lists. Suppose, for instance, we
@@ -418,29 +429,34 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
   =|<< means "either it's equal or bind it" -- it's used as the rule when we encounter a variable matching against a value. It returns k on success, k' on
        failure.
 
+  ==~  means "equivalent for the purposes of binding" -- this looks inside cons pairs to determine whether the two are structurally equivalent.
+
   b==? means "does x bind to or match y?" -- we use this to determine whether two forms match up. It will descend into sublists for the pattern form (x), and
        take lists in y and bind them to symbols in x where appropriate.
 
   (def =|<< (fn bindings (fn name (fn x
-    (cond (((bindings contains name) (&& (== (type (bindings get name)) (type x))
-                                         (== (bindings get name) x)))
+    (cond (((bindings contains name) (&& (==~ (bindings get name) x)))
            (k                        (k:' (bindings << name x) k))))))))
 
+  (def ==~ (fn x (fn y
+    (cond (((&& (*? x) (*? y)) (&& (==~ (x tail) (y tail)) (==~ (x head) (y head))))
+           (k                  (==? x y)))))))
+
   (def b==? (fn bindings (fn x (fn y
-    (cond (((&& (:? x) (:? y))                                k)
-           (('> == symbol (type x))                           (cond (((== x y)                       k)
-                                                                     ((== x (bindings get (' _)))    k)
-                                                                     ((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
-                                                                     (k                              k'))))
-           ((&& ('> == cons (type x)) ('> == cons (type y)))  (&& (b==? bindings (x tail) (y tail))
-                                                                  (b==? bindings (x head) (y head))))
-           (k                                                 k')))))))
+    (cond (((&& (:? x) (:? y))  k)
+           ((/? x)              (cond (((==? x y)                      k)
+                                       ((== x (bindings get (' _)))    k)
+                                       ((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
+                                       (k                              k'))))
+           ((&& (*? x) (*? y))  (&& (b==? bindings (x tail) (y tail))
+                                    (b==? bindings (x head) (y head))))
+           (k                   k')))))))
 
   (def simple-binder (qn variant (qn prefix
     (fn x (fn y (let result (hash : << (' ^) prefix << (' _) variant) (b==? result x y result :)))))))
 
   (def // (simple-binder _ $))
-__E0XGH6DpK5y6d89tZEQU6TTgaRnnhJb9nIAkRICL0EQ
+__rtcE9WQM1xx4kdW2JMKKEPkkpp/eUfDGMYQr44zKH3E
 
 meta::code('tests', <<'__v69c5+Mf94apflKJVmEAQhppKdQNfG+r5bB4mBTKt5w');
 Association list stuff.
@@ -977,7 +993,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA');
+meta::library('datatypes', <<'__lLycrG1KdDAjjEc5UX+tnoHKhzJlEbzhAj0yB+Z2FSw');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1101,7 +1117,7 @@ deftype 'symbol',
                       'bound?' => sub {$symbol_table{${$_[0]}} ? $true : $false},
                       unbind   => sub {my $self = $_[0]; sub {$self->unbind(); $_[0]->eval()}},
                       value    => sub {$_[0]->eval()},
-                      '<='     => sub {my $self = $_[0]; sub {$$self le $_[0]->eval()->serialize() ? $true : $false}},
+                      '<='     => sub {my $self = $_[0]; sub {$$self le ${$_[0]->eval()} ? $true : $false}},
                       '+'      => sub {my $self = $_[0]; sub {symbol($$self . ${$_[0]->eval()})}},
                       split    => sub {cons_from_array(map {symbol($_)} split //, ${$_[0]})},
                       ''       => sub {$_[1]->eval()->call($_[0])}),
@@ -1151,12 +1167,7 @@ deftype 'cons', new       => sub {[$_[0], $_[1]]},
                 call      => method(head => sub {$_[0][0]},
                                     tail => sub {$_[0][1]},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
-                                    '<=' => sub {my $self = $_[0]; sub {
-                                              my $value = $_[0]->eval();
-                                              ref $value eq 'cons' ?
-                                                $self->head()->call(symbol('<='))->call(placeholder($value->head()))->call(
-                                                  placeholder($self->tail()->call(symbol('<='))->call(placeholder($value->tail()))))->call($false) : $false;
-                                            }},
+                                    '<=' => sub {my $self = $_[0]; sub {$self eq $_[0]->eval() ? $true : $false}},
                                     ''   => sub {$_[1]->eval()->call($_[0])}),
                 serialize => sub {'(' . $_[0][0]->serialize() . ' . ' . $_[0][1]->serialize() . ')'};
 
@@ -1213,7 +1224,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__aNrvoQMEkLK7tXPc5Ha0RyN7SSAleuWvWSpzGZAF1iA
+__lLycrG1KdDAjjEc5UX+tnoHKhzJlEbzhAj0yB+Z2FSw
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
