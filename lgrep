@@ -996,7 +996,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__lLycrG1KdDAjjEc5UX+tnoHKhzJlEbzhAj0yB+Z2FSw');
+meta::library('datatypes', <<'__hLYxStEt5g3pC8r9gkHqixCX19cLAUjxoI5KkO1Bx8E');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1081,7 +1081,7 @@ sub method {
   my %table = @_;
   sub {
     my $self = $_[0];
-    my $lambda_wrap = sub {lambda(sub {'(' . $self->serialize() . ' ' . $_[0] . ')'}, $_[1])};
+    my $lambda_wrap = sub {my $name = $_[0]; lambda(sub {'(' . $self->serialize() . ' ' . $name . ')'}, $_[1])};
     if (ref $_[1] eq 'symbol' && $table{${$_[1]}}) {
       # Default behavior -- return the value directly, wrapping it in a serializable lambda
       # closure only if it's a function.
@@ -1227,7 +1227,7 @@ deftype 'file', new       => sub {\$_[0]},
                                                 $self;
                                               }}),
                 serialize => sub {'[file ' . ${$_[0]}->serialize() . ']'};
-__lLycrG1KdDAjjEc5UX+tnoHKhzJlEbzhAj0yB+Z2FSw
+__hLYxStEt5g3pC8r9gkHqixCX19cLAUjxoI5KkO1Bx8E
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
