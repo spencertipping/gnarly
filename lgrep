@@ -364,7 +364,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__mBmevfos+BRs2Tu1kvq0WNV3/W/4TtRWAml0pJc/t94');
+meta::code('source', <<'__3l5xzTbMCVHLiwrCveH09+2r70ow8Gp79STBoOYZDCU');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -430,14 +430,18 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
   (def b==? (fn bindings (fn x (fn y
     (cond (((&& (:? x) (:? y))                                k)
            ((== (type x) (' symbol))                          (cond (((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
-                                                                     ((== x (bindings get (' _)))    k))))
+                                                                     ((== x (bindings get (' _)))    k)
+                                                                     ((== x y)                       k)
+                                                                     (k                              k'))))
            ((&& ('> == cons (type x)) ('> == cons (type y)))  (&& (b==? bindings (x tail) (y tail))
-                                                                  (b==? bindings (x head) (y head))))))))))
+                                                                  (b==? bindings (x head) (y head))))
+           (k                                                 k')))))))
+
   (def simple-binder (qn variant (qn prefix
     (fn x (fn y (let result (hash :) (b==? (result << (' ^) prefix << (' _) variant) x y result :)))))))
 
   (def // (simple-binder _ $))
-__mBmevfos+BRs2Tu1kvq0WNV3/W/4TtRWAml0pJc/t94
+__3l5xzTbMCVHLiwrCveH09+2r70ow8Gp79STBoOYZDCU
 
 meta::code('tests', <<'__x0EGvD/2i1hcb8P8P05bUXp+TsXKprrI00cb4UAiM3Y');
 Association list stuff.
