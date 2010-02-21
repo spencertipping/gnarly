@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__rj/zWcVREMGTFh+37fLYWLiH9q2TadCOwOvjYGCQuHE');
+meta::code('cached-dependencies', <<'__5oLVvkR6r837vr34WfksHFZd/Tp44T+JdJLu5OFpd5o');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -266,8 +266,8 @@ operator. Deriving the other operators is trivial given this one, and it also pr
   (def k:  (fn x (fn y x)))
   (def k:' (fn x (fn y y)))
 
-  (def && (fn b1 (fn b2 (b1 (b2 k k') k'))))
-  (def || (fn b1 (fn b2 (b1 k (b2 k k')))))
+  (def && (fn b1 (qn b2 (b1 (:: b2 k k') k'))))
+  (def || (fn b1 (qn b2 (b1 k (:: b2 k k')))))
   (def !  (fn b (b k' k)))
 
   (def == (fn x (fn y (&& (x <= y) (y <= x)))))
@@ -356,13 +356,15 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__rj/zWcVREMGTFh+37fLYWLiH9q2TadCOwOvjYGCQuHE
+
+
+__5oLVvkR6r837vr34WfksHFZd/Tp44T+JdJLu5OFpd5o
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__rtcE9WQM1xx4kdW2JMKKEPkkpp/eUfDGMYQr44zKH3E');
+meta::code('source', <<'__kpSC1lIJhUnh3kCVMPnaKYAOmXHOydR1b1ZjnnqoiQs');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -435,11 +437,12 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
        take lists in y and bind them to symbols in x where appropriate.
 
   (def =|<< (fn bindings (fn name (fn x
-    (cond (((bindings contains name) (&& (==~ (bindings get name) x)))
+    (cond (((bindings contains name) (==~ (bindings get name) x))
            (k                        (k:' (bindings << name x) k))))))))
 
   (def ==~ (fn x (fn y
     (cond (((&& (*? x) (*? y)) (&& (==~ (x tail) (y tail)) (==~ (x head) (y head))))
+           ((&& (:? x) (:? y)) k)
            (k                  (==? x y)))))))
 
   (def b==? (fn bindings (fn x (fn y
@@ -453,12 +456,12 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
            (k                   k')))))))
 
   (def simple-binder (qn variant (qn prefix
-    (fn x (fn y (let result (hash : << (' ^) prefix << (' _) variant) (b==? result x y result :)))))))
+    (qn pattern (fn x (let result (hash : << (' ^) prefix << (' _) variant) (b==? result pattern x result :)))))))
 
   (def // (simple-binder _ $))
-__rtcE9WQM1xx4kdW2JMKKEPkkpp/eUfDGMYQr44zKH3E
+__kpSC1lIJhUnh3kCVMPnaKYAOmXHOydR1b1ZjnnqoiQs
 
-meta::code('tests', <<'__v69c5+Mf94apflKJVmEAQhppKdQNfG+r5bB4mBTKt5w');
+meta::code('tests', <<'__j95rz+SXQ+Vf9ZSUkXtUbJfOQuZEJd5p6ynn+qAhzcI');
 Association list stuff.
 
   (def alist (hash :))
@@ -474,15 +477,15 @@ Association list stuff.
 
 Binders.
 
-  (assert == (type (// (' (a b c)) (' (a b c))))       (' hash))
-  (assert == (type (// (' (a c b)) (' (a b c))))       (' nil))
-  (assert == (type (// (' (a _ c)) (' (a b c))))       (' hash))
-  (assert == (type (// (' ($x $y)) (' (a b))))         (' hash))
-  (assert == (type (// (' ($x $x)) (' (a a))))         (' hash))
-  (assert == (type (// (' ($x $x)) (' (a b))))         (' nil))
-  (assert == (type (// (' ($x $y)) (' ((a b) (c d))))) (' hash))
-  (assert == (type (// (' ($x $x)) (' ((a b) (a b))))) (' hash))
-__v69c5+Mf94apflKJVmEAQhppKdQNfG+r5bB4mBTKt5w
+  (assert == (type (// (a b c) (' (a b c))))       (' hash))
+  (assert == (type (// (a c b) (' (a b c))))       (' nil))
+  (assert == (type (// (a _ c) (' (a b c))))       (' hash))
+  (assert == (type (// ($x $y) (' (a b))))         (' hash))
+  (assert == (type (// ($x $x) (' (a a))))         (' hash))
+  (assert == (type (// ($x $x) (' (a b))))         (' nil))
+  (assert == (type (// ($x $y) (' ((a b) (c d))))) (' hash))
+  (assert == (type (// ($x $x) (' ((a b) (a b))))) (' hash))
+__j95rz+SXQ+Vf9ZSUkXtUbJfOQuZEJd5p6ynn+qAhzcI
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
