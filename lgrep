@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__Nzv7mg4fhkdtL/6SFcXmUIMP9VI4VWDzqbZ69OvwM+0');
+meta::code('cached-dependencies', <<'__6CPpKuHl+qJZN87xU3Vgk3aMBU+AGmqiGSyFWg4eQhI');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -337,10 +337,6 @@ at runtime and write new functions based on the ones that you have. The system p
 those constructors; for a beta expander, !!< gives you the symbol being expanded and !!> gives you the expansion; for compositions, !!< gives you the outer, or
 left, function, and !!> gives you the inner.
 
-Don't tell anyone, but these also work for cons cells -- !!< is the head and !!> is the tail. But you shouldn't be using these functions that way, and you
-should forget that I said any of this. So don't use them, or if you must, use them only on expanders and compositions. If you use these functions on a regular
-symbol or other atomic value, bad things will happen.
-
   (defperl !!< "${$_[0]->eval()}[0]")
   (defperl !!> "${$_[0]->eval()}[1]")
 
@@ -356,7 +352,9 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__Nzv7mg4fhkdtL/6SFcXmUIMP9VI4VWDzqbZ69OvwM+0
+
+
+__6CPpKuHl+qJZN87xU3Vgk3aMBU+AGmqiGSyFWg4eQhI
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
