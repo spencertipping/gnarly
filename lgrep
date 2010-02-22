@@ -461,7 +461,7 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
   (def // (simple-binder _ $))
 __kpSC1lIJhUnh3kCVMPnaKYAOmXHOydR1b1ZjnnqoiQs
 
-meta::code('tests', <<'__j95rz+SXQ+Vf9ZSUkXtUbJfOQuZEJd5p6ynn+qAhzcI');
+meta::code('tests', <<'__A0oOVejVkFQPtaeo+z5L6rhZ+pvrDrYcnx0qm8lzTYM');
 Association list stuff.
 
   (def alist (hash :))
@@ -485,7 +485,9 @@ Binders.
   (assert == (type (// ($x $x) (' (a b))))         (' nil))
   (assert == (type (// ($x $y) (' ((a b) (c d))))) (' hash))
   (assert == (type (// ($x $x) (' ((a b) (a b))))) (' hash))
-__j95rz+SXQ+Vf9ZSUkXtUbJfOQuZEJd5p6ynn+qAhzcI
+
+  (assert == (type (// ($x $y $z $x $y) (' ((a b) (a b c) (a d f g) (a b) (a b c))))) (' hash))
+__A0oOVejVkFQPtaeo+z5L6rhZ+pvrDrYcnx0qm8lzTYM
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
