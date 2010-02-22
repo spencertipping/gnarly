@@ -143,9 +143,9 @@ meta::attribute('module-api-version', <<'__0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9
 1.0
 __0P9ZdLaqUs9WK+pZIYQMAyqGCpGjUS9/6Pdo9rvgBfY
 
-meta::attribute('module-name', <<'__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw');
-core
-__DUX1/UYrjHC/+xACGsG8/z9Y8psfr3VoWVCVQn1CgSw
+meta::attribute('module-name', <<'__5G+SI2c5FHz3DmbOkWln/arXb69WOp25fAg3CiSh5XQ');
+optimize
+__5G+SI2c5FHz3DmbOkWln/arXb69WOp25fAg3CiSh5XQ
 
 meta::attribute('module-revision', <<'__X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k');
 0
@@ -186,201 +186,52 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
+meta::code('cached-dependencies', <<'__r58/DMCjq66nPnOpcuqaB7L0z7Jpfj2e3BSVc74uHWM');
+This will be overwritten when you type load-dependencies.
+__r58/DMCjq66nPnOpcuqaB7L0z7Jpfj2e3BSVc74uHWM
+
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__dXZJ9Bk6i2D76QaUUhWWu7GLLgLaDhGiskxwL7O2cKk');
-Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
-Licensed under the terms of the MIT source code license.
+meta::code('source', <<'__TYHcRtHwYq6IZt9RAsn0b8DqdiMY87hUzLE/Xl8L/xk');
+Function Optimization | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
 
-Quoting.
-Applying the identity beta expander consumes an evaluation step but does not carry it forward. Thus it can be useful for absorbing an evaluation as quoting
-is commonly used to do. In particular, it can delay evaluation for parameters passed to functions; for instance, (o my-function ' stuff), or, more
-concisely, ('> my-function stuff) will treat the /stuff/ as being quoted, just as if (my-function (' stuff)) had been typed. The double-quote operator, '',
-is used in conjunction with o'. o' is the system composition function, which does not protect the results of the first function from the effects of the
-second function's argument evaluation.  Also in (' ::> bind (:< (beta _ (o' _ ::)))) the mix is the :: operator, which double-evaluates an expression. This
-is equivalent to Common Lisp's /eval/ function, which evaluates its argument implicitly (since it is not a macro), and then evaluates it again.
+This module addresses one of the deficiencies in Gnarly's interpreter; namely, that the beta-expander is ridiculously slow. You can use the functions in this
+module to JIT to Perl functions, which should be many orders of magnitude faster. The only downside is that the resulting functions are not first-class
+beta-expanders in the sense that you can't disassemble them using !!< and !!>. However, it wouldn't make much sense to disassemble an already-optimized
+function.
 
-  (beta _ _ ' bind (beta _ _))
-  (' ''       bind (beta _ (' _)))
-  (' ::       bind (o' : :))
+Translating into Perl.
+At the base layer, all we're doing is creating a faster and slightly smarter version of fn. (You can also '> it to get the corresponding qn.) Right now, the
+semantics of fn are to eval the parameter, put it into a placeholder, and then beta-expand it into the expansion, evaluating the result. We lose speed in a
+couple of ways, but the most significant it this: the expansion could be another fn, in which case we should compile the second fn up-front as opposed to
+waiting until we have the first parameter. Since Perl allows anonymous closures to be created, we can encode this in a straightforward way.
 
-Composition.
-These let you easily put evals or quotes onto existing functions.
+Note that we must do some inlining through the global symbol table if we want to precompile inner functions. This isn't horrible, but it does mean that the
+function becomes pure since all of the free symbols are baked in. It also means that it matters when you do the optimization; all of the symbols that are
+referenced in the function must have their proper values when you optimize it. Finally, there's one more consideration. Recursive functions obviously won't do
+the right thing because as soon as they hit the recursive symbol they'll be back in unoptimized code.
 
-  (' :<  bind (o'  :))
-  (' ::< bind (o' ::))
-  (' '<  bind (o'  '))
-  (' :>  bind (:< (beta _ (o' _  :))))
-  (' ::> bind (:< (beta _ (o' _ ::))))
-  (' '>  bind (:< (beta _ (o' _ ''))))
+Because the core language is fairly straightforward and all values can be inspected, translating these forms into Perl is trivial at the high level.
+Compositions can be translated directly (optionally inlined, though I'm not doing that yet), beta-expanders can be encoded as Perl subroutines (wrapped in the
+lambda() constructor), and other expressions can be encoded as inlined cons-evaluators if they are going to be evaluated. (The naive approach would encode them
+as cons-cells that would be evaluated by the functions they were passed to. With some work, however, you can pre-expand the cons logic to avoid allocating
+memory.)
 
-Normal composition.
-This doesn't double-evaluate stuff when there are two functions. This is by virtue of the fact that we quote the result of the first function. If the second
-function doesn't evaluate, then it will just get a quoted value; however, it makes no sense to place a non-evaluating function on the left-hand side of a
-composition.
+  (def opt-beta (fn b ()))
+  (def opt-comp (fn c ()))
+  (def opt-cons (fn c ()))
+  (def opt-atom (fn a ()))
 
-  (' o bind (:< (beta _ (o' (o' _ ')))))
+  (def optimize (fn f (cond (((@? f) (opt-beta f)) ((o? f) (opt-comp f))
+                             ((*? f) (opt-cons f)) (k      (opt-atom f))))))
+__TYHcRtHwYq6IZt9RAsn0b8DqdiMY87hUzLE/Xl8L/xk
 
-Functions and macros.
-Definitions for creating functions and macros.
-
-  tr = translate code. This is an unevaluative macro that essentially does beta-substitution and evaluates its output.
-  fn = function. This behaves like lambda in most languages, except that you can compose the quote function (or any other beta) onto it to make it not evaluate
-       its parameter.
-  en = evaluative function. It evaluates the things you pass in as the /name/ and /expansion/.
-  qn = quoted function. Just like function, except that its parameter is not evaluated.
-
-  (' tr bind (:< (::> (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
-  (' fn bind (::> (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
-
-  (' en bind     (fn name     (fn expansion (:> (:> fn name) expansion))))
-  (' qn bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))))
-
-Shorthands.
-let and def are two shorthands for common operations. let is used to define a local variable, like this:
-|
-| (let x 5 (x + 1))
-|
-and def is used to define an entry in the global symbol table, like this:
-|
-| (def foo (' bar))
-|
-Note that there aren't really any local variables -- they are all constants and get rewritten to placeholder expressions during function application.
-
-  (' let bind (qn name (fn value (qn expansion ((en name expansion) value)))))
-  (' def bind (tr name (' name bind)))
-
-  (def _ (fn _))
-
-Y combinator.
-There are cases where using the global symbol table for recursion is suboptimal. One example is when you are trying to optimize a function using the
-optimization library. In this case, you want to eliminate recursive symbol references and use the Y combinator instead. Since Gnarly uses call-by-value, I'm
-encoding Z instead of Y.
-
-  (def z (fn f (fn x (f (fn y (x x y))) (fn x (f (fn y (x x y)))))))
-
-Booleans and relational operators.
-Booleans are Church-encoded, and logical operators try to get the result as much evaluated as possible to maximize performance. The meanings of these functions
-correspond to their names, with the first four ultimately rooted in the SK combinator calculus. K is a function that returns a constant-returning function; that
-is, k x y = x. k' returns y; that is, it absorbs its parameter. Normally, k and k' are lazy in that they fail to evaluate their unused parameter. However,
-sometimes it is necessary to evaluate both, so k: and k:' are provided for this purpose.
-
-Relational operators operate on partially or fully ordered things. The only assumption that is made is that the things implement <=, the less-than-or-equal-to
-operator. Deriving the other operators is trivial given this one, and it also provides an indication of whether something is not comparable to something else
-(in this case, x <= y and y <= x are both false).
-
-  (def k   (fn x (qn y x)))
-  (def k'  (qn x (fn y y)))
-  (def k:  (fn x (fn y x)))
-  (def k:' (fn x (fn y y)))
-
-  (def && (fn b1 (qn b2 (b1 (:: b2 k k') k'))))
-  (def || (fn b1 (qn b2 (b1 k (:: b2 k k')))))
-  (def !  (fn b (b k' k)))
-
-  (def == (fn x (fn y (&& (x <= y) (y <= x)))))
-  (def <  (fn x (fn y (&& (x <= y) (! (y <= x))))))
-  (def >  (fn x (fn y (&& (y <= x) (! (x <= y))))))
-  (def >= (fn x (fn y (y <= x))))
-  (def <= (fn x (fn y (x <= y))))
-  (def != (fn x (fn y (! (== x y)))))
-
-Lists.
-Here's what these functions are for.
-
-  :? = a null check -- it behaves much like the ternary operator in C, but instead of zero/nonzero it does null/non-null.
-  *  = map    -- usage is * function list. The mnemonic is that functions can distribute across lists via multiplication.
-  %  = filter -- usage is % function list. The idea is that certain elements are inside some equivalence class, and others aren't. (Modulus is one example.)
-  /  = reduce -- usage is / function list. For some reason I thought / felt like a fold operator, but I honestly don't know why.
-  ++ = append -- usage is ++ list1 list2.
-
-  reverse' is a helper function for reverse. It's a hack because right now I don't have letrec or a Y combinator.
-  reverse reverses a list in linear time.
-
-  list is a list constructor that behaves just as it does in Lisp or Scheme, except that it needs extra parens: (list (1 2 3)). It constructs the list in
-  left-cons form, just like all lists in Gnarly: (((: . 1) . 2) . 3)
-
-  (def :? (fn xs (== (type xs) (' nil))))
-
-  (def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))))
-  (def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))))
-  (def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail))))))
-  (def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail))))))
-
-  (def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head))))))
-  (def reverse  (reverse' :))
-
-  (def list ('> (* ::)))
-
-Strings.
-Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
-isn't too hard either; you can reduce the list under (x + (' " ") + y). The most common case is wanting to pass a string to a function; for this you want to
-right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that folds the list into a string,
-and $'>, which right-quotes the result of right-composing the string generator onto a function.
-
-Because I'm a softie, you can also use escaped symbol literals in the language. Note, however, that they aren't strings! The expression "foo bar bif" is a
-symbol just as much as foo_bar_bif is, and both will be evaluated if given to a function. (Both will complain, too, if you haven't defined them.) So if you want
-a "string" to behave like a proper string literal, it needs to be quoted, as in (' "foo bar").
-
-  (def $   (o / _ (_ + (' " ") +)))
-  (def $*  (o $ list))
-  (def $'> (fn f (o f ('> $))))
-
-Cond.
-This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
-returned. The internal workings below can be read as the following in English: "evaluate the tail of the first expression whose tail of whose head is true."
-
-  (def cond (qn options (:: (o * _ (_ tail) (o % _ (:: (_ head tail)) (reverse options)) tail))))
-
-Some Perl interfacing.
-The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
-being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
-
-  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
-  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) + (' "]', sub {") + contents + (' "})")))))))
-
-Beta and composition disassembly.
-You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
-at runtime and write new functions based on the ones that you have. The system provides two function constructors, beta and o'. These two operators look inside
-those constructors; for a beta expander, !!< gives you the symbol being expanded and !!> gives you the expansion; for compositions, !!< gives you the outer, or
-left, function, and !!> gives you the inner.
-
-  (defperl !!< "${$_[0]->eval()}[0]")
-  (defperl !!> "${$_[0]->eval()}[1]")
-
-  (defperl r== "my $self = $_[0]->eval(); types::lambda('[' . $self->serialize() . ' r== ...]',
-                  sub {$self eq $_[0]->eval() ? $types::true : $types::false})")
-
-Assertions.
-Basic things to assist testing.
-
-  (defperl fail "terminal::message('fail', $transient{'last-failure'} = $_[0]->eval()->serialize()); types::nil()")
-
-  (def fail$  ($'> fail))
-  (def assert (qn predicate (fn e1 (fn e2
-    (cond (((:: predicate e1 e2) :)
-           (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__A4oktbvYETxTrVV/8pfB+DQNkTExQqqLocXn5JkwzLU
-
-meta::code('tests', <<'__Bj3uez8Y9bt3R2MjATugVRQecdOCst3gLg9Zl0YBtDc');
-Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
-If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
-tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
-make sure that the assumptions being made are basically true.
-
-  (assert == 14 (o / _ (_ +) ('> (o * _ (_ + 1)) (1 2 3 4))))
-
-  (assert == (!!> (beta x y)) (' y))
-  (assert == 2 2)
-
-  (&& k' (assert == 1 2))
-  (assert == (&& k  k  1 2) 1)
-  (assert == (&& k' k  1 2) 2)
-  (assert == (&& k  k' 1 2) 2)
-  (assert == (&& k' k' 1 2) 2)
-__Bj3uez8Y9bt3R2MjATugVRQecdOCst3gLg9Zl0YBtDc
+meta::code('tests', <<'__pUlbKLBwH0shnUUThu2z/3EhVnuOvhbfCOedvgFOifU');
+Module-specific unit tests go here. These will be run when you type :unit, and when you try to load the module as a dependency.
+__pUlbKLBwH0shnUUThu2z/3EhVnuOvhbfCOedvgFOifU
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -1220,9 +1071,10 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
+meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
 
-__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+core
+__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
 
 meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
 " Gnarly
