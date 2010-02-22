@@ -302,7 +302,7 @@ Here's what these functions are for.
   list is a list constructor that behaves just as it does in Lisp or Scheme, except that it needs extra parens: (list (1 2 3)). It constructs the list in
   left-cons form, just like all lists in Gnarly: (((: . 1) . 2) . 3)
 
-  (def :? (fn xs (== (type xs) (' nil))))
+  (def :? (fn xs ('> == nil (type xs))))
 
   (def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))))
   (def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))))
@@ -313,6 +313,14 @@ Here's what these functions are for.
   (def reverse  (reverse' :))
 
   (def list ('> (* ::)))
+
+Type detection.
+These provide predicates that tell you whether a value is of a given type.
+
+  (def *? (fn x ('> == cons        (type x))))
+  (def /? (fn x ('> == symbol      (type x))))
+  (def @? (fn f ('> == expander    (type f))))
+  (def o? (fn f ('> == composition (type f))))
 
 Strings.
 Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
@@ -362,9 +370,9 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__A4oktbvYETxTrVV/8pfB+DQNkTExQqqLocXn5JkwzLU
+__dXZJ9Bk6i2D76QaUUhWWu7GLLgLaDhGiskxwL7O2cKk
 
-meta::code('tests', <<'__Bj3uez8Y9bt3R2MjATugVRQecdOCst3gLg9Zl0YBtDc');
+meta::code('tests', <<'__SniAhKgJt1Safxezl9DyiARoxrdNMjtn0yQIBLYuK7E');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
@@ -380,7 +388,10 @@ make sure that the assumptions being made are basically true.
   (assert == (&& k' k  1 2) 2)
   (assert == (&& k  k' 1 2) 2)
   (assert == (&& k' k' 1 2) 2)
-__Bj3uez8Y9bt3R2MjATugVRQecdOCst3gLg9Zl0YBtDc
+
+  (def fact (z (fn f (fn n (n <= 1 1 (n * (f (n - 1))))))))
+  (assert == (fact 10) 3628800)
+__SniAhKgJt1Safxezl9DyiARoxrdNMjtn0yQIBLYuK7E
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
