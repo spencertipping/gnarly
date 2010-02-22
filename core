@@ -304,12 +304,12 @@ Here's what these functions are for.
 
   (def :? (fn xs ('> == nil (type xs))))
 
-  (def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))))
-  (def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))))
-  (def /  (fn f  (fn xs (:? (xs head) (xs tail) (f (/ f (xs head)) (xs tail))))))
-  (def ++ (fn xs (fn ys (:? ys xs (cons (++ xs (ys head)) (ys tail))))))
+  (def *  (z (fn r (fn f (fn xs (:? xs : (cons (r f (xs head)) (f (xs tail)))))))))
+  (def %  (z (fn r (fn f (fn xs (:? xs : (f (xs tail) (cons (r f (xs head)) (xs tail)) (r f (xs head)))))))))
+  (def /  (z (fn r (fn f (fn xs (:? (xs head) (xs tail) (f (r f (xs head)) (xs tail))))))))
+  (def ++ (z (fn r (fn xs (fn ys (:? ys xs (cons (r xs (ys head)) (ys tail))))))))
 
-  (def reverse' (fn xs (fn ys (:? ys xs (reverse' (cons xs (ys tail)) (ys head))))))
+  (def reverse' (z (fn r (fn xs (fn ys (:? ys xs (r (cons xs (ys tail)) (ys head))))))))
   (def reverse  (reverse' :))
 
   (def list ('> (* ::)))
@@ -1235,7 +1235,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
+meta::vim_highlighter('gnarly', <<'__F1OQMuNvmBVt1AiMBCkOk23sLOROdFdvMTEio3pePnA');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1261,10 +1261,11 @@ syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! r== contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
+syn keyword gnarlyTypeFunctions    *? /? @? o? contained
 syn keyword gnarlyConditionals     cond contained
 
 syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
-syn cluster gnarlySyntax add=gnarlyBooleanFunctions,gnarlyListFunctions,gnarlyConditionals,gnarlyQuoted,gnarlyDangerous
+syn cluster gnarlySyntax add=gnarlyBooleanFunctions,gnarlyListFunctions,gnarlyConditionals,gnarlyQuoted,gnarlyDangerous,gnarlyTypeFunctions
 
 syn region  gnarlyCodeRegion    start=/^\s*(/     end=/^$/ contains=@gnarlySyntax transparent fold
 syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold
@@ -1272,6 +1273,7 @@ syn region  gnarlyCommentRegion start=/^\s*[^( ]/ end=/^$/ fold
 hi link gnarlyBooleans         Boolean
 hi link gnarlyBooleanFunctions Operator
 hi link gnarlyListFunctions    Operator
+hi link gnarlyTypeFunctions    Operator
 hi link gnarlyCommentRegion    Comment
 hi link gnarlyBuiltins         Keyword
 hi link gnarlyFunctions        Keyword
@@ -1287,7 +1289,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4
+__F1OQMuNvmBVt1AiMBCkOk23sLOROdFdvMTEio3pePnA
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
