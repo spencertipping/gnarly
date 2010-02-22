@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__6CPpKuHl+qJZN87xU3Vgk3aMBU+AGmqiGSyFWg4eQhI');
+meta::code('cached-dependencies', <<'__g/2VoTH8BnW9kYD1GaqbZ3f9s10fqjsKGmy8CNwM+xw');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -199,9 +199,9 @@ is used in conjunction with o'. o' is the system composition function, which doe
 second function's argument evaluation.  Also in (' ::> bind (:< (beta _ (o' _ ::)))) the mix is the :: operator, which double-evaluates an expression. This
 is equivalent to Common Lisp's /eval/ function, which evaluates its argument implicitly (since it is not a macro), and then evaluates it again.
 
-  (beta _ _ '  bind (beta _ _))
-  (' ''        bind (beta _ (' _)))
-  (' ::        bind (o' : :))
+  (beta _ _ ' bind (beta _ _))
+  (' ''       bind (beta _ (' _)))
+  (' ::       bind (o' : :))
 
 Composition.
 These let you easily put evals or quotes onto existing functions.
@@ -229,11 +229,192 @@ Definitions for creating functions and macros.
   en = evaluative function. It evaluates the things you pass in as the /name/ and /expansion/.
   qn = quoted function. Just like function, except that its parameter is not evaluated.
 
-  (' tr  bind (:< (::> (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
-  (' fn  bind (::> (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
+  (' tr bind (:< (::> (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
+  (' fn bind (::> (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
 
-  (' en  bind     (fn name     (fn expansion (:> (:> fn name) expansion))))
-  (' qn  bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))))
+  (' en bind     (fn name     (fn expansion (:> (:> fn name) expansion))))
+  (' qn bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))))
+
+Shorthands.
+let and def are two shorthands for common operations. let is used to define a local variable, like this:
+|
+| (let x 5 (x + 1))
+|
+and def is used to define an entry in the global symbol table, like this:
+|
+| (def foo (' bar))
+|
+Note that there aren't really any local variables -- they are all constants and get rewritten to placeholder expressions during function application.
+
+  (' let bind (qn name (fn value (qn expansion ((en name expansion) value)))))
+  (' def bind (tr name (' name bind)))
+
+  (def _ (fn _))
+
+Y combinator.
+There are cases where using the global symbol table for recursion is suboptimal. One example is when you are trying to optimize a function using the
+optimization library. In this case, you want to eliminate recursive symbol references and use the Y combinator instead. Since Gnarly uses call-by-value, I'm
+encoding Z instead of Y.
+
+  (def z (fn f (fn x (f (fn y (x x y))) (fn x (f (fn y (x x y)))))))
+
+Booleans and relational operators.
+Booleans are Church-encoded, and logical operators try to get the result as much evaluated as possible to maximize performance. The meanings of these functions
+correspond to their names, with the first four ultimately rooted in the SK combinator calculus. K is a function that returns a constant-returning function; that
+is, k x y = x. k' returns y; that is, it absorbs its parameter. Normally, k and k' are lazy in that they fail to evaluate their unused parameter. However,
+sometimes it is necessary to evaluate both, so k: and k:' are provided for this purpose.
+
+Relational operators operate on partially or fully ordered things. The only assumption that is made is that the things implement <=, the less-than-or-equal-to
+operator. Deriving the other operators is trivial given this one, and it also provides an indication of whether something is not comparable to something else
+(in this case, x <= y and y <= x are both false).
+
+  (def k   (fn x (qn y x)))
+  (def k'  (qn x (fn y y)))
+  (def k:  (fn x (fn y x)))
+  (def k:' (fn x (fn y y)))
+
+  (def && (fn b1 (qn b2 (b1 (:: b2 k k') k'))))
+  (def || (fn b1 (qn b2 (b1 k (:: b2 k k')))))
+  (def !  (fn b (b k' k)))
+
+  (def == (fn x (fn y (&& (x <= y) (y <= x)))))
+  (def <  (fn x (fn y (&& (x <= y) (! (y <= x))))))
+  (def >  (fn x (fn y (&& (y <= x) (! (x <= y))))))
+  (def >= (fn x (fn y (y <= x))))
+  (def <= (fn x (fn y (x <= y))))
+  (def != (fn x (fn y (! (== x y)))))
+
+Lists.
+Here's what these functions are for.
+
+  :? = a null check -- it behaves much like the ternary operator in C, but instead of zero/nonzero it does null/non-null.
+  *  = map    -- usage is * function list. The mnemonic is that functions can distribute across lists via multiplication.
+  %  = filter -- usage is % function list. The idea is that certain elements are inside some equivalence class, and others aren't. (Modulus is one example.)
+  /  = reduce -- usage is / function list. For some reason I thought / felt like a fold operator, but I honestly don't know why.
+  ++ = append -- usage is ++ list1 list2.
+
+  reverse' is a helper function for reverse. It's a hack because right now I don't have letrec or a Y combinator.
+  reverse reverses a list in linear time.
+
+  list is a list constructor that behaves just as it does in Lisp or Scheme, except that it needs extra parens: (list (1 2 3)). It constructs the list in
+  left-cons form, just like all lists in Gnarly: (((: . 1) . 2) . 3)
+
+  (def :? (fn xs ('> == nil (type xs))))
+
+  (def *  (z (fn r (fn f (fn xs (:? xs : (cons (r f (xs head)) (f (xs tail)))))))))
+  (def %  (z (fn r (fn f (fn xs (:? xs : (f (xs tail) (cons (r f (xs head)) (xs tail)) (r f (xs head)))))))))
+  (def /  (z (fn r (fn f (fn xs (:? (xs head) (xs tail) (f (r f (xs head)) (xs tail))))))))
+  (def ++ (z (fn r (fn xs (fn ys (:? ys xs (cons (r xs (ys head)) (ys tail))))))))
+
+  (def reverse' (z (fn r (fn xs (fn ys (:? ys xs (r (cons xs (ys tail)) (ys head))))))))
+  (def reverse  (reverse' :))
+
+  (def list ('> (* ::)))
+
+Type detection.
+These provide predicates that tell you whether a value is of a given type.
+
+  (def *? (fn x ('> == cons        (type x))))
+  (def /? (fn x ('> == symbol      (type x))))
+  (def @? (fn f ('> == expander    (type f))))
+  (def o? (fn f ('> == composition (type f))))
+
+Strings.
+Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
+isn't too hard either; you can reduce the list under (x + (' " ") + y). The most common case is wanting to pass a string to a function; for this you want to
+right-quote the function and combine it with the string generator. So there are two functions, $, which is a proper lambda that folds the list into a string,
+and $'>, which right-quotes the result of right-composing the string generator onto a function.
+
+Because I'm a softie, you can also use escaped symbol literals in the language. Note, however, that they aren't strings! The expression "foo bar bif" is a
+symbol just as much as foo_bar_bif is, and both will be evaluated if given to a function. (Both will complain, too, if you haven't defined them.) So if you want
+a "string" to behave like a proper string literal, it needs to be quoted, as in (' "foo bar").
+
+  (def $   (o / _ (_ + (' " ") +)))
+  (def $*  (o $ list))
+  (def $'> (fn f (o f ('> $))))
+
+Cond.
+This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
+returned. The internal workings below can be read as the following in English: "evaluate the tail of the first expression whose tail of whose head is true."
+
+  (def cond (qn options (:: (o * _ (_ tail) (o % _ (:: (_ head tail)) (reverse options)) tail))))
+
+Some Perl interfacing.
+The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
+being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
+
+  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) + (' "]', sub {") + contents + (' "})")))))))
+
+Beta and composition disassembly.
+You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
+at runtime and write new functions based on the ones that you have. The system provides two function constructors, beta and o'. These two operators look inside
+those constructors; for a beta expander, !!< gives you the symbol being expanded and !!> gives you the expansion; for compositions, !!< gives you the outer, or
+left, function, and !!> gives you the inner.
+
+  (defperl !!< "${$_[0]->eval()}[0]")
+  (defperl !!> "${$_[0]->eval()}[1]")
+
+  (defperl r== "my $self = $_[0]->eval(); types::lambda('[' . $self->serialize() . ' r== ...]',
+                  sub {$self eq $_[0]->eval() ? $types::true : $types::false})")
+
+Assertions.
+Basic things to assist testing.
+
+  (defperl fail "terminal::message('fail', $transient{'last-failure'} = $_[0]->eval()->serialize()); types::nil()")
+
+  (def fail$  ($'> fail))
+  (def assert (qn predicate (fn e1 (fn e2
+    (cond (((:: predicate e1 e2) :)
+           (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
+
+
+Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license.
+
+Quoting.
+Applying the identity beta expander consumes an evaluation step but does not carry it forward. Thus it can be useful for absorbing an evaluation as quoting
+is commonly used to do. In particular, it can delay evaluation for parameters passed to functions; for instance, (o my-function ' stuff), or, more
+concisely, ('> my-function stuff) will treat the /stuff/ as being quoted, just as if (my-function (' stuff)) had been typed. The double-quote operator, '',
+is used in conjunction with o'. o' is the system composition function, which does not protect the results of the first function from the effects of the
+second function's argument evaluation.  Also in (' ::> bind (:< (beta _ (o' _ ::)))) the mix is the :: operator, which double-evaluates an expression. This
+is equivalent to Common Lisp's /eval/ function, which evaluates its argument implicitly (since it is not a macro), and then evaluates it again.
+
+  (beta _ _ ' bind (beta _ _))
+  (' ''       bind (beta _ (' _)))
+  (' ::       bind (o' : :))
+
+Composition.
+These let you easily put evals or quotes onto existing functions.
+
+  (' :<  bind (o'  :))
+  (' ::< bind (o' ::))
+  (' '<  bind (o'  '))
+  (' :>  bind (:< (beta _ (o' _  :))))
+  (' ::> bind (:< (beta _ (o' _ ::))))
+  (' '>  bind (:< (beta _ (o' _ ''))))
+
+Normal composition.
+This doesn't double-evaluate stuff when there are two functions. This is by virtue of the fact that we quote the result of the first function. If the second
+function doesn't evaluate, then it will just get a quoted value; however, it makes no sense to place a non-evaluating function on the left-hand side of a
+composition.
+
+  (' o bind (:< (beta _ (o' (o' _ ')))))
+
+Functions and macros.
+Definitions for creating functions and macros.
+
+  tr = translate code. This is an unevaluative macro that essentially does beta-substitution and evaluates its output.
+  fn = function. This behaves like lambda in most languages, except that you can compose the quote function (or any other beta) onto it to make it not evaluate
+       its parameter.
+  en = evaluative function. It evaluates the things you pass in as the /name/ and /expansion/.
+  qn = quoted function. Just like function, except that its parameter is not evaluated.
+
+  (' tr bind (:< (::> (beta ev (:< (beta name (:< (beta ev (:< (beta name ev)))))))) (' (gensym (' γ)))))
+  (' fn bind (::> (tr ev (tr name (tr ev (o' (:< (beta name ev)) placeholder))))     (' (gensym (' λ)))))
+
+  (' en bind     (fn name     (fn expansion (:> (:> fn name) expansion))))
+  (' qn bind ('> (fn name ('> (fn expansion ('> (en name expansion)))))))
 
 Shorthands.
 let and def are two shorthands for common operations. let is used to define a local variable, like this:
@@ -292,7 +473,7 @@ Here's what these functions are for.
   list is a list constructor that behaves just as it does in Lisp or Scheme, except that it needs extra parens: (list (1 2 3)). It constructs the list in
   left-cons form, just like all lists in Gnarly: (((: . 1) . 2) . 3)
 
-  (def :? (fn xs (== (type xs) (' nil))))
+  (def :? (fn xs ('> == nil (type xs))))
 
   (def *  (fn f  (fn xs (:? xs : (cons (* f (xs head)) (f (xs tail)))))))
   (def %  (fn f  (fn xs (:? xs : (f (xs tail) (cons (% f (xs head)) (xs tail)) (% f (xs head)))))))
@@ -303,6 +484,14 @@ Here's what these functions are for.
   (def reverse  (reverse' :))
 
   (def list ('> (* ::)))
+
+Type detection.
+These provide predicates that tell you whether a value is of a given type.
+
+  (def *? (fn x ('> == cons        (type x))))
+  (def /? (fn x ('> == symbol      (type x))))
+  (def @? (fn f ('> == expander    (type f))))
+  (def o? (fn f ('> == composition (type f))))
 
 Strings.
 Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
@@ -354,14 +543,7 @@ Basic things to assist testing.
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
 
 
-__6CPpKuHl+qJZN87xU3Vgk3aMBU+AGmqiGSyFWg4eQhI
-
-meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
-Integration tests. These are run after your code is loaded and the unit tests have been run.
-__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
-
-meta::code('source', <<'__kpSC1lIJhUnh3kCVMPnaKYAOmXHOydR1b1ZjnnqoiQs');
-List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
+Perl Hash Interface | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
 Association lists.
@@ -384,6 +566,17 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
 
   (defperl hash "types::hash()")
 
+
+__g/2VoTH8BnW9kYD1GaqbZ3f9s10fqjsKGmy8CNwM+xw
+
+meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
+Integration tests. These are run after your code is loaded and the unit tests have been run.
+__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
+
+meta::code('source', <<'__Vc7zE2S2WPIyF9IQle6diYHF2q0d8K1Hn/HWAP/eXDE');
+List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
+
 List matching.
 Some basic list matching predicates.
 
@@ -400,15 +593,6 @@ Some basic list matching predicates.
 
   (def /$? (fn p (fn s (*$? (p split) (s split)))))
   (def /^? (fn p (fn s (*^? (p split) (s split)))))
-
-Type identifiers.
-Shorthands for type detection.
-
-  *? = detect whether a value is a cons cell.
-  /? = detect whether a value is a symbol.
-
-  (def *? (fn x ('> == cons   (type x))))
-  (def /? (fn x ('> == symbol (type x))))
 
 Binders.
 A binder is just a function that takes a list and produces a hash of bindings. One case where this is useful is destructuring lists. Suppose, for instance, we
@@ -455,22 +639,9 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
     (qn pattern (fn x (let result (hash : << (' ^) prefix << (' _) variant) (b==? result pattern x result :)))))))
 
   (def // (simple-binder _ $))
-__kpSC1lIJhUnh3kCVMPnaKYAOmXHOydR1b1ZjnnqoiQs
+__Vc7zE2S2WPIyF9IQle6diYHF2q0d8K1Hn/HWAP/eXDE
 
-meta::code('tests', <<'__A0oOVejVkFQPtaeo+z5L6rhZ+pvrDrYcnx0qm8lzTYM');
-Association list stuff.
-
-  (def alist (hash :))
-
-  (assert r== alist (alist << (' foo) (' bar)))
-  (assert == (alist get (' foo)) (' bar))
-
-  (alist << 4 5 << 5 6 << 6 7)
-  (assert == (alist get 4) 5)
-  (assert == (alist get 5) 6)
-  (assert == (alist get 6) 7)
-  (alist keys)
-
+meta::code('tests', <<'__RJXfUz2EStmWn4x0+Kl+NMiFj2MV909g2vKGddWG8z0');
 Binders.
 
   (assert == (type (// (a b c) (' (a b c))))       (' hash))
@@ -483,7 +654,7 @@ Binders.
   (assert == (type (// ($x $x) (' ((a b) (a b))))) (' hash))
 
   (assert == (type (// ($x $y $z $x $y) (' ((a b) (a b c) (a d f g) (a b) (a b c))))) (' hash))
-__A0oOVejVkFQPtaeo+z5L6rhZ+pvrDrYcnx0qm8lzTYM
+__RJXfUz2EStmWn4x0+Kl+NMiFj2MV909g2vKGddWG8z0
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -1322,10 +1493,11 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
+meta::list('dependencies', <<'__B9LozXyj4sAOqItRCM44CqOIDe3JaFJ07LQ+N9F06qs');
 
 core
-__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
+hash
+__B9LozXyj4sAOqItRCM44CqOIDe3JaFJ07LQ+N9F06qs
 
 meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
 " Gnarly

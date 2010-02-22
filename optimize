@@ -1071,10 +1071,11 @@ sub message {
 }
 __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 
-meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
+meta::list('dependencies', <<'__B9LozXyj4sAOqItRCM44CqOIDe3JaFJ07LQ+N9F06qs');
 
 core
-__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
+hash
+__B9LozXyj4sAOqItRCM44CqOIDe3JaFJ07LQ+N9F06qs
 
 meta::vim_highlighter('gnarly', <<'__moNoxv/wRgmxYv1hQzACzqd9mu+BTF1vW1lk51p3gQ4');
 " Gnarly
