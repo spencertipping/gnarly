@@ -190,7 +190,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__xId5cK/5XkHXMdYJ+Z3vL216X+toCDCgX7lPKxSxIqI');
+meta::code('source', <<'__1fdWcZbsuZZRjLaCkfFF3N2uPjEpE6qSu1ChKBBTM3I');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -259,7 +259,7 @@ There are cases where using the global symbol table for recursion is suboptimal.
 optimization library. In this case, you want to eliminate recursive symbol references and use the Y combinator instead. Since Gnarly uses call-by-value, I'm
 encoding Z instead of Y.
 
-  (def z  (fn f (fn x (f (fn y (x x y))) (fn x (f (fn y (x x y)))))))
+  (def z  (fn f (fn x (f (qn y (:> (x x) y))) (fn x (f (qn y (:> (x x) y)))))))
   (def z> (qn name (qn body (z (en name body)))))
 
 Booleans and relational operators.
@@ -371,7 +371,7 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__xId5cK/5XkHXMdYJ+Z3vL216X+toCDCgX7lPKxSxIqI
+__1fdWcZbsuZZRjLaCkfFF3N2uPjEpE6qSu1ChKBBTM3I
 
 meta::code('tests', <<'__SniAhKgJt1Safxezl9DyiARoxrdNMjtn0yQIBLYuK7E');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.

@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__g/2VoTH8BnW9kYD1GaqbZ3f9s10fqjsKGmy8CNwM+xw');
+meta::code('cached-dependencies', <<'__Xk8R+/hEcJrAJxIY4HcVN0l3Fn8SB7DS/ZdMZIPW4eM');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -256,7 +256,8 @@ There are cases where using the global symbol table for recursion is suboptimal.
 optimization library. In this case, you want to eliminate recursive symbol references and use the Y combinator instead. Since Gnarly uses call-by-value, I'm
 encoding Z instead of Y.
 
-  (def z (fn f (fn x (f (fn y (x x y))) (fn x (f (fn y (x x y)))))))
+  (def z  (fn f (fn x (f (qn y (:> (x x) y))) (fn x (f (qn y (:> (x x) y)))))))
+  (def z> (qn name (qn body (z (en name body)))))
 
 Booleans and relational operators.
 Booleans are Church-encoded, and logical operators try to get the result as much evaluated as possible to maximize performance. The meanings of these functions
@@ -301,12 +302,12 @@ Here's what these functions are for.
 
   (def :? (fn xs ('> == nil (type xs))))
 
-  (def *  (z (fn r (fn f (fn xs (:? xs : (cons (r f (xs head)) (f (xs tail)))))))))
-  (def %  (z (fn r (fn f (fn xs (:? xs : (f (xs tail) (cons (r f (xs head)) (xs tail)) (r f (xs head)))))))))
-  (def /  (z (fn r (fn f (fn xs (:? (xs head) (xs tail) (f (r f (xs head)) (xs tail))))))))
-  (def ++ (z (fn r (fn xs (fn ys (:? ys xs (cons (r xs (ys head)) (ys tail))))))))
+  (def *  (z> r (fn f (fn xs (:? xs : (cons (r f (xs head)) (f (xs tail))))))))
+  (def %  (z> r (fn f (fn xs (:? xs : (f (xs tail) (cons (r f (xs head)) (xs tail)) (r f (xs head))))))))
+  (def /  (z> r (fn f (fn xs (:? (xs head) (xs tail) (f (r f (xs head)) (xs tail)))))))
+  (def ++ (z> r (fn xs (fn ys (:? ys xs (cons (r xs (ys head)) (ys tail)))))))
 
-  (def reverse' (z (fn r (fn xs (fn ys (:? ys xs (r (cons xs (ys tail)) (ys head))))))))
+  (def reverse' (z> r (fn xs (fn ys (:? ys xs (r (cons xs (ys tail)) (ys head)))))))
   (def reverse  (reverse' :))
 
   (def list ('> (* ::)))
@@ -567,13 +568,13 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
   (defperl hash "types::hash()")
 
 
-__g/2VoTH8BnW9kYD1GaqbZ3f9s10fqjsKGmy8CNwM+xw
+__Xk8R+/hEcJrAJxIY4HcVN0l3Fn8SB7DS/ZdMZIPW4eM
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__Vc7zE2S2WPIyF9IQle6diYHF2q0d8K1Hn/HWAP/eXDE');
+meta::code('source', <<'__U9hFvzpKFSzkcb6H/CaidMoInQBd/B1zNCZoaPkWC9Q');
 List Manipulation Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -588,11 +589,11 @@ Some basic list matching predicates.
 
   (def ==? (fn x (fn y (&& (== (type x) (type y)) (== x y)))))
 
-  (def *$? (fn x (fn xs (:? x k (:? xs k' (&& (==? (xs tail) (x tail)) (*$? (x head) (xs head))))))))
-  (def *^? (fn x (fn xs (*$? (reverse x) (reverse xs)))))
+  (def *$? (z> r (fn x (fn xs (:? x k (:? xs k' (&& (==? (xs tail) (x tail)) (r (x head) (xs head)))))))))
+  (def *^? (z> r (fn x (fn xs (r (reverse x) (reverse xs))))))
 
-  (def /$? (fn p (fn s (*$? (p split) (s split)))))
-  (def /^? (fn p (fn s (*^? (p split) (s split)))))
+  (def /$? (z> r (fn p (fn s (r (p split) (s split))))))
+  (def /^? (z> r (fn p (fn s (r (p split) (s split))))))
 
 Binders.
 A binder is just a function that takes a list and produces a hash of bindings. One case where this is useful is destructuring lists. Suppose, for instance, we
@@ -620,26 +621,26 @@ defining a variant wildcard that can bind to multiple values. (Similar to the _ 
     (cond (((bindings contains name) (==~ (bindings get name) x))
            (k                        (k:' (bindings << name x) k))))))))
 
-  (def ==~ (fn x (fn y
-    (cond (((&& (*? x) (*? y)) (&& (==~ (x tail) (y tail)) (==~ (x head) (y head))))
+  (def ==~ (z> r (fn x (fn y
+    (cond (((&& (*? x) (*? y)) (&& (r (x tail) (y tail)) (r (x head) (y head))))
            ((&& (:? x) (:? y)) k)
-           (k                  (==? x y)))))))
+           (k                  (==? x y))))))))
 
-  (def b==? (fn bindings (fn x (fn y
+  (def b==? (z> r (fn bindings (fn x (fn y
     (cond (((&& (:? x) (:? y))  k)
            ((/? x)              (cond (((==? x y)                      k)
                                        ((== x (bindings get (' _)))    k)
                                        ((/^?  (bindings get (' ^)) x)  (=|<< bindings x y))
                                        (k                              k'))))
-           ((&& (*? x) (*? y))  (&& (b==? bindings (x tail) (y tail))
-                                    (b==? bindings (x head) (y head))))
-           (k                   k')))))))
+           ((&& (*? x) (*? y))  (&& (r bindings (x tail) (y tail))
+                                    (r bindings (x head) (y head))))
+           (k                   k'))))))))
 
   (def simple-binder (qn variant (qn prefix
     (qn pattern (fn x (let result (hash : << (' ^) prefix << (' _) variant) (b==? result pattern x result :)))))))
 
   (def // (simple-binder _ $))
-__Vc7zE2S2WPIyF9IQle6diYHF2q0d8K1Hn/HWAP/eXDE
+__U9hFvzpKFSzkcb6H/CaidMoInQBd/B1zNCZoaPkWC9Q
 
 meta::code('tests', <<'__RJXfUz2EStmWn4x0+Kl+NMiFj2MV909g2vKGddWG8z0');
 Binders.
