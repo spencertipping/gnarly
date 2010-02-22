@@ -194,7 +194,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__TYHcRtHwYq6IZt9RAsn0b8DqdiMY87hUzLE/Xl8L/xk');
+meta::code('source', <<'__FuOhCD/UKkMAyRJLWLoqd4RuFlPJi7/MGub4MIJyZQ8');
 Function Optimization | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -212,7 +212,8 @@ waiting until we have the first parameter. Since Perl allows anonymous closures 
 Note that we must do some inlining through the global symbol table if we want to precompile inner functions. This isn't horrible, but it does mean that the
 function becomes pure since all of the free symbols are baked in. It also means that it matters when you do the optimization; all of the symbols that are
 referenced in the function must have their proper values when you optimize it. Finally, there's one more consideration. Recursive functions obviously won't do
-the right thing because as soon as they hit the recursive symbol they'll be back in unoptimized code.
+the right thing because as soon as they hit the recursive symbol they'll be back in unoptimized code. For now you have to define recursive functions by using
+the y/z combinator (see core).
 
 Because the core language is fairly straightforward and all values can be inspected, translating these forms into Perl is trivial at the high level.
 Compositions can be translated directly (optionally inlined, though I'm not doing that yet), beta-expanders can be encoded as Perl subroutines (wrapped in the
@@ -227,7 +228,7 @@ memory.)
 
   (def optimize (fn f (cond (((@? f) (opt-beta f)) ((o? f) (opt-comp f))
                              ((*? f) (opt-cons f)) (k      (opt-atom f))))))
-__TYHcRtHwYq6IZt9RAsn0b8DqdiMY87hUzLE/Xl8L/xk
+__FuOhCD/UKkMAyRJLWLoqd4RuFlPJi7/MGub4MIJyZQ8
 
 meta::code('tests', <<'__pUlbKLBwH0shnUUThu2z/3EhVnuOvhbfCOedvgFOifU');
 Module-specific unit tests go here. These will be run when you type :unit, and when you try to load the module as a dependency.
