@@ -190,7 +190,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__uWLfy6HJmX9ppgOAclfjQKfi3NEaacqecvym+xqOprk');
+meta::code('source', <<'__XI8e8o66ZXmlwfWMB7o7ct0h3va1bmqrDVvWxKapPaE');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -325,6 +325,7 @@ These provide predicates that tell you whether a value is of a given type.
      (type-predicate @? expander)
      (type-predicate l? lambda)
      (type-predicate m? macro)
+     (type-predicate [? placeholder)
      (type-predicate o? composition)))
 
 Strings.
@@ -342,7 +343,7 @@ a "string" to behave like a proper string literal, it needs to be quoted, as in 
   (def $'> (fn f (o f ('> $))))
 
   (def +' (qn s1 (qn s2 (s1 + s2))))
-  (def =~ (fn p (::> perl (' "types::lambda('" + p +' "', sub {$_[0]->serialize() =~ /" + p +' "/ ? $types::true : $types::false})"))))
+  (def =~ (fn p (:> perl (' "types::lambda('" + p +' "', sub {$_[0]->serialize() =~ /" + p +' "/ ? $types::true : $types::false})"))))
 
 Cond.
 This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
@@ -355,7 +356,7 @@ The core command set was designed to be able to interface with Perl. This is one
 being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
 
   (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0])})"))
-  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) +' "]', sub {" + contents +' "})"))))))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + name +' "]', sub {" + contents +' "})"))))))
 
 Beta and composition disassembly.
 You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
@@ -378,9 +379,9 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__uWLfy6HJmX9ppgOAclfjQKfi3NEaacqecvym+xqOprk
+__XI8e8o66ZXmlwfWMB7o7ct0h3va1bmqrDVvWxKapPaE
 
-meta::code('tests', <<'__SniAhKgJt1Safxezl9DyiARoxrdNMjtn0yQIBLYuK7E');
+meta::code('tests', <<'__kv8CGNFsYoM4Ze02VeosDeM9GCuuAQdi3ZZN0ZWwUz4');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
 If the code is not clearly correct, then it is probably wrong; in any case, extensive tests should never be necessary and probably indicate poor design. These
 tests serve two purposes. First, they are usage examples and expected output; this is useful for documentation. Second, they provide simple sanity-checks to
@@ -399,7 +400,9 @@ make sure that the assumptions being made are basically true.
 
   (def fact (z (fn f (fn n (n <= 1 1 (n * (f (n - 1))))))))
   (assert == (fact 10) 3628800)
-__SniAhKgJt1Safxezl9DyiARoxrdNMjtn0yQIBLYuK7E
+
+  (assert == (' cons) (type (!!> (beta x (x x)))))
+__kv8CGNFsYoM4Ze02VeosDeM9GCuuAQdi3ZZN0ZWwUz4
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -911,7 +914,7 @@ meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::library('datatypes', <<'__QAAxbAGNwN6geCB18PFp/c+yzQmA8p293W/zCu4sqs4');
+meta::library('datatypes', <<'__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1045,7 +1048,7 @@ sub gensym {
   my $value = $_[0];
   die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
   ++$gensym_count;
-  symbol("#$$value$gensym_count");
+  symbol("ι$$value$gensym_count");
 }
 
 deftype 'placeholder',
@@ -1136,7 +1139,7 @@ deftype 'number', new       => sub {\$_[0]},
                                       ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
                                                    return $_[1]->eval()->call($_[0])}),
                   serialize => sub {${$_[0]}};
-__QAAxbAGNwN6geCB18PFp/c+yzQmA8p293W/zCu4sqs4
+__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
