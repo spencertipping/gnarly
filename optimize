@@ -598,7 +598,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__/As6HNTldjWkNIdPsA25LzkLSt/JpqsT6475eqw1smQ');
+meta::code('source', <<'__HXkkU4aB4SUPbqB3EK2Hk4RXWoresGrHEsCAW/E0as4');
 Function Optimization | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -627,7 +627,9 @@ memory.)
 
   (def !?  (_ (|| (l? _) (|| (:? _) (&& (o? _) (!? (!!> _)))))))
 
-  (def o@  (_ (' "macro('" + (!!< _) +' "', sub {my $" + (!!< _) +' " = $_[0]; " + (o! (!!> _)) +' "})")))
+  (def o@  (_ (let s (gensym (' m)) (' "macro('" + (!!< _) +' "', sub {my $" + s +' " = $_[0]; " +
+                                       (o! ((:> (:> (:> beta (!!< _)) (!!> _)) s))) +' "})")))
+
   (def oo  (_ (' "composition(" + (ov (!!< _)) +' ", " + (!? (!!< _) o! ov (!!> _)) +' ")")))
   (def o*  (_ (' "cons(" + (ov (_ head)) +' ", " + (ov (_ tail)) +' ")")))
   (def o/  (_ (' "symbol(\"" + (serialize _) +' "\")")))
@@ -644,14 +646,15 @@ memory.)
 
   (def ov (_ (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*  _)) ((/? _) (o/  _)) ((#? _) (o# _)) ((:? _) (o: _)) (([? _) (o[ _))))))
   (def o! (_ (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*! _)) ((/? _) (o/! _)) ((#? _) (o# _)) ((:? _) (o: _)) (([? _) (o[ _))))))
-__/As6HNTldjWkNIdPsA25LzkLSt/JpqsT6475eqw1smQ
+__HXkkU4aB4SUPbqB3EK2Hk4RXWoresGrHEsCAW/E0as4
 
-meta::code('tests', <<'__tvTwXh6N/JJscV9DGQq41EkcXVjgWeXw+P2Y2xX+ff0');
+meta::code('tests', <<'__2yrc7LoR29FszhBl8OtnTez8oK/fRZlts5WzMWIROVI');
 Module-specific unit tests go here. These will be run when you type :unit, and when you try to load the module as a dependency.
 
   (ov (beta x x))
   (ov ')
-__tvTwXh6N/JJscV9DGQq41EkcXVjgWeXw+P2Y2xX+ff0
+  (ov /)
+__2yrc7LoR29FszhBl8OtnTez8oK/fRZlts5WzMWIROVI
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
