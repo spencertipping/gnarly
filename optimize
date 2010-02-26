@@ -186,7 +186,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__OlvLEZmIFFevQJIkSbbz3SH/X4XXj6gb/qZV+71AiFk');
+meta::code('cached-dependencies', <<'__Hlu71SuEsTgsKQTdcJ+te0IU2REd1HAqNjlTVJE9A3g');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -322,7 +322,7 @@ These provide predicates that tell you whether a value is of a given type.
      (type-predicate @? expander)
      (type-predicate l? lambda)
      (type-predicate m? macro)
-     (type-predicate [? placeholder)
+     (type-predicate p? placeholder)
      (type-predicate o? composition)))
 
 Strings.
@@ -590,15 +590,13 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
          nil()")
 
   (defperl hash "types::hash()")
-
-
-__OlvLEZmIFFevQJIkSbbz3SH/X4XXj6gb/qZV+71AiFk
+__Hlu71SuEsTgsKQTdcJ+te0IU2REd1HAqNjlTVJE9A3g
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__HXkkU4aB4SUPbqB3EK2Hk4RXWoresGrHEsCAW/E0as4');
+meta::code('source', <<'__h+zjSj76/iRwbBkj5hS7xI5yInzlI7IBbrpYTnvJsJw');
 Function Optimization | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -627,34 +625,47 @@ memory.)
 
   (def !?  (_ (|| (l? _) (|| (:? _) (&& (o? _) (!? (!!> _)))))))
 
-  (def o@  (_ (let s (gensym (' m)) (' "macro('" + (!!< _) +' "', sub {my $" + s +' " = $_[0]; " +
-                                       (o! ((:> (:> (:> beta (!!< _)) (!!> _)) s))) +' "})")))
+  (def o@  (_ (let s (gensym (' m)) (' "types::macro('" + (!!< _) +' "', sub {my $" + s +' " = $_[0]; " +
+                                       (o! ((:> (:> (:> beta (!!< _)) (!!> _)) s))) +' "})"))))
 
-  (def oo  (_ (' "composition(" + (ov (!!< _)) +' ", " + (!? (!!< _) o! ov (!!> _)) +' ")")))
-  (def o*  (_ (' "cons(" + (ov (_ head)) +' ", " + (ov (_ tail)) +' ")")))
-  (def o/  (_ (' "symbol(\"" + (serialize _) +' "\")")))
-  (def o#  (_ (' "number(" + (serialize _) +' ")")))
-  (def o:  (_ (' "nil()")))
-  (def o[  (_ (ov _)))
+  (def ol  (_ (cond (((r== _ placeholder) (' "types::symbol('placeholder')->eval()"))
+                     ((r== _ o')          (' "types::symbol('o\\'')->eval()"))
+                     (k                   (' "<unknown: " + (serialize _) +' ">"))))))
 
-  (def o*! (_ (let h (_ head) (let t (_ tail) (!? h (o! h +' "->call(placeholder(" + (o! t) +' "))")
-                                                    (o! h +' "->call("             + (ov t) +' ")"))))))
+  (def oo  (_ (' "types::composition(" + (ov (!!< _)) +' ", " + (!? (!!< _) o! ov (!!> _)) +' ")")))
+  (def o*  (_ (' "types::cons(" + (ov (_ head)) +' ", " + (ov (_ tail)) +' ")")))
+  (def o/  (_ (' "types::symbol(\"" + (serialize _) +' "\")")))
+  (def o#  (_ (' "types::number(" + (serialize _) +' ")")))
+  (def o:  (_ (' "types::nil()")))
+  (def op  (_ (ov _)))
 
-  (def o/! (_ (_ bound? (let sv (_ value) (cond (((|| (l? sv) (m? sv)) (o/ sv +' "->eval()"))
+  (def o*! (_ (let h (_ head) (let t (_ tail) (!? h (o! h +' "->call(types::placeholder(" + (o! t) +' "))")
+                                                    (o! h +' "->call("                    + (ov t) +' ")"))))))
+
+  (def o/! (_ (_ bound? (let sv (_ value) (cond (((|| (l? sv) (m? sv)) (ol sv +' "->eval()"))
                                                  (k                    (ov sv)))))
                         (' "$" + _))))
 
-  (def ov (_ (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*  _)) ((/? _) (o/  _)) ((#? _) (o# _)) ((:? _) (o: _)) (([? _) (o[ _))))))
-  (def o! (_ (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*! _)) ((/? _) (o/! _)) ((#? _) (o# _)) ((:? _) (o: _)) (([? _) (o[ _))))))
-__HXkkU4aB4SUPbqB3EK2Hk4RXWoresGrHEsCAW/E0as4
+  (def ov (_ (trace (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*  _)) ((/? _) (o/  _))
+                           ((#? _) (o# _)) ((:? _) (o: _)) ((p? _) (op  _)) ((l? _) (ol  _)) (k (' "<error>")))))))
+  (def o! (_ (trace (cond (((@? _) (o@ _)) ((o? _) (oo _)) ((*? _) (o*! _)) ((/? _) (o/! _))
+                           ((#? _) (o# _)) ((:? _) (o: _)) ((p? _) (op  _)) ((l? _) (ol  _)) (k (' "<error>")))))))
 
-meta::code('tests', <<'__2yrc7LoR29FszhBl8OtnTez8oK/fRZlts5WzMWIROVI');
+  (def opt (o' perl o!))
+__h+zjSj76/iRwbBkj5hS7xI5yInzlI7IBbrpYTnvJsJw
+
+meta::code('tests', <<'__R1vE5hpN81oZ3eMbGBRIAHFNkJnhHQWvqSucQpiANFw');
 Module-specific unit tests go here. These will be run when you type :unit, and when you try to load the module as a dependency.
 
   (ov (beta x x))
   (ov ')
-  (ov /)
-__2yrc7LoR29FszhBl8OtnTez8oK/fRZlts5WzMWIROVI
+  (ov _)
+
+  (assert == 5 (opt (fn x x) 5))
+  (assert == 6 (opt (fn x (x + 1)) 5))
+
+  (assert == 5 (opt _ (_ + 1) 4))
+__R1vE5hpN81oZ3eMbGBRIAHFNkJnhHQWvqSucQpiANFw
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();
@@ -1166,7 +1177,7 @@ meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::library('datatypes', <<'__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c');
+meta::library('datatypes', <<'__npD7A8tjvjLfP060tLHLeqKif5hdVjHQNM76RSHJjxY');
 # Data type definitions for the interpreter.
 
 package types;
@@ -1217,7 +1228,9 @@ sub initialize_symbols {
   symbol('serialize')->bind(lambda('[serialize]', sub {symbol($_[0]->serialize())}));
 
   symbol('perl')->bind(macro('[perl]', sub {
-    eval $_[0]->serialize();
+    my $result = eval $_[0]->serialize();
+    die $@ if $@;
+    $result;
   }));
 }
 
@@ -1300,7 +1313,7 @@ sub gensym {
   my $value = $_[0];
   die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
   ++$gensym_count;
-  symbol("ι$$value$gensym_count");
+  symbol("__$$value${gensym_count}__");
 }
 
 deftype 'placeholder',
@@ -1391,7 +1404,7 @@ deftype 'number', new       => sub {\$_[0]},
                                       ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
                                                    return $_[1]->eval()->call($_[0])}),
                   serialize => sub {${$_[0]}};
-__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c
+__npD7A8tjvjLfP060tLHLeqKif5hdVjHQNM76RSHJjxY
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
@@ -1505,7 +1518,7 @@ core
 hash
 __B9LozXyj4sAOqItRCM44CqOIDe3JaFJ07LQ+N9F06qs
 
-meta::vim_highlighter('gnarly', <<'__u1Wg4HTl9mYRSxP3Nq4B6VKWkLx5znWbrRZ5Dq/Pxos');
+meta::vim_highlighter('gnarly', <<'__3AigJYM4BeKIS6LpgQooIUOZY/kf1DYzLf5KFKZ80eo');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1531,7 +1544,7 @@ syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! r== contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
-syn keyword gnarlyTypeFunctions    *? /? @? o? #? contained
+syn keyword gnarlyTypeFunctions    *? /? @? o? #? l? m? p? contained
 syn keyword gnarlyConditionals     cond contained
 
 syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
@@ -1559,7 +1572,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__u1Wg4HTl9mYRSxP3Nq4B6VKWkLx5znWbrRZ5Dq/Pxos
+__3AigJYM4BeKIS6LpgQooIUOZY/kf1DYzLf5KFKZ80eo
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
