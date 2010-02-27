@@ -123,6 +123,14 @@ meta::define_form '_list_type', sub {
 };
 __OKczvJ+6wi8VPNFcZ9ohlXjw+ychodWCfcELdli9p+w
 
+meta::meta('datatypes::note', <<'__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34');
+meta::define_form 'note', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "note::$name";
+  *{$name} = sub {edit("note::$name")};
+};
+__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34
+
 meta::meta('datatypes::vim-highlighter', <<'__vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0');
 meta::define_form 'vim_highlighter', \&meta::bootstrap::implementation;
 __vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0
@@ -186,7 +194,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__lnAa6kfFy6hjDJwJlPXgC6P+rPxycJbTZ9j+wc7xh7k');
+meta::code('cached-dependencies', <<'__RJZc5HXqv8DAfAjUDll3O+k2OUzqJNiSq4ipupX0wsk');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -591,14 +599,13 @@ values in the head of the cons cells -- however, doing this in Lisp wouldn't hav
 
   (defperl hash "types::hash()")
 
-
-__lnAa6kfFy6hjDJwJlPXgC6P+rPxycJbTZ9j+wc7xh7k
+__RJZc5HXqv8DAfAjUDll3O+k2OUzqJNiSq4ipupX0wsk
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__7Te4QNGZIN9QBGqG3p32BIH4wa8Li7Rut/Tvzw6R418');
+meta::code('source', <<'__V+mzptVMTHk+rRbVUR229xxthYHagZyQWUmX0BY4eUc');
 Function Optimization | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -638,11 +645,12 @@ memory.)
 
   (def oo  (_ (' "types::composition(" + (ov (!!< _)) +' ", " + (!? (!!< _) o! ov (!!> _)) +' ")")))
   (def o*  (_ (' "types::cons(" + (ov (_ head)) +' ", " + (ov (_ tail)) +' ")")))
-  (def o/  (_ (scope contains _ (' "$" + _) (' "types::symbol(\"" + (serialize _) +' "\")"))))
   (def o#  (_ (' "types::number(" + (serialize _) +' ")")))
   (def o:  (_ (' "types::nil()")))
   (def op  (_ (ov _)))
   (def o>  (_ (o! (!!< _) +' "->call(" + (ov (!!> _)) +' ")")))
+
+  (def o/  (_ (scope contains _ (' "$" + _) (' "types::symbol(\"" + (serialize _) +' "\")"))))
 
   (def o*! (_ (let h (_ head) (let t (_ tail) (!? h (o! h +' "->call(types::placeholder(" + (o! t) +' "))")
                                                     (o! h +' "->call("                    + (ov t) +' ")"))))))
@@ -657,9 +665,9 @@ memory.)
                            ((#? _) (o# _)) ((:? _) (o: _)) ((p? _) (op  _)) ((m? _) (om  _)) (k (' "<error>")))))))
 
   (def opt (o' perl o!))
-__7Te4QNGZIN9QBGqG3p32BIH4wa8Li7Rut/Tvzw6R418
+__V+mzptVMTHk+rRbVUR229xxthYHagZyQWUmX0BY4eUc
 
-meta::code('tests', <<'__0ry2xn+Jp/2gnd1DPWHZxdd7H+AvG2/Goes9mK2+ARs');
+meta::code('tests', <<'__U0W4nanDRtjttiDLW6+gvjdJWKCpot2q/FplCUGGTjM');
 Module-specific unit tests go here. These will be run when you type :unit, and when you try to load the module as a dependency.
 
   (ov (beta x x))
@@ -672,11 +680,11 @@ Module-specific unit tests go here. These will be run when you type :unit, and w
   (assert == 5 (opt _ (_ + 1) 4))
 
   (def z' (opt z))
-  (def fact (z' (fn r (_ (_ <= 0 1 (_ * (r (_ - 1))))))))
+  (def fact (z' (opt (fn r (_ (_ <= 0 1 (_ * (r (_ - 1)))))))))
   (assert == (fact 5) 120)
 
   (opt cond (((5 == 5) :) (k ('> fail "Oops! 5 == 5"))))
-__0ry2xn+Jp/2gnd1DPWHZxdd7H+AvG2/Goes9mK2+ARs
+__U0W4nanDRtjttiDLW6+gvjdJWKCpot2q/FplCUGGTjM
 
 meta::configuration(':check', <<'__KvsssAe/QdPPsO6QGorfBgTAacCYF0TyU/r2trjV79o');
 shell::initialize_symbol_table();

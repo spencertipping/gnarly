@@ -123,6 +123,14 @@ meta::define_form '_list_type', sub {
 };
 __OKczvJ+6wi8VPNFcZ9ohlXjw+ychodWCfcELdli9p+w
 
+meta::meta('datatypes::note', <<'__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34');
+meta::define_form 'note', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "note::$name";
+  *{$name} = sub {edit("note::$name")};
+};
+__TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34
+
 meta::meta('datatypes::vim-highlighter', <<'__vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0');
 meta::define_form 'vim_highlighter', \&meta::bootstrap::implementation;
 __vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0
@@ -186,7 +194,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::code('cached-dependencies', <<'__aH0kmVMMhB1/k/5Fi80X710ssvEPJXjVrpSLcuAXniA');
+meta::code('cached-dependencies', <<'__GCQF85T91Q9tpcukc+TXxWURQLwRwJGIHVjxR0jgPoU');
 
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
@@ -377,8 +385,7 @@ Basic things to assist testing.
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
 
-
-__aH0kmVMMhB1/k/5Fi80X710ssvEPJXjVrpSLcuAXniA
+__GCQF85T91Q9tpcukc+TXxWURQLwRwJGIHVjxR0jgPoU
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
@@ -933,7 +940,7 @@ meta::issue('todos', <<'__M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw');
 Add dependency processing
 __M9jZqrWgFqWKf59y0IhtY8mz40puIElM9PeiNT6CYVw
 
-meta::library('datatypes', <<'__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c');
+meta::library('datatypes', <<'__dmuceLNyZ8ILxNskW4/h7g8VucOOw3yUYZU8qCVbHmA');
 # Data type definitions for the interpreter.
 
 package types;
@@ -960,23 +967,23 @@ sub initialize_symbols {
   symbol('beta')->bind(macro('[beta]', sub {
     my $symbol = $_[0];
     die 'Cannot create beta-expander for non-symbol value ' . $symbol->serialize() unless ref $symbol eq 'symbol';
-    macro("[beta $$symbol -> ...]", sub {
+    application(symbol('beta')->eval(), $symbol, macro('', sub {
       expander($symbol, $_[0]);
-    });
+    }));
   }));
 
   symbol('cons')->bind(lambda('[cons]', sub {
     my $head = $_[0];
-    lambda(sub {'(cons ' . $head->serialize() . ' ...)'}, sub {
+    application(symbol('cons')->eval(), $head, lambda('', sub {
       cons($head, $_[0]);
-    });
+    }));
   }));
 
   symbol('o\'')->bind(lambda('[o\']', sub {
     my $f = $_[0];
-    lambda(sub {'[' . $f->serialize() . ' o\' ...]'}, sub {
+    application(symbol('o\'')->eval(), $f, lambda('', sub {
       composition($f, $_[0]);
-    });
+    }));
   }));
 
   symbol(':')->bind(nil());
@@ -984,7 +991,9 @@ sub initialize_symbols {
   symbol('serialize')->bind(lambda('[serialize]', sub {symbol($_[0]->serialize())}));
 
   symbol('perl')->bind(macro('[perl]', sub {
-    eval $_[0]->serialize();
+    my $result = eval $_[0]->serialize();
+    die $@ if $@;
+    $result;
   }));
 }
 
@@ -1012,12 +1021,12 @@ sub method {
   my %table = @_;
   sub {
     my $self = $_[0];
-    my $lambda_wrap = sub {my $name = $_[0]; macro(sub {'(' . $self->serialize() . ' ' . $name . ')'}, $_[1])};
+    my $lambda_wrap = sub {application($self, $_[0], macro('', $_[1]))};
     if (ref $_[1] eq 'symbol' && $table{${$_[1]}}) {
       # Default behavior -- return the value directly, wrapping it in a serializable lambda
       # closure only if it's a function.
       my $v = $table{${$_[1]}}->($self, $value);
-      return $lambda_wrap->(${$_[1]}, $v) if ref $v eq 'CODE';
+      return $lambda_wrap->($_[1], $v) if ref $v eq 'CODE';
       return $v;
     } else {
       $table{''} ? $table{''}->($self, $_[1]) :
@@ -1025,6 +1034,12 @@ sub method {
     }
   };
 }
+
+my $nil = '';
+deftype 'nil', new       => sub {\$nil},
+               eval      => $id,
+               call      => sub {$_[1]->eval()},
+               serialize => sub {':'};
 
 deftype 'composition', new       => sub {[@_]},
                        eval      => $id,
@@ -1036,13 +1051,15 @@ deftype 'macro',  new       => sub {[@_]},
                   call      => sub {$_[0][1]->($_[1])},
                   serialize => sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]};
 
-deftype 'lambda', new       => sub {[@_]},
-                  eval      => $id,
-                  call      => sub {$_[0][1]->($_[1]->eval())},
-                  serialize => sub {ref $_[0][0] eq 'CODE' ? $_[0][0]->() : $_[0][0]};
+deftype 'application', new       => sub {[@_]},
+                       eval      => $id,
+                       call      => sub {$_[0][2]->call($_[1])},
+                       serialize => sub {'(' . $_[0][0]->serialize() . ' ' . $_[0][1]->serialize() . ' ...)'};
 
-our $true  = lambda('true',  sub {my $x = $_[0]; macro(sub {'(true ' . $x->serialize() . ')'}, sub {$x})});
-our $false =  macro('false', sub {lambda(sub {'(false ' . $_[0]->serialize() . ')'}, sub {$_[0]})});
+sub lambda {composition(macro(@_), nil())}
+
+our $true  = lambda('true',  sub {my $x = $_[0]; application($true, $x, macro('', sub {$x}))});
+our $false =  macro('false', sub {application($false, $_[0], lambda('', sub {$_[0]}))});
 
 deftype 'symbol',
   new       => sub {\$_[0]},
@@ -1067,7 +1084,7 @@ sub gensym {
   my $value = $_[0];
   die 'Cannot call gensym on non-symbol value: ' . $value->serialize() unless ref $value eq 'symbol';
   ++$gensym_count;
-  symbol("ι$$value$gensym_count");
+  symbol("__$$value${gensym_count}__");
 }
 
 deftype 'placeholder',
@@ -1130,12 +1147,6 @@ sub cons_from_array {
   return cons(cons_from_array(@_), $tail);
 }
 
-my $nil = '';
-deftype 'nil', new       => sub {\$nil},
-               eval      => $id,
-               call      => sub {$_[1]->eval()},
-               serialize => sub {':'};
-
 sub number_op(&) {
   my $implementation = $_[0];
   sub {my $self = $_[0]; sub {number($implementation->($$self, ${$_[0]->eval()}))}}
@@ -1158,7 +1169,7 @@ deftype 'number', new       => sub {\$_[0]},
                                       ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
                                                    return $_[1]->eval()->call($_[0])}),
                   serialize => sub {${$_[0]}};
-__l+LiA7wLbrxsAyCmN5DDrh6XYFsaxlTpr027+8ngW7c
+__dmuceLNyZ8ILxNskW4/h7g8VucOOw3yUYZU8qCVbHmA
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
@@ -1271,7 +1282,7 @@ meta::list('dependencies', <<'__vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A');
 core
 __vQSkEh/WjLxhE9uZSHlfB1Ar++nVfcNNIR+qSTTVy5A
 
-meta::vim_highlighter('gnarly', <<'__u1Wg4HTl9mYRSxP3Nq4B6VKWkLx5znWbrRZ5Dq/Pxos');
+meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   A minimalistic combinatory language with rewriting
@@ -1297,7 +1308,7 @@ syn region  gnarlyQuoted           start=/"/ end=/"/ skip=/\\.\|\n/ contained
 
 syn keyword gnarlyBooleanFunctions <= == < > >= != && \|\| ! r== contained
 syn keyword gnarlyListFunctions    * / % ++ :? reverse reverse' list cons' $ $'> $* contained
-syn keyword gnarlyTypeFunctions    *? /? @? o? #? contained
+syn keyword gnarlyTypeFunctions    *? /? @? o? #? >? m? p? contained
 syn keyword gnarlyConditionals     cond contained
 
 syn cluster gnarlySyntax add=gnarlyBuiltins,gnarlyMethods,gnarlyFunctions,gnarlyUserFunctions,gnarlyNumbers,gnarlyParens,gnarlyBooleans
@@ -1325,7 +1336,7 @@ hi link gnarlyDangerous        Special
 set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
-__u1Wg4HTl9mYRSxP3Nq4B6VKWkLx5znWbrRZ5Dq/Pxos
+__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
