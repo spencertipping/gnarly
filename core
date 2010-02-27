@@ -92,6 +92,18 @@ meta::define_form 'internal_function', sub {
 };
 __heBxmlI7O84FgR+9+ULeiCTWJ4hqd079Z02rZnl9Ong
 
+meta::meta('datatypes::java', <<'__YwJ9aNyrqtevjVtmJgDlP6IdDiWzmLXRoqiofL/XKws');
+meta::define_form 'java', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "java::$name";
+  *{$name} = sub {
+    write_java_source($name)   if grep /^$_[0]$/, qw/run compile unlit/;
+    compile_java_source($name) if grep /^$_[0]$/, qw/run compile/;
+    run_java($name)            if grep /^$_[0]$/, qw/run/;
+  };
+};
+__YwJ9aNyrqtevjVtmJgDlP6IdDiWzmLXRoqiofL/XKws
+
 meta::meta('datatypes::library', <<'__3RHc2q2OKjeHL1QRq6jhHHCeSrNLDPWTwSax7MclXRE');
 meta::define_form 'library', sub {
   eval $_[1];
@@ -798,6 +810,11 @@ $name =~ s/^[^:]*:://;
 $name;
 __T4JEqOUYjMzssdVwV/rdgAhvr0Vz9TQUo0noTdeBLxw
 
+meta::internal_function('compile_java_source', <<'__dkNCqD6IGlM2F2k+9vsSEZ868TxeVar5XgNbA3qpBks');
+write_java_source($_[0]);
+`javac -g $transient{"last_unlit_$_[0]"}` if $transient{"last_unlit_$_[0]"};
+__dkNCqD6IGlM2F2k+9vsSEZ868TxeVar5XgNbA3qpBks
+
 meta::internal_function('complete', <<'__lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg');
 my @functions  = sort keys %externalized_functions;
 my @attributes = sort keys %data;
@@ -895,6 +912,10 @@ meta::internal_function('retrieve', <<'__Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvL
 @data{@_};
 __Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvLvsFM
 
+meta::internal_function('run_java', <<'__STDNs4KOIo1nTEhGS9O5xBT6n4cV2eDkeL9+07u9UYw');
+system("java -cp /tmp $_[0]");
+__STDNs4KOIo1nTEhGS9O5xBT6n4cV2eDkeL9+07u9UYw
+
 meta::internal_function('serialize::single', <<'__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE');
 my $name               = shift || $_;
 my $contents           = $data{$name};
@@ -910,6 +931,10 @@ my $noise  = $name || state();
 $noise =~ s/\//-/g;
 "$0.$noise";
 __zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw
+
+meta::internal_function('write_java_source', <<'__pfmr1npi5jU6mHCPybSYdfy0Kfq+MvP84y2lvqHxqm8');
+file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.java', retrieve("java::$_[0]"));
+__pfmr1npi5jU6mHCPybSYdfy0Kfq+MvP84y2lvqHxqm8
 
 meta::issue('bugs', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
