@@ -1350,7 +1350,7 @@ set foldmethod=syntax
 let b:current_syntax = "gnarly"
 __Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g
 
-meta::vim_highlighter('ljava', <<'__BA49y/iRhNFO/QZILD+3QoUMvRidcUjvtQx0vr1TD7g');
+meta::vim_highlighter('ljava', <<'__yF4ujZVYAP7IPHn10yiwYWEgCcOSjnD1XxAwKp9Nk2U');
 " Literate Java
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
 " Language:   Java with literate paragraph detection
@@ -1363,15 +1363,15 @@ endif
 
 syn include @java syntax/java.vim
 
-syn region  ljavaCodeRegion    start=/^\s*[a-z]/  end=/^$/ contains=@java fold
-syn region  ljavaCommentRegion start=/^\s*[^a-z]/ end=/^$/ fold
+syn region  ljavaCodeRegion    start=/^\s*[a-z]/   end=/^$/ contains=@java fold
+syn region  ljavaCommentRegion start=/^\s*[^a-z ]/ end=/^$/ fold
 
-hi link gnarlyCommentRegion Comment
+hi link ljavaCommentRegion Comment
 
 set foldmethod=syntax
 
 let b:current_syntax = "ljava"
-__BA49y/iRhNFO/QZILD+3QoUMvRidcUjvtQx0vr1TD7g
+__yF4ujZVYAP7IPHn10yiwYWEgCcOSjnD1XxAwKp9Nk2U
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
