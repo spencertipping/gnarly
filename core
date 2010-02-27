@@ -455,7 +455,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('meta-associations', <<'__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U');
+meta::data('meta-associations', <<'__BFdycmRWHd5yrDYINtE+WsF8sq1GNU0DfQEEnrALg/A');
 ^function:: .pl
 ^library:: .pl
 ^internal_function:: .pl
@@ -464,7 +464,8 @@ meta::data('meta-associations', <<'__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U
 ^configuration:: .pl
 ^code:: .gnarly
 ^vim_highlighter:: .vim
-__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U
+^java:: .ljava
+__BFdycmRWHd5yrDYINtE+WsF8sq1GNU0DfQEEnrALg/A
 
 meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
 my ($filename) = @_;
@@ -932,9 +933,13 @@ $noise =~ s/\//-/g;
 "$0.$noise";
 __zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw
 
-meta::internal_function('write_java_source', <<'__pfmr1npi5jU6mHCPybSYdfy0Kfq+MvP84y2lvqHxqm8');
-file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.java', retrieve("java::$_[0]"));
-__pfmr1npi5jU6mHCPybSYdfy0Kfq+MvP84y2lvqHxqm8
+meta::internal_function('unlit_java', <<'__TxYYAPyN8PqFYA+9ZwxL/2Su3rmYdaXL/MG2t+4RjlQ');
+join "\n\n", map /^\s*[a-z]/ ? $_ : "/* $_ */", split /\n\s*\n+/, $_[0];
+__TxYYAPyN8PqFYA+9ZwxL/2Su3rmYdaXL/MG2t+4RjlQ
+
+meta::internal_function('write_java_source', <<'__3u037kPBFgaxUiYMupt5G6nEMZRkjFLTlGyHmdAnJp4');
+file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.java', unlit_java(retrieve("java::$_[0]")));
+__3u037kPBFgaxUiYMupt5G6nEMZRkjFLTlGyHmdAnJp4
 
 meta::issue('bugs', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
@@ -1344,6 +1349,29 @@ set foldmethod=syntax
 
 let b:current_syntax = "gnarly"
 __Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g
+
+meta::vim_highlighter('ljava', <<'__BA49y/iRhNFO/QZILD+3QoUMvRidcUjvtQx0vr1TD7g');
+" Literate Java
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   Java with literate paragraph detection
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn include @java syntax/java.vim
+
+syn region  ljavaCodeRegion    start=/^\s*[a-z]/  end=/^$/ contains=@java fold
+syn region  ljavaCommentRegion start=/^\s*[^a-z]/ end=/^$/ fold
+
+hi link gnarlyCommentRegion Comment
+
+set foldmethod=syntax
+
+let b:current_syntax = "ljava"
+__BA49y/iRhNFO/QZILD+3QoUMvRidcUjvtQx0vr1TD7g
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
