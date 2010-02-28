@@ -69,7 +69,7 @@ There are cases where using the global symbol table for recursion is suboptimal.
 optimization library. In this case, you want to eliminate recursive symbol references and use the Y combinator instead. Since Gnarly uses call-by-value, I'm
 encoding Z instead of Y.
 
-  (def z  (fn f (fn x (f (fn y (x x y))) (fn x (f (fn y (x x y)))))))
+  (def z  (fn f (fn x (f (qn y (:> (x x) y))) (fn x (f (qn y (:> (x x) y)))))))
   (def z> (qn name (qn body (z (en name body)))))
 
 Booleans and relational operators.
@@ -128,10 +128,15 @@ Here's what these functions are for.
 Type detection.
 These provide predicates that tell you whether a value is of a given type.
 
-  (def *? (fn x ('> == cons        (type x))))
-  (def /? (fn x ('> == symbol      (type x))))
-  (def @? (fn f ('> == expander    (type f))))
-  (def o? (fn f ('> == composition (type f))))
+  (let type-predicate (qn fname (qn name (k:' (:> def fname (fn x (== name (type x)))) :)))
+    ((type-predicate *? cons)
+     (type-predicate /? symbol)
+     (type-predicate #? number)
+     (type-predicate @? expander)
+     (type-predicate >? application)
+     (type-predicate m? macro)
+     (type-predicate p? placeholder)
+     (type-predicate o? composition)))
 
 Strings.
 Sometimes you want to write a sentence. The easiest way to do this is to use lists of symbols separated out by spaces. Constructing one long symbol from a list
@@ -147,6 +152,9 @@ a "string" to behave like a proper string literal, it needs to be quoted, as in 
   (def $*  (o $ list))
   (def $'> (fn f (o f ('> $))))
 
+  (def +' (qn s1 (qn s2 (s1 + s2))))
+  (def =~ (fn p (:> perl (' "types::lambda('" + p +' "', sub {$_[0]->serialize() =~ /" + p +' "/ ? $types::true : $types::false})"))))
+
 Cond.
 This is cool. It behaves just like the Lisp cond form, so that you have a list of 2-tuples of conditions and values and the first true conditional has its value
 returned. The internal workings below can be read as the following in English: "evaluate the tail of the first expression whose tail of whose head is true."
@@ -157,8 +165,8 @@ Some Perl interfacing.
 The core command set was designed to be able to interface with Perl. This is one example; we use interpreter internals to obtain reflection data about the value
 being referenced. It's OK to do this in general, but just be aware that such code might conceivably break in the future.
 
-  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0]->eval())})"))
-  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + (serialize name) + (' "]', sub {") + contents + (' "})")))))))
+  (def type (perl "types::lambda('[type]', sub {types::symbol(ref $_[0])})"))
+  (def defperl (qn name (qn contents (name bind (:> perl (' "types::lambda('[" + name +' "]', sub {" + contents +' "})"))))))
 
 Beta and composition disassembly.
 You can take apart compiled functions. One reason for this is that they're never really compiled, just interpreted. So you can always inspect their definitions
@@ -166,16 +174,16 @@ at runtime and write new functions based on the ones that you have. The system p
 those constructors; for a beta expander, !!< gives you the symbol being expanded and !!> gives you the expansion; for compositions, !!< gives you the outer, or
 left, function, and !!> gives you the inner.
 
-  (defperl !!< "${$_[0]->eval()}[0]")
-  (defperl !!> "${$_[0]->eval()}[1]")
+  (defperl !!< "${$_[0]}[0]")
+  (defperl !!> "${$_[0]}[1]")
 
-  (defperl r== "my $self = $_[0]->eval(); types::lambda('[' . $self->serialize() . ' r== ...]',
-                  sub {$self eq $_[0]->eval() ? $types::true : $types::false})")
+  (defperl r== "my $self = $_[0]; types::lambda('[' . $self->serialize() . ' r== ...]',
+                  sub {$self eq $_[0] ? $types::true : $types::false})")
 
 Assertions.
 Basic things to assist testing.
 
-  (defperl fail "terminal::message('fail', $transient{'last-failure'} = $_[0]->eval()->serialize()); types::nil()")
+  (defperl fail "terminal::message('fail', $transient{'last-failure'} = $_[0]->serialize()); types::nil()")
 
   (def fail$  ($'> fail))
   (def assert (qn predicate (fn e1 (fn e2
