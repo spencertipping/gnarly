@@ -768,7 +768,7 @@ my (undef, undef, $mode) = stat $0;
 chmod $mode | 0200, $0;
 __08PohCY8fcNe+pWCO6ic6XOOKv48NkrxpNMmTOUIFdA
 
-meta::function('update-from', <<'__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4');
+meta::function('update-from', <<'__/BG6eQgzKZ5JxbCXzs15unjydN/vRfpPrVepEyA7CYs');
 # Upgrade all attributes that aren't customized. In this case, we want everything except for configuration::, code::, and attribute::.
 return "That is a really bad idea." if $0 =~ /\.\/(.*)/ && $_[0] eq $1 || $_[0] eq $0;
 
@@ -777,13 +777,14 @@ print "Updating... Please be patient as this is an unjustifiably slow process.\n
 for my $attribute (grep length && ! (/^configuration::/ || /^code::/ || /^attribute::/ || /^function::pop-state$/ ||
                                      /^list::/ || /^issue::/ || /^data::/), split(/\n/, `$_[0] ls-a`)) {
   associate($attribute, join('', `$_[0] cat $attribute`));
+  reload();     # Necessary to activate new datatypes.
   print '.';
 }
 
 print "\nReloading new attributes\n";
 reload();
 "Imported from $_[0]. Run pop-state to undo this change.\n(The value of pop-state wasn't changed during the update.)";
-__sbtFZ7CF4vK7UXLC1PKSByMYv06T9H7x38AkdJuxWm4
+__/BG6eQgzKZ5JxbCXzs15unjydN/vRfpPrVepEyA7CYs
 
 meta::function('usage', <<'__oHVev4RtZlF/82SSE87y4Bf7ran2afn/HDtukOQBf9I');
 <<"EOD" . join '  ', split /\n/, ls ();
