@@ -222,7 +222,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94');
+meta::c('interpreter', <<'__GMfjWltod3iCFAG39/LVGQyNY4vpDTStCqE56TEeQwc');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -332,6 +332,7 @@ follows:
   b_table(c, 10000000)
   b_table(a, 1000000)
   b_table(o, 1000000)
+  b_table(e, 1000000)
 
   s_table(s, 1000000)
   s_table(m, 1000000)
@@ -343,10 +344,12 @@ follows:
   #define peek2   (*(sp - 2))
   #define poke(x) (*sp = (x))
 
-  #define h(x)       (*((value*) (x)))
-  #define t(x)       (*((value*) (x) + 1))
-  #define cons(x, y) (*(++cp) = (x), *(++cp) = (y), cp - 2)
-  #define application(x, y) (*(++ap) = (x), *(++ap) = (y), ap - 2)
+  #define h(x)      (*((value*) (x)))
+  #define t(x)      (*((value*) (x) + 1))
+  #define ccp(x, y) ((value) cc(x, y))
+  #define ecp(x, y) ((value) ec(x, y) | 0x4ull)
+  #define ocp(x, y) ((value) oc(x, y) | 0x5ull)
+  #define acp(x, y) ((value) ac(x, y) | 0x6ull)
 
   #define symbol(x)  (((x) << 3) | 0x1ull)
   #define bind(x, y) (m[(x) >> 3] = (y))
@@ -369,9 +372,9 @@ follows:
 
   int main () {
     const void *eval_targets[3]   = {&&eval_cons, &&eval_symbol, &&eval_ref};
-    const void *call_targets[3]   = {&&call_cons_or_nil, &&call_symbol, &&call_ref, &&call_undefined,
+    const void *call_targets[8]   = {&&call_cons_or_nil, &&call_symbol, &&call_ref, &&call_undefined,
                                      &&call_application, &&call_composition, &&call_expander, &&call_continuation};
-    const void *call_s_targets[5] = {&&call_s_ref, &&call_s_o, &&call_s_cons};
+    const void *call_s_targets[3] = {&&call_s_ref, &&call_s_o, &&call_s_cons};
 
     value eval_x, eval_k, eval_c1_x, eval_c1_t, eval_c1_k;
     value call_x, call_y, call_k, call_x_type, call_x_h, call_x_t;
@@ -450,7 +453,7 @@ follows:
         call_symbol_c1:
           call_x = pop;
           call_k = pop;
-          push(application(call_x, s_bind));
+          push(acp(call_x, s_bind));
           goto *fn(call_k);
 
       call_ref:       cerr << "Attempting to call a ref" << endl;              return 1;
@@ -515,7 +518,7 @@ follows:
 
     return 0;
   }
-__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94
+__GMfjWltod3iCFAG39/LVGQyNY4vpDTStCqE56TEeQwc
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.

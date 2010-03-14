@@ -45,6 +45,20 @@ meta::meta('datatypes::bootstrap', <<'__guYWiOv4zBmdrlI3k3sW7f/q/xsX38Xvzz0dwwLC
 meta::define_form 'bootstrap', sub {};
 __guYWiOv4zBmdrlI3k3sW7f/q/xsX38Xvzz0dwwLCIRM
 
+meta::meta('datatypes::c', <<'__Ji6/U0j2lrrl1sb57Mpro3gDV/39Xhnx3oLs8zAhewk');
+meta::define_form 'c', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "c::$name";
+  *{$name} = sub {
+    return edit("c::$name") if $_[0] eq 'edit';
+
+    write_c_source($name)   if grep /^$_[0]$/, qw/run compile unlit/;
+    compile_c_source($name) if grep /^$_[0]$/, qw/run compile/;
+    run_c($name)            if grep /^$_[0]$/, qw/run/;
+  };
+};
+__Ji6/U0j2lrrl1sb57Mpro3gDV/39Xhnx3oLs8zAhewk
+
 meta::meta('datatypes::code', <<'__OEWZ93LGHT8yOiO/06UyIrAiKTXnAbI7tYl7+93uAT0');
 meta::define_form 'code', sub {
   my ($name, $value) = @_;
@@ -143,6 +157,20 @@ meta::define_form 'note', sub {
 };
 __TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34
 
+meta::meta('datatypes::ocaml', <<'__u5BPhNcm6QdRYIJltEUQ7misAeSFsh4+hB2GCg3BzKo');
+meta::define_form 'ocaml', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "ocaml::$name";
+  *{$name} = sub {
+    return edit("ocaml::$name") if $_[0] eq 'edit';
+
+    write_ocaml_source($name)   if grep /^$_[0]$/, qw/run compile unlit/;
+    compile_ocaml_source($name) if grep /^$_[0]$/, qw/run compile/;
+    run_ocaml($name)            if grep /^$_[0]$/, qw/run/;
+  };
+};
+__u5BPhNcm6QdRYIJltEUQ7misAeSFsh4+hB2GCg3BzKo
+
 meta::meta('datatypes::vim-highlighter', <<'__vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0');
 meta::define_form 'vim_highlighter', \&meta::bootstrap::implementation;
 __vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0
@@ -205,6 +233,301 @@ meta::define_form 'meta', sub {
 };
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
+
+meta::c('interpreter', <<'__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94');
+C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
+
+Interpreter logic.
+
+  > type value is [cons h t] or nil or [symbol n] or [expander x e] or [ref x] or [composition f g] or [application f x]
+  > let m be mutable integer -> value
+
+  > eval cons h t = call (eval h) t
+  > eval symbol n = m n
+  > eval ref x    = x
+  > eval _        = _
+
+  > call (expander x (cons h t)) y = cons (call (expander x h) y) (call (expander x t) y)
+  > call (expander x x) y          = y
+  > call (expander x _) y          = _
+  > call (composition f g) x       = call f (call g x)
+  > call nil x                     = eval x
+
+  Builtin functions.
+
+  > call n 'bind                = application (eval n) bind
+  > call (application n bind) x = set m n to (eval x) in m n
+  > call n 'unbind              = delete m n in n
+  > call 'ref x                 = ref (eval x)
+  > call 'beta x                = application beta x
+  > call (application beta x) y = expander x y
+
+  > call 'o' f                  = application o' (eval f)
+  > call (application o' f) g   = composition f (eval g)
+
+  > call 'cons x                = application cons (eval x)
+  > call (application cons x) y = cons x (eval y)
+  > call (cons x y) 'h          = x
+  > call (cons x y) 't          = y
+
+  Runtime.
+
+  > output (eval input)
+
+CPS conversion.
+Ideally we want the interpreter to use only tail calls so that GOTO can be used to handle all of the branching. The simplest way to do this is to use CPS
+conversion on the above program. Note, however, that this requires some encoding of pattern-matching. For now I'm going to gloss over it and save the encoding
+of this decisional for the C++ implementation. Also note that the type constructors don't get CPS-converted.
+
+  > eval (cons h t) k = eval h (x -> (call x t k)))
+  > eval (symbol n) k = k (m n)
+  > eval (ref x) k    = k x
+  > eval _ k          = k _
+
+  > call (expander x (cons h t)) y k = call (expander x h) y (c1 -> call (expander x t) y (c2 -> k (cons c1 c2)))
+  > call (expander x x) y k          = k y
+  > call (expander x _) y k          = k _
+  > call (composition f g) x k       = call g x (c1 -> call f c1 k)
+  > call nil x k                     = eval x k
+
+  > call n 'bind k                   = eval n (c1 -> k (application c1 bind))
+  > call (application n bind) x k    = eval x (c1 -> set m n to c1 (c2 -> k c1))
+  > call n 'unbind k                 = delete m n (c1 -> k n)
+  > call 'ref x k                    = eval x (c1 -> k (ref c1))
+  > call 'beta x k                   = k (application beta x)
+  > call (application beta x) y k    = k (expander x y)
+
+  > call 'o' f k                     = eval f (c1 -> k (application o' c1))
+  > call (application o' f) g k      = eval g (c1 -> k (composition f c1))
+
+  > call 'cons x k                   = eval x (c1 -> k (application cons c1))
+  > call (application cons x) y k    = eval y (c1 -> k (cons x c1))
+  > call (cons x y) 'h k             = k x
+  > call (cons x y) 't k             = k y
+
+  > eval input output
+
+Encoding in imperative form.
+Probably the simplest way to encode the CPS-expanded forms above is to use a value stack with computed GOTO as the control flow mechanism. At this point,
+control flow is forward-only (as would always be the case with a fully CPS-converted program).
+
+Defining an expansion of one of the above CPS forms would involve popping the requisite parameters off of the stack, pushing parameters for the continuations,
+and then invoking GOTO on those continuations with the new parameters in place. The only difficulty that arises is encoding the anonymous functions, which close
+over other parameter values. I'm handling these by pushing the closure parameters manually and popping them as if they were explicit.
+
+Types of arguments are encoded using the least-significant bits. (I'm relying on the fact that all pointers are to 64-bit-aligned integers.) The encoding is as
+follows:
+
+  | 000 cons cell (nil if the entire value is 0)
+  | 001 symbol
+  | 010 ref
+  | 100 expander
+  | 101 composition
+  | 110 application
+  | 111 continuation
+
+  typedef unsigned long long value;
+
+  #define table(name, size) static value name[size]; \
+                            static value *name##p = name;
+
+  #define stack_access(name) static inline value *name##c (value v) \
+                               {*(++name##p) = v; return name##p;}
+
+  #define binary_access(name) static inline value *name##c (value v1, value v2) \
+                                {*(++name##p) = v1; *(++name##p) = v2; return name##p;}
+
+  #define s_table(name, size) table(name, size) stack_access(name)
+  #define b_table(name, size) table(name, size) binary_access(name)
+
+  b_table(c, 10000000)
+  b_table(a, 1000000)
+  b_table(o, 1000000)
+
+  s_table(s, 1000000)
+  s_table(m, 1000000)
+
+  #define pop     (*(sp--))
+  #define push(x) (*(++sp) = (x))
+  #define peek    (*sp)
+  #define peek1   (*(sp - 1))
+  #define peek2   (*(sp - 2))
+  #define poke(x) (*sp = (x))
+
+  #define h(x)       (*((value*) (x)))
+  #define t(x)       (*((value*) (x) + 1))
+  #define cons(x, y) (*(++cp) = (x), *(++cp) = (y), cp - 2)
+  #define application(x, y) (*(++ap) = (x), *(++ap) = (y), ap - 2)
+
+  #define symbol(x)  (((x) << 3) | 0x1ull)
+  #define bind(x, y) (m[(x) >> 3] = (y))
+  #define unbind(x)  (m[(x) >> 3] = 0)
+
+  #define unpack(x)       ((x) & ~0x7ull)
+
+  #define continuation(x) ((value) (x) | 0x7ull)
+  #define fn(x)           ((void*) unpack(x))
+
+  static const value s_ref    = symbol(0);
+  static const value s_beta   = symbol(1);
+  static const value s_o      = symbol(2);
+  static const value s_cons   = symbol(3);
+
+  static const value s_h      = symbol(4);
+  static const value s_t      = symbol(5);
+  static const value s_bind   = symbol(6);
+  static const value s_unbind = symbol(7);
+
+  int main () {
+    const void *eval_targets[3]   = {&&eval_cons, &&eval_symbol, &&eval_ref};
+    const void *call_targets[3]   = {&&call_cons_or_nil, &&call_symbol, &&call_ref, &&call_undefined,
+                                     &&call_application, &&call_composition, &&call_expander, &&call_continuation};
+    const void *call_s_targets[5] = {&&call_s_ref, &&call_s_o, &&call_s_cons};
+
+    value eval_x, eval_k, eval_c1_x, eval_c1_t, eval_c1_k;
+    value call_x, call_y, call_k, call_x_type, call_x_h, call_x_t;
+
+    eval:
+      eval_x = peek1;
+      if (eval_x & 0x4ull) goto *fn(pop);           // Inlined
+      else                 goto *eval_targets[eval_x & 0x3ull];
+
+      eval_cons:
+        eval_k = pop;
+        eval_x = peek;    // Linked (pop)
+        poke(eval_k);     // Linked (push)
+        push(t(eval_x));
+        push(h(eval_x));
+        push(continuation(&&eval_cons_c1));
+        goto eval;
+
+      eval_symbol:
+        eval_k = pop;
+        eval_x = pop;
+        push(m[unpack(eval_x) >> 3]);
+        goto *fn(eval_k);
+
+      eval_ref:
+        eval_k = pop;
+        poke(*((value*) unpack(peek)));
+        goto *fn(eval_k);
+
+      eval_cons_c1:       // Fragile (implicit 'goto call' -- see end of block)
+        eval_c1_x = pop;
+        eval_c1_t = pop;
+        eval_c1_k = pop;
+        push(eval_c1_x);
+        push(eval_c1_t);
+        push(eval_c1_k);
+        // goto call
+
+    call:
+      call_x_type = peek2 & 0x7ull;
+      goto *call_targets[call_x_type];
+
+      call_cons_or_nil:
+        call_k = pop;
+        call_y = pop;
+        call_x = pop;
+
+        if (call_x) {
+          // cons
+          if      (call_y == s_h) push(h(call_x));
+          else if (call_y == s_t) push(h(call_y));
+          else goto call_cons_on_invalid;
+          goto *fn(call_k);
+        } else {
+          // nil
+          push(call_y);
+          push(call_k);
+          goto eval;
+        }
+
+      call_symbol:
+        call_k = pop;
+        call_y = pop;
+        call_x = pop;
+
+        if (call_y == s_bind) {
+          push(call_k);
+          push(call_x);
+          push(continuation(&&call_symbol_c1));
+          goto eval;
+        } else if (call_y == s_unbind) unbind(call_x), push(call_x);
+        else goto call_symbol_on_invalid;
+
+        goto *fn(call_k);
+
+        call_symbol_c1:
+          call_x = pop;
+          call_k = pop;
+          push(application(call_x, s_bind));
+          goto *fn(call_k);
+
+      call_ref:       cerr << "Attempting to call a ref" << endl;              return 1;
+      call_undefined: cerr << "Attempting to call an undefined value" << endl; return 1;
+
+      call_application:
+        call_k   = pop;
+        call_y   = pop;
+        call_x   = pop;
+        call_x_h = h(call_x);
+        call_x_t = t(call_x);
+
+        if (call_x_h & 0x7ull == 0x7ull) {
+          // Case 1. x_h is a continuation of some sort, so pass x_t and y to it.
+          push(call_x_t);
+          push(call_y);
+          push(call_k);
+          goto *fn(call_x_h);
+        } else if (call_x_h & 0x7ull == 0x1ull) {
+          // Case 2. It's a symbol, so create the binding. (Flattening the conditional by relying on the precondition that (application n x) implies that x ==
+          // bind)
+          push(call_k);
+          push(call_x_h);
+          push(call_y);
+          push(&&call_application_symbol_bind);
+          goto eval;
+        }
+
+        call_application_symbol_bind:
+          call_y = pop;
+          call_x = pop;
+          push(m[unpack(call_x)] = call_y);
+          goto *fn(pop);
+
+      call_composition:
+        call_k   = pop;
+        call_y   = pop;
+        call_x   = pop;
+        push(call_k);
+        push(h(call_x));
+        push(t(call_x));
+        push(call_y);
+        push(&&call_composition_c1);
+        goto call;
+
+        call_composition_c1:
+          call_x = pop;
+          call_y = pop;
+          call_k = pop;
+          push(call_x);
+          push(call_y);
+          push(call_k);
+          goto call;
+
+      call_expander:
+      call_continuation:
+        goto *fn(pop);
+
+      call_s_ref:
+      call_s_o:
+      call_s_cons:
+
+    return 0;
+  }
+__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94
 
 meta::code('cached-dependencies', <<'__r58/DMCjq66nPnOpcuqaB7L0z7Jpfj2e3BSVc74uHWM');
 This will be overwritten when you type load-dependencies.
@@ -609,10 +932,22 @@ $name =~ s/^[^:]*:://;
 $name;
 __T4JEqOUYjMzssdVwV/rdgAhvr0Vz9TQUo0noTdeBLxw
 
+meta::internal_function('compile_c_source', <<'__wpMpoal70gwcOkAF6fsip4jYBUSQ7Prp6oweFI40P3U');
+write_c_source($_[0]);
+my $source = $transient{"last_unlit_$_[0]"};
+qx|g++ -O2 -g -o $source.out $source| if $source;
+__wpMpoal70gwcOkAF6fsip4jYBUSQ7Prp6oweFI40P3U
+
 meta::internal_function('compile_java_source', <<'__dkNCqD6IGlM2F2k+9vsSEZ868TxeVar5XgNbA3qpBks');
 write_java_source($_[0]);
 `javac -g $transient{"last_unlit_$_[0]"}` if $transient{"last_unlit_$_[0]"};
 __dkNCqD6IGlM2F2k+9vsSEZ868TxeVar5XgNbA3qpBks
+
+meta::internal_function('compile_ocaml_source', <<'__fYqhn2XlWxz8txxm4W1J34KcfOCv0isgVyGP++DFGYE');
+write_ocaml_source($_[0]);
+my $source = $transient{"last_ocaml_unlit_$_[0]"};
+qx|ocamlopt -o $source.out $source| if $source;
+__fYqhn2XlWxz8txxm4W1J34KcfOCv0isgVyGP++DFGYE
 
 meta::internal_function('complete', <<'__lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg');
 my @functions  = sort keys %externalized_functions;
@@ -711,9 +1046,17 @@ meta::internal_function('retrieve', <<'__Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvL
 @data{@_};
 __Erqqkp11FEHKsitr0DEJZ6OCGDYAs+U6BSu4UvLvsFM
 
+meta::internal_function('run_c', <<'__2OLcajGatrqxSRYd/mjbxfnXRXElYKwTdFHDOi/on98');
+qx|$_[0].out|;
+__2OLcajGatrqxSRYd/mjbxfnXRXElYKwTdFHDOi/on98
+
 meta::internal_function('run_java', <<'__STDNs4KOIo1nTEhGS9O5xBT6n4cV2eDkeL9+07u9UYw');
 system("java -cp /tmp $_[0]");
 __STDNs4KOIo1nTEhGS9O5xBT6n4cV2eDkeL9+07u9UYw
+
+meta::internal_function('run_ocaml', <<'__Wh2aafSnjcntecRIveSYlNtu80e1Fv4gaw2B1bnTd7M');
+qx|$transient{"last_ocaml_unlit_$_[0]"}.out|;
+__Wh2aafSnjcntecRIveSYlNtu80e1Fv4gaw2B1bnTd7M
 
 meta::internal_function('serialize::single', <<'__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE');
 my $name               = shift || $_;
@@ -731,13 +1074,29 @@ $noise =~ s/\//-/g;
 "$0.$noise";
 __zNSrihAkMKJG5spRYgcFdoNArFKig1u12gIp6gJ8pZw
 
+meta::internal_function('unlit_c', <<'__sy7R/rmrsF0Mxz/rPAqYJHVok29baW9BzZ/g5ahZhO4');
+join "\n\n", map /^\s*[a-z@#]/ ? $_ : "/* $_ */", split /\n\s*\n+/, $_[0];
+__sy7R/rmrsF0Mxz/rPAqYJHVok29baW9BzZ/g5ahZhO4
+
 meta::internal_function('unlit_java', <<'__TxYYAPyN8PqFYA+9ZwxL/2Su3rmYdaXL/MG2t+4RjlQ');
 join "\n\n", map /^\s*[a-z]/ ? $_ : "/* $_ */", split /\n\s*\n+/, $_[0];
 __TxYYAPyN8PqFYA+9ZwxL/2Su3rmYdaXL/MG2t+4RjlQ
 
+meta::internal_function('unlit_ocaml', <<'__7n0vtAVbAsrjYbpOYU5OVncwiZD7PCq7fjR71QrwT/0');
+join "\n\n", map /^\s*[a-z@#]/ ? $_ : "(* $_ *)", split /\n\s*\n+/, $_[0];
+__7n0vtAVbAsrjYbpOYU5OVncwiZD7PCq7fjR71QrwT/0
+
+meta::internal_function('write_c_source', <<'__+3eSSJPtzpvyQdOXsoWFX900DK9jqfkLu2f+cinBBVc');
+file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.cpp', unlit_c(retrieve("c::$_[0]")));
+__+3eSSJPtzpvyQdOXsoWFX900DK9jqfkLu2f+cinBBVc
+
 meta::internal_function('write_java_source', <<'__3u037kPBFgaxUiYMupt5G6nEMZRkjFLTlGyHmdAnJp4');
 file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.java', unlit_java(retrieve("java::$_[0]")));
 __3u037kPBFgaxUiYMupt5G6nEMZRkjFLTlGyHmdAnJp4
+
+meta::internal_function('write_ocaml_source', <<'__aJJakvlD5inz2QSkM9oxfQMUvxQruHLEk9tf2CDEz+Q');
+file::write($transient{"last_ocaml_unlit_$_[0]"} = "/tmp/$0.ml", unlit_ocaml(retrieve("ocaml::$_[0]")));
+__aJJakvlD5inz2QSkM9oxfQMUvxQruHLEk9tf2CDEz+Q
 
 meta::issue('bugs', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
@@ -759,7 +1118,7 @@ which I'm not sure there is.) Whether or not Gnarly is directly compiled, the pe
 the interpreter is based on the JVM.
 __eKfMlYplkP3xgkEcPAEz2Fib3wkxCjnruIEho/BYPvk
 
-meta::library('datatypes', <<'__dmuceLNyZ8ILxNskW4/h7g8VucOOw3yUYZU8qCVbHmA');
+meta::library('datatypes', <<'__q1LSLuHGLAt+1XUTuRfyzIH3/XWigXMQ1PScnZNIjJI');
 # Data type definitions for the interpreter.
 
 package types;
@@ -913,35 +1272,17 @@ deftype 'placeholder',
   serialize => sub {'[' . ${$_[0]}->serialize() . ']'};
 
 sub lazy_rewrite {
-  sub merge_by_composition {
-    my ($h1, $h2) = @_;
-    return $h1 unless $h2;
-    return $h2 unless $h1;
-    return $h1 if $h1 eq $h2;
-
-    my %hash = ();
-    $hash{$_} = ref ${$h1}{$_} eq 'symbol' && ${$h2}{${${$h1}{$_}}} || ${$h1}{$_} for keys %$h1;
-    $hash{$_} = $hash{$_} || ${$h2}{$_}                                           for keys %$h2;
-    \%hash;
-  }
-
-  my ($form, $table) = @_;
-  return $form unless $table;
-  return ${$table}{${$form}} || $form if ref $form eq 'symbol';
-
-  if (ref $form eq 'cons') {
-    return cons(${$form}[0], ${$form}[1], merge_by_composition(${$form}[2], $table)) if ${$form}[2];
-    return cons(${$form}[0], ${$form}[1], $table);
-  }
-
+  my ($form, $find, $replace) = @_;
+  return cons(lazy_rewrite($form->head(), $find, $replace), lazy_rewrite($form->tail(), $find, $replace)) if ref $form eq 'cons' && $form->contents()->{$$find};
+  return $replace                                                                                         if ref $form eq 'symbol' && $$form eq $$find;
   return $form;
 }
 
-deftype 'expander', new       => sub {[@_]},
+deftype 'expander', new       => sub {\@_},
                     eval      => $id,
                     head      => sub {$_[0][0]},
                     tail      => sub {$_[0][1]},
-                    call      => sub {lazy_rewrite($_[0]->tail(), {$_[0]->head()->serialize() => $_[1]})},
+                    call      => sub {lazy_rewrite($_[0]->tail(), $_[0]->head(), $_[1])},
                     serialize => sub {'[' . $_[0]->head()->serialize() . ' -> ' . $_[0]->tail()->serialize() . ']'};
 
 deftype 'counter', new       => sub {\$_[0]},
@@ -949,10 +1290,18 @@ deftype 'counter', new       => sub {\$_[0]},
                    call      => sub {die 'Cannot call ' . $_[0]->serialize() . ' on ' . $_[1]->serialize()},
                    serialize => sub {"[counter +${$_[0]}]"};
 
-deftype 'cons', new       => sub {\@_},
+deftype 'cons', new       => sub {
+                               my %contents;
+                               if (ref $_[0] eq 'cons') {$contents{$_}++ for keys %{$_[0]->contents()}}
+                               if (ref $_[1] eq 'cons') {$contents{$_}++ for keys %{$_[1]->contents()}}
+                               $contents{${$_[0]}}++ if ref $_[0] eq 'symbol';
+                               $contents{${$_[1]}}++ if ref $_[1] eq 'symbol';
+                               [$_[0], $_[1], \%contents];
+                             },
+                contents  => sub {$_[0][2]},
                 eval      => sub {$_[0]->head()->eval()->call($_[0]->tail())},
-                head      => sub {lazy_rewrite($_[0][0], $_[0][2])},
-                tail      => sub {lazy_rewrite($_[0][1], $_[0][2])},
+                head      => sub {$_[0][0]},
+                tail      => sub {$_[0][1]},
                 call      => method(head => sub {$_[0]->head()},
                                     tail => sub {$_[0]->tail()},
                                     call => sub {my $self = $_[0]; sub {$_[0]->eval()->call($self->head())->call($self->tail())}},
@@ -988,7 +1337,7 @@ deftype 'number', new       => sub {\$_[0]},
                                       ''   => sub {return number(${$_[0]} * ${$_[1]}) if ref $_[1] eq 'number';
                                                    return $_[1]->eval()->call($_[0])}),
                   serialize => sub {${$_[0]}};
-__dmuceLNyZ8ILxNskW4/h7g8VucOOw3yUYZU8qCVbHmA
+__q1LSLuHGLAt+1XUTuRfyzIH3/XWigXMQ1PScnZNIjJI
 
 meta::library('reader', <<'__FNIGiO/4HpdvKl1LG4oDoOJ1jQgaaKgwGIBLzZKw+uo');
 package reader;
@@ -1100,6 +1449,82 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
+meta::ocaml('prototype', <<'__Eq8zCOn8a/lFG2pK91sg/P8fPLTmgL8mJBRA1Z9WYE8');
+OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
+
+Interpreter logic. (See the C++ interpreter implementation for the basis of these definitions.)
+
+  open Hashtbl
+
+  type value = Cons of value * value
+             | Nil
+             | Symbol of int
+             | Expander of value * value
+             | Ref of value
+             | Composition of value * value
+             | Application of value * value
+             | Continuation of int
+
+  let s_ref    = Symbol 0
+  let s_beta   = Symbol 1
+  let s_o      = Symbol 2
+  let s_cons   = Symbol 3
+  let s_h      = Symbol 4
+  let s_t      = Symbol 5
+  let s_bind   = Symbol 6
+  let s_unbind = Symbol 7
+
+  let c_ref    = Continuation 0
+  let c_beta   = Continuation 1
+  let c_o      = Continuation 2
+  let c_cons   = Continuation 3
+
+  let m = Hashtbl.create 100
+
+  let _ = Hashtbl.add m 0 c_ref;
+          Hashtbl.add m 1 c_beta;
+          Hashtbl.add m 2 c_o;
+          Hashtbl.add m 3 c_cons
+
+  let rec eval x = match x with
+    | Cons (h, t) -> call (eval h) t
+    | Symbol s    -> Hashtbl.find m s
+    | Ref x       -> x
+    | x           -> x
+  and call x y = match (x, y) with
+    | (Expander (x', (Cons (h, t))), y')                  -> Cons (call (Expander (x', h)) y', call (Expander (x', t)) y')
+    | (Expander (x', x''), y) when x' == x''              -> y
+    | (Expander (x', q), y)                               -> q
+    | (Composition (f, g), x')                            -> call f (call g x')
+    | (Nil, x')                                           -> eval x'
+    | (Symbol x', s) when s == s_bind                     -> Application (eval (Symbol x'), s_bind)
+    | (Symbol x', s) when s == s_unbind                   -> Hashtbl.remove m x'; Symbol x'
+    | (Application ((Symbol x'), s), y') when s == s_bind -> Hashtbl.replace m x' y'; y'
+    | (c, x') when c == c_ref                             -> Ref x'
+    | (c, x') when c == c_beta                            -> Application (c_beta, x')
+    | (c, f)  when c == c_o                               -> Application (c_o, eval f)
+    | (c, x') when c == c_cons                            -> Application (c_cons, eval x')
+    | (Application (c, x'), y') when c == c_beta          -> Expander (x', y')
+    | (Application (c, f), g)   when c == c_o             -> Composition (f, eval g)
+    | (Application (c, x'), y') when c == c_cons          -> Cons (x', (eval y'))
+    | (Cons (h, t), s) when s == s_h                      -> h
+    | (Cons (h, t), s) when s == s_t                      -> t
+
+  let int_to_string x = Int64.to_string (Int64.of_int x)
+  let rec serialize x = match x with
+    | Cons (h, t)        -> "(" ^ (serialize h) ^ " . " ^ (serialize t) ^ ")"
+    | Nil                -> ":"
+    | Symbol s           -> "[sym " ^ (int_to_string s) ^ "]"
+    | Ref x              -> "[ref " ^ (serialize x) ^ "]"
+    | Application (x, y) -> "(" ^ (serialize x) ^ " " ^ (serialize y) ^ " ...)"
+    | Expander (x, y)    -> "[" ^ (serialize x) ^ " -> " ^ (serialize y) ^ "]"
+    | Composition (x, y) -> "[" ^ (serialize x) ^ " o' " ^ (serialize y) ^ "]"
+    | Continuation x     -> "[cont " ^ (int_to_string x) ^ "]"
+
+  let _ = print_string (serialize (eval (Cons (Cons (Cons (Nil, c_beta), s_h), s_h))))
+__Eq8zCOn8a/lFG2pK91sg/P8fPLTmgL8mJBRA1Z9WYE8
+
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
@@ -1156,6 +1581,29 @@ set foldmethod=syntax
 let b:current_syntax = "gnarly"
 __Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g
 
+meta::vim_highlighter('lc', <<'__Og4NtvEdzxsAANLD72RF5q6r0NegrGBtSmHkZV0xp0E');
+" Literate C++
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   C++ with literate paragraph detection
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn include @cpp syntax/cpp.vim
+
+syn region  lcCodeRegion    start=/^\s*[a-z@#]/   end=/^$/ contains=@cpp fold
+syn region  lcCommentRegion start=/^\s*[^a-z@# ]/ end=/^$/ fold
+
+hi link lcCommentRegion Comment
+
+set foldmethod=syntax
+
+let b:current_syntax = "lc"
+__Og4NtvEdzxsAANLD72RF5q6r0NegrGBtSmHkZV0xp0E
+
 meta::vim_highlighter('ljava', <<'__yF4ujZVYAP7IPHn10yiwYWEgCcOSjnD1XxAwKp9Nk2U');
 " Literate Java
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
@@ -1178,6 +1626,29 @@ set foldmethod=syntax
 
 let b:current_syntax = "ljava"
 __yF4ujZVYAP7IPHn10yiwYWEgCcOSjnD1XxAwKp9Nk2U
+
+meta::vim_highlighter('locaml', <<'__9p1ExW6kepCXqYZ/g5F0EQds8SrfJ+gja9SX4dsNZng');
+" Literate OCaml
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   OCaml with literate paragraph detection
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn include @ocaml syntax/ocaml.vim
+
+syn region  lcCodeRegion    start=/^\s*[a-z@#]/   end=/^$/ contains=@ocaml fold
+syn region  lcCommentRegion start=/^\s*[^a-z@# ]/ end=/^$/ fold
+
+hi link lcCommentRegion Comment
+
+set foldmethod=syntax
+
+let b:current_syntax = "locaml"
+__9p1ExW6kepCXqYZ/g5F0EQds8SrfJ+gja9SX4dsNZng
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
