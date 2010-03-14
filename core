@@ -145,6 +145,20 @@ meta::define_form 'note', sub {
 };
 __TGOjJwmj+QJp1giUQqg2bEaQe8RvqnrFEqyZhIpSC34
 
+meta::meta('datatypes::ocaml', <<'__u5BPhNcm6QdRYIJltEUQ7misAeSFsh4+hB2GCg3BzKo');
+meta::define_form 'ocaml', sub {
+  my ($name, undef) = @_;
+  $externalized_functions{$name} = "ocaml::$name";
+  *{$name} = sub {
+    return edit("ocaml::$name") if $_[0] eq 'edit';
+
+    write_ocaml_source($name)   if grep /^$_[0]$/, qw/run compile unlit/;
+    compile_ocaml_source($name) if grep /^$_[0]$/, qw/run compile/;
+    run_ocaml($name)            if grep /^$_[0]$/, qw/run/;
+  };
+};
+__u5BPhNcm6QdRYIJltEUQ7misAeSFsh4+hB2GCg3BzKo
+
 meta::meta('datatypes::vim-highlighter', <<'__vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0');
 meta::define_form 'vim_highlighter', \&meta::bootstrap::implementation;
 __vsGBLVDC3S+pX/k/zl5CgXeAQz2QjpBkLgx0CJ4vcn0
@@ -208,7 +222,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__2IQRVO7sSIcv9u1TzdKK+/uIz65iDjF2i8sKyZH9ly4');
+meta::c('interpreter', <<'__H/unvocM6bsFKQe+B4n3lZacNFTdsz/283eHzClxddg');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -225,15 +239,16 @@ Interpreter logic.
   > call (expander x (cons h t)) y = cons (call (expander x h) y) (call (expander x t) y)
   > call (expander x x) y          = y
   > call (expander x _) y          = _
-  > call (composition f g) x       = f (g x)
+  > call (composition f g) x       = call f (call g x)
   > call nil x                     = eval x
 
   Builtin functions.
 
-  > call 'bind n                = application bind (eval n)
-  > call (application bind n) x = set m n to (eval x) in m n
-  > call 'unbind n              = delete m n in n
+  > call n 'bind                = application (eval n) bind
+  > call (application n bind) x = set m n to (eval x) in m n
+  > call n 'unbind              = delete m n in n
   > call 'ref x                 = ref (eval x)
+  > call 'beta x y              = expander x y
 
   > call 'o' f                  = application o' (eval f)
   > call (application o' f) g   = composition f (eval g)
@@ -260,13 +275,15 @@ of this decisional for the C++ implementation. Also note that the type construct
   > call (expander x (cons h t)) y k = call (expander x h) y (c1 -> call (expander x t) y (c2 -> k (cons c1 c2)))
   > call (expander x x) y k          = k y
   > call (expander x _) y k          = k _
-  > call (composition f g) x k       = g x (c1 -> f c1 (c2 -> k c2))
+  > call (composition f g) x k       = call g x (c1 -> call f c1 (c2 -> k c2))
   > call nil x k                     = eval x k
 
-  > call 'bind n k                   = eval n (c1 -> k (application bind c1))
-  > call (application bind n) x k    = eval x (c1 -> set m n to c1 (c2 -> k c1))
-  > call 'unbind n k                 = delete m n (c1 -> k n)
+  > call n 'bind k                   = eval n (c1 -> k (application c1 bind))
+  > call (application n bind) x k    = eval x (c1 -> set m n to c1 (c2 -> k c1))
+  > call n 'unbind k                 = delete m n (c1 -> k n)
   > call 'ref x k                    = eval x (c1 -> k (ref c1))
+  > call 'beta x k                   = k (application beta x)
+  > call (application beta x) y k    = k (expander x y)
 
   > call 'o' f k                     = eval f (c1 -> k (application o' c1))
   > call (application o' f) g k      = eval g (c1 -> k (composition f c1))
@@ -299,17 +316,24 @@ follows:
 
   typedef unsigned long long value;
 
-  #define STACK_SIZE 1000000
-  #define CONS_SIZE  10000000
-  #define TABLE_SIZE 1000000
+  #define table(name, size) static value name[size]; \
+                            static value *name##p = name;
 
-  #define table(name, size) \
-    static value name[size]; \
-    static value *name##p = name;
+  #define stack_access(name) static inline value *name##c (value v) \
+                               {*(++name##p) = v; return name##p;}
 
-  table(c, 1000000)
-  table(s, 1000000)
-  table(m, 1000000)
+  #define binary_access(name) static inline value *name##c (value v1, value v2) \
+                                {*(++name##p) = v1; *(++name##p) = v2; return name##p;}
+
+  #define s_table(name, size) table(name, size) stack_access(name)
+  #define b_table(name, size) table(name, size) binary_access(name)
+
+  b_table(c, 10000000)
+  b_table(a, 1000000)
+  b_table(o, 1000000)
+
+  s_table(s, 1000000)
+  s_table(m, 1000000)
 
   #define pop     (*(sp--))
   #define push(x) (*(++sp) = (x))
@@ -320,29 +344,35 @@ follows:
 
   #define h(x)       (*((value*) (x)))
   #define t(x)       (*((value*) (x) + 1))
-  #define cons(x, y) (*(++cp) = (x), *(++cp = (y)), cp - 2)
+  #define cons(x, y) (*(++cp) = (x), *(++cp) = (y), cp - 2)
+  #define application(x, y) (*(++ap) = (x), *(++ap) = (y), ap - 2)
 
-  #define symbol(x)  ((x) | 0x1ull)
+  #define symbol(x)  (((x) << 3) | 0x1ull)
+  #define bind(x, y) (m[(x) >> 3] = (y))
+  #define unbind(x)  (m[(x) >> 3] = 0)
 
   #define unpack(x)       ((x) & ~0x7ull)
 
   #define continuation(x) ((value) (x) | 0x7ull)
   #define fn(x)           ((void*) unpack(x))
 
-  static const value s_bind   = symbol(0 << 3);
-  static const value s_unbind = symbol(1 << 3);
-  static const value s_ref    = symbol(2 << 3);
-  static const value s_o      = symbol(3 << 3);
-  static const value s_cons   = symbol(4 << 3);
-  static const value s_h      = symbol(5 << 3);
-  static const value s_t      = symbol(6 << 3);
+  static const value s_ref    = symbol(0);
+  static const value s_o      = symbol(1);
+  static const value s_cons   = symbol(2);
+
+  static const value s_h      = symbol(3);
+  static const value s_t      = symbol(4);
+  static const value s_bind   = symbol(5);
+  static const value s_unbind = symbol(6);
 
   int main () {
     const void *eval_targets[3]   = {&&eval_cons, &&eval_symbol, &&eval_ref};
-    const void *call_targets[3]   = {&&call_application, &&call_composition, &&call_expander};
-    const void *call_s_targets[5] = {&&call_s_bind, &&call_s_unbind, &&call_s_ref, &&call_s_o, &&call_s_cons};
+    const void *call_targets[3]   = {&&call_cons_or_nil, &&call_symbol, &&call_ref, &&call_undefined,
+                                     &&call_application, &&call_composition, &&call_expander, &&call_continuation};
+    const void *call_s_targets[5] = {&&call_s_ref, &&call_s_o, &&call_s_cons};
+
     value eval_x, eval_k, eval_c1_x, eval_c1_t, eval_c1_k;
-    value call_x, call_y, call_k, call_x_type;
+    value call_x, call_y, call_k, call_x_type, call_x_h, call_x_t;
 
     eval:
       eval_x = peek1;
@@ -380,28 +410,71 @@ follows:
 
     call:
       call_x_type = peek2 & 0x7ull;
+      goto *call_targets[call_x_type];
 
-      if (call_x_type == 0ull) {
-        sp[-2] = sp[-1];
-        sp[-1] = *sp;
-        pop;
-        goto eval;
-      }
+      call_cons_or_nil:
+        call_k = pop;
+        call_y = pop;
+        call_x = pop;
 
-      call_s_bind:
-      call_s_unbind:
+        if (call_x) {
+          // cons
+          if      (call_y == s_h) push(h(call_x));
+          else if (call_y == s_t) push(h(call_y));
+          else goto call_cons_on_invalid;
+          goto *fn(call_k);
+        } else {
+          // nil
+          push(call_y);
+          push(call_k);
+          goto eval;
+        }
+
+      call_symbol:
+        call_k = pop;
+        call_y = pop;
+        call_x = pop;
+
+        if (call_y == s_bind) {
+          push(call_k);
+          push(call_x);
+          push(continuation(&&call_symbol_c1));
+          goto eval;
+        } else if (call_y == s_unbind) unbind(call_x), push(call_x);
+        else goto call_symbol_on_invalid;
+
+        goto *fn(call_k);
+
+        call_symbol_c1:
+          call_x = pop;
+          call_k = pop;
+          push(application(call_x, s_bind));
+          goto *fn(call_k);
+
+      call_ref:       cerr << "Attempting to call a ref" << endl;              return 1;
+      call_undefined: cerr << "Attempting to call an undefined value" << endl; return 1;
+
+      call_application:
+        call_k   = pop;
+        call_y   = pop;
+        call_x   = pop;
+        call_x_h = h(call_x);
+        call_x_t = t(call_x);
+
+        // TODO
+        
+      call_composition:
+      call_expander:
+      call_continuation:
+        goto *fn(pop);
+
       call_s_ref:
       call_s_o:
       call_s_cons:
-      call_application:
-      call_composition:
-      call_expander:
-      call_cons:
-      ;
 
     return 0;
   }
-__2IQRVO7sSIcv9u1TzdKK+/uIz65iDjF2i8sKyZH9ly4
+__H/unvocM6bsFKQe+B4n3lZacNFTdsz/283eHzClxddg
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
@@ -651,7 +724,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('meta-associations', <<'__w8WnwPWoqXXyit2wKHYV7WdQnsKEVrSSI2adVSCcOdE');
+meta::data('meta-associations', <<'__jjL5mHvdYDVtOaz/XJPiaN3p/7q2GQFDvRZH1Xyfnb0');
 ^function:: .pl
 ^library:: .pl
 ^internal_function:: .pl
@@ -661,7 +734,8 @@ meta::data('meta-associations', <<'__w8WnwPWoqXXyit2wKHYV7WdQnsKEVrSSI2adVSCcOdE
 ^code:: .gnarly
 ^vim_highlighter:: .vim
 ^c:: .lc
-__w8WnwPWoqXXyit2wKHYV7WdQnsKEVrSSI2adVSCcOdE
+^ocaml:: .locaml
+__jjL5mHvdYDVtOaz/XJPiaN3p/7q2GQFDvRZH1Xyfnb0
 
 meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
 my ($filename) = @_;
@@ -1014,6 +1088,12 @@ my $source = $transient{"last_unlit_$_[0]"};
 qx|g++ -O2 -g -o $source.out $source| if $source;
 __wpMpoal70gwcOkAF6fsip4jYBUSQ7Prp6oweFI40P3U
 
+meta::internal_function('compile_ocaml_source', <<'__fYqhn2XlWxz8txxm4W1J34KcfOCv0isgVyGP++DFGYE');
+write_ocaml_source($_[0]);
+my $source = $transient{"last_ocaml_unlit_$_[0]"};
+qx|ocamlopt -o $source.out $source| if $source;
+__fYqhn2XlWxz8txxm4W1J34KcfOCv0isgVyGP++DFGYE
+
 meta::internal_function('complete', <<'__lhlD80z2kvEUEeHPqLFw6JE8xUdXr6J5Q1gXHg4beHg');
 my @functions  = sort keys %externalized_functions;
 my @attributes = sort keys %data;
@@ -1115,6 +1195,10 @@ meta::internal_function('run_c', <<'__2OLcajGatrqxSRYd/mjbxfnXRXElYKwTdFHDOi/on9
 qx|$_[0].out|;
 __2OLcajGatrqxSRYd/mjbxfnXRXElYKwTdFHDOi/on98
 
+meta::internal_function('run_ocaml', <<'__Wh2aafSnjcntecRIveSYlNtu80e1Fv4gaw2B1bnTd7M');
+qx|$transient{"last_ocaml_unlit_$_[0]"}.out|;
+__Wh2aafSnjcntecRIveSYlNtu80e1Fv4gaw2B1bnTd7M
+
 meta::internal_function('serialize::single', <<'__lDBHaXpbrfER2envI2Ipy77IcdjUnlZou+rggaxsAWE');
 my $name               = shift || $_;
 my $contents           = $data{$name};
@@ -1135,9 +1219,17 @@ meta::internal_function('unlit_c', <<'__sy7R/rmrsF0Mxz/rPAqYJHVok29baW9BzZ/g5ahZ
 join "\n\n", map /^\s*[a-z@#]/ ? $_ : "/* $_ */", split /\n\s*\n+/, $_[0];
 __sy7R/rmrsF0Mxz/rPAqYJHVok29baW9BzZ/g5ahZhO4
 
+meta::internal_function('unlit_ocaml', <<'__7n0vtAVbAsrjYbpOYU5OVncwiZD7PCq7fjR71QrwT/0');
+join "\n\n", map /^\s*[a-z@#]/ ? $_ : "(* $_ *)", split /\n\s*\n+/, $_[0];
+__7n0vtAVbAsrjYbpOYU5OVncwiZD7PCq7fjR71QrwT/0
+
 meta::internal_function('write_c_source', <<'__+3eSSJPtzpvyQdOXsoWFX900DK9jqfkLu2f+cinBBVc');
 file::write($transient{"last_unlit_$_[0]"} = '/tmp/' . state_based_filename . '.cpp', unlit_c(retrieve("c::$_[0]")));
 __+3eSSJPtzpvyQdOXsoWFX900DK9jqfkLu2f+cinBBVc
+
+meta::internal_function('write_ocaml_source', <<'__aJJakvlD5inz2QSkM9oxfQMUvxQruHLEk9tf2CDEz+Q');
+file::write($transient{"last_ocaml_unlit_$_[0]"} = "/tmp/$0.ml", unlit_ocaml(retrieve("ocaml::$_[0]")));
+__aJJakvlD5inz2QSkM9oxfQMUvxQruHLEk9tf2CDEz+Q
 
 meta::issue('bugs', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
@@ -1482,6 +1574,69 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
+meta::ocaml('prototype', <<'__1nydbII4lfuja/jUmiI85cuKcDcjOUyJ3PKK6lgQxaU');
+OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
+Licensed under the terms of the MIT source code license
+
+Interpreter logic. (See the C++ interpreter implementation for the basis of these definitions.)
+
+  open Hashtbl
+
+  type value = Cons of value * value
+             | Nil
+             | Symbol of int
+             | Expander of value * value
+             | Ref of value
+             | Composition of value * value
+             | Application of value * value
+             | Continuation of int
+
+  let s_ref    = Symbol 0
+  let s_beta   = Symbol 1
+  let s_o      = Symbol 2
+  let s_cons   = Symbol 3
+  let s_h      = Symbol 4
+  let s_t      = Symbol 5
+  let s_bind   = Symbol 6
+  let s_unbind = Symbol 7
+
+  let c_ref    = Continuation 0
+  let c_beta   = Continuation 1
+  let c_o      = Continuation 2
+  let c_cons   = Continuation 3
+
+  let m = Hashtbl.create 100
+
+  let _ = Hashtbl.add m 0 c_ref;
+          Hashtbl.add m 1 c_beta;
+          Hashtbl.add m 2 c_o;
+          Hashtbl.add m 3 c_cons
+
+  let rec eval x = match x with
+    | Cons (h, t) -> call (eval h) t
+    | Symbol s    -> Hashtbl.find m s
+    | Ref x       -> x
+    | x           -> x
+  and call x y = match (x, y) with
+    | (Expander (x', (Cons (h, t))), y')      -> Cons (call (Expander (x', h)) y', call (Expander (x', t)) y')
+    | (Expander (x', x''), y) when x' == x''  -> y
+    | (Expander (x', q), y)                   -> q
+    | (Composition (f, g), x')                -> call f (call g x')
+    | (Nil, x')                               -> eval x
+    | (Symbol x', s_bind)                     -> Application (eval (Symbol x'), s_bind)
+    | (Application ((Symbol x'), s_bind), y') -> Hashtbl.replace m x' y'; y'
+    | (Symbol x', s_unbind)                   -> Hashtbl.remove m x'; Symbol x'
+    | (c_ref, x')                             -> Ref x'
+    | (c_beta, x')                            -> Application (c_beta, x')
+    | (Application (c_beta, x'), y')          -> Expander (x', y')
+    | (c_o, f)                                -> Application (c_o, eval f)
+    | (Application (c_o, f), g)               -> Composition (f, eval g)
+    | (c_cons, x')                            -> Application (c_cons, eval x')
+    | (Application (c_cons, x'), y')          -> Cons (x', (eval y'))
+    | (Cons (h, t), s_h)                      -> h
+    | (Cons (h, t), s_t)                      -> t
+__1nydbII4lfuja/jUmiI85cuKcDcjOUyJ3PKK6lgQxaU
+
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
@@ -1560,6 +1715,29 @@ set foldmethod=syntax
 
 let b:current_syntax = "lc"
 __Og4NtvEdzxsAANLD72RF5q6r0NegrGBtSmHkZV0xp0E
+
+meta::vim_highlighter('locaml', <<'__9p1ExW6kepCXqYZ/g5F0EQds8SrfJ+gja9SX4dsNZng');
+" Literate OCaml
+" Maintainer: Spencer Tipping <spencer@spencertipping.com>
+" Language:   OCaml with literate paragraph detection
+
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
+syn include @ocaml syntax/ocaml.vim
+
+syn region  lcCodeRegion    start=/^\s*[a-z@#]/   end=/^$/ contains=@ocaml fold
+syn region  lcCommentRegion start=/^\s*[^a-z@# ]/ end=/^$/ fold
+
+hi link lcCommentRegion Comment
+
+set foldmethod=syntax
+
+let b:current_syntax = "locaml"
+__9p1ExW6kepCXqYZ/g5F0EQds8SrfJ+gja9SX4dsNZng
 
 meta::internal('runtime', <<'__YPmIzwZkTg8URmPfjiwGRG4VDUF2ZCJqTEz+gjETYLQ');
 my $initial_state = sha256_base64 serialize();
