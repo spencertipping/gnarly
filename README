@@ -1,3 +1,46 @@
+Semantics of Gnarly.
+These are the functions that determine the behavior of the language. Right now, the Perl interpreter is based on a slightly different model; most of the
+differences have to do with the way bind, unbind, and ref work. However, the call and eval semantics are identical. The REPL shell, then, essentially does this:
+
+  | while (<STDIN>) {
+  |   print eval(parse($_));
+  | }
+
+So you get one eval() for free, and that carries through to other pieces of the program.
+
+  Interpreter logic.
+
+  > type value is [cons h t] or nil or [symbol n] or [expander x e] or [ref x] or [composition f g] or [application f x]
+  > let m be mutable integer -> value
+
+  > eval cons h t = call (eval h) t
+  > eval symbol n = m n
+  > eval ref x    = x
+  > eval _        = _
+
+  > call (expander x (cons h t)) y = cons (call (expander x h) y) (call (expander x t) y)
+  > call (expander x x) y          = y
+  > call (expander x _) y          = _
+  > call (composition f g) x       = f (g x)
+  > call nil x                     = eval x
+
+  Builtin functions.
+
+  > call 'bind n                = application bind (eval n)
+  > call (application bind n) x = set m n to (eval x) in m n
+  > call 'unbind n              = delete m n in n
+  > call 'ref x                 = ref (eval x)
+
+  > call 'o' f                  = application o' (eval f)
+  > call (application o' f) g   = composition f (eval g)
+
+  > call 'cons x                = application cons (eval x)
+  > call (application cons x) y = cons x (eval y)
+  > call (cons x y) 'h          = x
+  > call (cons x y) 't          = y
+
+The C++ interpreter will be derived from these definitions via CPS.
+
 This is the Gnarly standard library (still under construction). I'm not going to pretend that it's self-explanatory or even vaguely useful, but if by some
 coincidence you happen to find it intuitive, then Gnarly could very well be your perfect language.
 

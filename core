@@ -208,7 +208,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__n1JDw7LcxPCoN6aUG0+v9kmL2z7HDlCpmdZJNPLdN6k');
+meta::c('interpreter', <<'__45KAdonAlOZlfe9fpKf9YVH+qwXBGy8ZXUPlePOK8xU');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -230,16 +230,16 @@ Interpreter logic.
 
   Builtin functions.
 
-  > call 'bind n                = application bind n
-  > call (application bind n) x = set m n to x in x
+  > call 'bind n                = application bind (eval n)
+  > call (application bind n) x = set m n to (eval x) in m n
   > call 'unbind n              = delete m n in n
-  > call 'ref x                 = ref x
+  > call 'ref x                 = ref (eval x)
 
-  > call 'o' f                  = application o' f
-  > call (application o' f) g   = composition f g
+  > call 'o' f                  = application o' (eval f)
+  > call (application o' f) g   = composition f (eval g)
 
-  > call 'cons x                = application cons x
-  > call (application cons x) y = cons x y
+  > call 'cons x                = application cons (eval x)
+  > call (application cons x) y = cons x (eval y)
   > call (cons x y) 'h          = x
   > call (cons x y) 't          = y
 
@@ -263,23 +263,21 @@ of this decisional for the C++ implementation. Also note that the type construct
   > call (composition f g) x k       = g x (c1 -> f c1 (c2 -> k c2))
   > call nil x k                     = eval x k
 
-  > call 'bind n k                   = k (application bind n)
-  > call (application bind n) x k    = set m n to x (c1 -> k x)
+  > call 'bind n k                   = eval n (c1 -> k (application bind c1))
+  > call (application bind n) x k    = eval x (c1 -> set m n to c1 (c2 -> k c1))
   > call 'unbind n k                 = delete m n (c1 -> k n)
-  > call 'ref x k                    = k (ref x)
+  > call 'ref x k                    = eval x (c1 -> k (ref c1))
 
-  > call 'o' f k                     = k (application o' f)
-  > call (application o' f) g k      = k (composition f g)
+  > call 'o' f k                     = eval f (c1 -> k (application o' c1))
+  > call (application o' f) g k      = eval g (c1 -> k (composition f c1))
 
-  > call 'cons x k                   = k (application cons x)
-  > call (application cons x) y k    = k (cons x y)
+  > call 'cons x k                   = eval x (c1 -> k (application cons c1))
+  > call (application cons x) y k    = eval y (c1 -> k (cons x c1))
   > call (cons x y) 'h k             = k x
   > call (cons x y) 't k             = k y
 
   > eval input output
-
-
-__n1JDw7LcxPCoN6aUG0+v9kmL2z7HDlCpmdZJNPLdN6k
+__45KAdonAlOZlfe9fpKf9YVH+qwXBGy8ZXUPlePOK8xU
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
