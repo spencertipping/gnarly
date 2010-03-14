@@ -208,7 +208,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__BvSEsZ7HOd9+ZkryaWOF3sMVWPxVlaLrdNY3adwkKP4');
+meta::c('interpreter', <<'__2IQRVO7sSIcv9u1TzdKK+/uIz65iDjF2i8sKyZH9ly4');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -297,17 +297,17 @@ follows:
   | 110 application
   | 111 continuation
 
-  typedef uint64_t value;
+  typedef unsigned long long value;
 
   #define STACK_SIZE 1000000
   #define CONS_SIZE  10000000
   #define TABLE_SIZE 1000000
 
-  #define table(size, name) \
-    static value[size] name; \
-    static unsigned value* name##p = name;
+  #define table(name, size) \
+    static value name[size]; \
+    static value *name##p = name;
 
-  table(c, 10000000)
+  table(c, 1000000)
   table(s, 1000000)
   table(m, 1000000)
 
@@ -318,15 +318,15 @@ follows:
   #define peek2   (*(sp - 2))
   #define poke(x) (*sp = (x))
 
-  #define h(x)       (*x)
-  #define t(x)       (*(x + 1))
-  #define cons(x, y) (*(++cp) = x, *(++cp = y), cp - 2)
+  #define h(x)       (*((value*) (x)))
+  #define t(x)       (*((value*) (x) + 1))
+  #define cons(x, y) (*(++cp) = (x), *(++cp = (y)), cp - 2)
 
   #define symbol(x)  ((x) | 0x1ull)
 
   #define unpack(x)       ((x) & ~0x7ull)
 
-  #define continuation(x) ((x) | 0x7ull)
+  #define continuation(x) ((value) (x) | 0x7ull)
   #define fn(x)           ((void*) unpack(x))
 
   static const value s_bind   = symbol(0 << 3);
@@ -337,10 +337,10 @@ follows:
   static const value s_h      = symbol(5 << 3);
   static const value s_t      = symbol(6 << 3);
 
-  void run () {
-    const void** eval_targets   = {&&eval_cons, &&eval_symbol, &&eval_ref};
-    const void** call_targets   = {&&call_application, &&call_composition, &&call_expander};
-    const void** call_s_targets = {&&call_s_bind, call_s_unbind, call_s_ref, call_s_o, call_s_cons};
+  int main () {
+    const void *eval_targets[3]   = {&&eval_cons, &&eval_symbol, &&eval_ref};
+    const void *call_targets[3]   = {&&call_application, &&call_composition, &&call_expander};
+    const void *call_s_targets[5] = {&&call_s_bind, &&call_s_unbind, &&call_s_ref, &&call_s_o, &&call_s_cons};
     value eval_x, eval_k, eval_c1_x, eval_c1_t, eval_c1_k;
     value call_x, call_y, call_k, call_x_type;
 
@@ -355,18 +355,18 @@ follows:
         poke(eval_k);     // Linked (push)
         push(t(eval_x));
         push(h(eval_x));
-        push(cc(&&eval_cons_c1));
+        push(continuation(&&eval_cons_c1));
         goto eval;
 
       eval_symbol:
         eval_k = pop;
         eval_x = pop;
-        push(m[x & 0xffffffff]);
+        push(m[unpack(eval_x) >> 3]);
         goto *fn(eval_k);
 
       eval_ref:
         eval_k = pop;
-        poke(*unpack(peek));
+        poke(*((value*) unpack(peek)));
         goto *fn(eval_k);
 
       eval_cons_c1:       // Fragile (implicit 'goto call' -- see end of block)
@@ -388,7 +388,6 @@ follows:
         goto eval;
       }
 
-
       call_s_bind:
       call_s_unbind:
       call_s_ref:
@@ -398,8 +397,11 @@ follows:
       call_composition:
       call_expander:
       call_cons:
+      ;
+
+    return 0;
   }
-__BvSEsZ7HOd9+ZkryaWOF3sMVWPxVlaLrdNY3adwkKP4
+__2IQRVO7sSIcv9u1TzdKK+/uIz65iDjF2i8sKyZH9ly4
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
