@@ -208,52 +208,78 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__CTeefzkAvqkTYsMU08+Nmfowxs/rKBBHlGNTk173yOo');
+meta::c('interpreter', <<'__n1JDw7LcxPCoN6aUG0+v9kmL2z7HDlCpmdZJNPLdN6k');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
-Note: This interpreter probably requires G++ to compile. I'm assuming GNU extensions such as computed GOTO, local labels, and maybe some other things.
+Interpreter logic.
 
-Because Perl's reference allocation/deallocation process is quite slow, I'm implementing Gnarly as a C-interpreted language with the possible future intention
-of compiling it directly to machine code. (This, of course, makes sense only if there is some isomorphism between Gnarly constructs and machine code, which I'm
-not sure there is.) Whether or not Gnarly is directly compiled, the performance of interpreting Gnarly expressions should increase significantly once the
-interpreter is based on native code.
+  > type value is [cons h t] or nil or [symbol n] or [expander x e] or [ref x] or [composition f g] or [application f x]
+  > let m be mutable integer -> value
 
-  #include<iostream>
-  #include<map>
-  #include<string>
-  #include<vector>
+  > eval cons h t = call (eval h) t
+  > eval symbol n = m n
+  > eval ref x    = x
+  > eval _        = _
 
-  using namespace std;
+  > call (expander x (cons h t)) y = cons (call (expander x h) y) (call (expander x t) y)
+  > call (expander x x) y          = y
+  > call (expander x _) y          = _
+  > call (composition f g) x       = f (g x)
+  > call nil x                     = eval x
 
-Encoding.
-I will admit that this is not a practical or extensible encoding of things. I'm mainly doing it this way to have fun and feel like I'm writing really fast code.
+  Builtin functions.
 
-  typedef unsigned long long value;
+  > call 'bind n                = application bind n
+  > call (application bind n) x = set m n to x in x
+  > call 'unbind n              = delete m n in n
+  > call 'ref x                 = ref x
 
-  #define def(f, cons, symbol, expander, lambda) \
-    f: {                         \
-      switch ((x) >> 62) {       \
-        case 0: return cons;     \
-        case 1: return symbol;   \
-        case 2: return expander; \
-        case 3: return lambda;   \
-      }                          \
-    }
+  > call 'o' f                  = application o' f
+  > call (application o' f) g   = composition f g
 
-  #define err(x) (cerr << (x), exit(1), 1)
+  > call 'cons x                = application cons x
+  > call (application cons x) y = cons x y
+  > call (cons x y) 'h          = x
+  > call (cons x y) 't          = y
 
-  #define cons(x, y)     (memory.push_back(x), memory.push_back(y), memory.size() - 3)
-  #define expander(v, e) (memory.push_back(cons(v, e)), (memory.size() - 2) | 0x4000000000000000ull)
+  Runtime.
 
-  static vector<value>     memory;
-  static map<value, value> symbols;
+  > output (eval input)
 
-  def(h, memory[x],   0, 0, 0)
-  def(t, memory[x+1], 0, 0, 0)
+CPS conversion.
+Ideally we want the interpreter to use only tail calls so that GOTO can be used to handle all of the branching. The simplest way to do this is to use CPS
+conversion on the above program. Note, however, that this requires some encoding of pattern-matching. For now I'm going to gloss over it and save the encoding
+of this decisional for the C++ implementation. Also note that the type constructors don't get CPS-converted.
 
-  def(id,   x, x, x, x)
-__CTeefzkAvqkTYsMU08+Nmfowxs/rKBBHlGNTk173yOo
+  > eval (cons h t) k = eval h (x -> (call x t k)))
+  > eval (symbol n) k = k (m n)
+  > eval (ref x) k    = k x
+  > eval _ k          = k _
+
+  > call (expander x (cons h t)) y k = call (expander x h) y (c1 -> call (expander x t) y (c2 -> k (cons c1 c2)))
+  > call (expander x x) y k          = k y
+  > call (expander x _) y k          = k _
+  > call (composition f g) x k       = g x (c1 -> f c1 (c2 -> k c2))
+  > call nil x k                     = eval x k
+
+  > call 'bind n k                   = k (application bind n)
+  > call (application bind n) x k    = set m n to x (c1 -> k x)
+  > call 'unbind n k                 = delete m n (c1 -> k n)
+  > call 'ref x k                    = k (ref x)
+
+  > call 'o' f k                     = k (application o' f)
+  > call (application o' f) g k      = k (composition f g)
+
+  > call 'cons x k                   = k (application cons x)
+  > call (application cons x) y k    = k (cons x y)
+  > call (cons x y) 'h k             = k x
+  > call (cons x y) 't k             = k y
+
+  > eval input output
+
+
+__n1JDw7LcxPCoN6aUG0+v9kmL2z7HDlCpmdZJNPLdN6k
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
