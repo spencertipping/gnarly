@@ -1574,7 +1574,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::ocaml('prototype', <<'__1nydbII4lfuja/jUmiI85cuKcDcjOUyJ3PKK6lgQxaU');
+meta::ocaml('prototype', <<'__Eq8zCOn8a/lFG2pK91sg/P8fPLTmgL8mJBRA1Z9WYE8');
 OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -1618,24 +1618,37 @@ Interpreter logic. (See the C++ interpreter implementation for the basis of thes
     | Ref x       -> x
     | x           -> x
   and call x y = match (x, y) with
-    | (Expander (x', (Cons (h, t))), y')      -> Cons (call (Expander (x', h)) y', call (Expander (x', t)) y')
-    | (Expander (x', x''), y) when x' == x''  -> y
-    | (Expander (x', q), y)                   -> q
-    | (Composition (f, g), x')                -> call f (call g x')
-    | (Nil, x')                               -> eval x
-    | (Symbol x', s_bind)                     -> Application (eval (Symbol x'), s_bind)
-    | (Application ((Symbol x'), s_bind), y') -> Hashtbl.replace m x' y'; y'
-    | (Symbol x', s_unbind)                   -> Hashtbl.remove m x'; Symbol x'
-    | (c_ref, x')                             -> Ref x'
-    | (c_beta, x')                            -> Application (c_beta, x')
-    | (Application (c_beta, x'), y')          -> Expander (x', y')
-    | (c_o, f)                                -> Application (c_o, eval f)
-    | (Application (c_o, f), g)               -> Composition (f, eval g)
-    | (c_cons, x')                            -> Application (c_cons, eval x')
-    | (Application (c_cons, x'), y')          -> Cons (x', (eval y'))
-    | (Cons (h, t), s_h)                      -> h
-    | (Cons (h, t), s_t)                      -> t
-__1nydbII4lfuja/jUmiI85cuKcDcjOUyJ3PKK6lgQxaU
+    | (Expander (x', (Cons (h, t))), y')                  -> Cons (call (Expander (x', h)) y', call (Expander (x', t)) y')
+    | (Expander (x', x''), y) when x' == x''              -> y
+    | (Expander (x', q), y)                               -> q
+    | (Composition (f, g), x')                            -> call f (call g x')
+    | (Nil, x')                                           -> eval x'
+    | (Symbol x', s) when s == s_bind                     -> Application (eval (Symbol x'), s_bind)
+    | (Symbol x', s) when s == s_unbind                   -> Hashtbl.remove m x'; Symbol x'
+    | (Application ((Symbol x'), s), y') when s == s_bind -> Hashtbl.replace m x' y'; y'
+    | (c, x') when c == c_ref                             -> Ref x'
+    | (c, x') when c == c_beta                            -> Application (c_beta, x')
+    | (c, f)  when c == c_o                               -> Application (c_o, eval f)
+    | (c, x') when c == c_cons                            -> Application (c_cons, eval x')
+    | (Application (c, x'), y') when c == c_beta          -> Expander (x', y')
+    | (Application (c, f), g)   when c == c_o             -> Composition (f, eval g)
+    | (Application (c, x'), y') when c == c_cons          -> Cons (x', (eval y'))
+    | (Cons (h, t), s) when s == s_h                      -> h
+    | (Cons (h, t), s) when s == s_t                      -> t
+
+  let int_to_string x = Int64.to_string (Int64.of_int x)
+  let rec serialize x = match x with
+    | Cons (h, t)        -> "(" ^ (serialize h) ^ " . " ^ (serialize t) ^ ")"
+    | Nil                -> ":"
+    | Symbol s           -> "[sym " ^ (int_to_string s) ^ "]"
+    | Ref x              -> "[ref " ^ (serialize x) ^ "]"
+    | Application (x, y) -> "(" ^ (serialize x) ^ " " ^ (serialize y) ^ " ...)"
+    | Expander (x, y)    -> "[" ^ (serialize x) ^ " -> " ^ (serialize y) ^ "]"
+    | Composition (x, y) -> "[" ^ (serialize x) ^ " o' " ^ (serialize y) ^ "]"
+    | Continuation x     -> "[cont " ^ (int_to_string x) ^ "]"
+
+  let _ = print_string (serialize (eval (Cons (Cons (Cons (Nil, c_beta), s_h), s_h))))
+__Eq8zCOn8a/lFG2pK91sg/P8fPLTmgL8mJBRA1Z9WYE8
 
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
