@@ -21,7 +21,7 @@ So you get one eval() for free, and that carries through to other pieces of the 
   > call (expander x (cons h t)) y = cons (call (expander x h) y) (call (expander x t) y)
   > call (expander x x) y          = y
   > call (expander x _) y          = _
-  > call (composition f g) x       = f (g x)
+  > call (composition f g) x       = call f (call g x)
   > call nil x                     = eval x
 
   Builtin functions.
