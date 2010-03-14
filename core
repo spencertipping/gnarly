@@ -222,7 +222,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__H/unvocM6bsFKQe+B4n3lZacNFTdsz/283eHzClxddg');
+meta::c('interpreter', <<'__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -248,7 +248,8 @@ Interpreter logic.
   > call (application n bind) x = set m n to (eval x) in m n
   > call n 'unbind              = delete m n in n
   > call 'ref x                 = ref (eval x)
-  > call 'beta x y              = expander x y
+  > call 'beta x                = application beta x
+  > call (application beta x) y = expander x y
 
   > call 'o' f                  = application o' (eval f)
   > call (application o' f) g   = composition f (eval g)
@@ -275,7 +276,7 @@ of this decisional for the C++ implementation. Also note that the type construct
   > call (expander x (cons h t)) y k = call (expander x h) y (c1 -> call (expander x t) y (c2 -> k (cons c1 c2)))
   > call (expander x x) y k          = k y
   > call (expander x _) y k          = k _
-  > call (composition f g) x k       = call g x (c1 -> call f c1 (c2 -> k c2))
+  > call (composition f g) x k       = call g x (c1 -> call f c1 k)
   > call nil x k                     = eval x k
 
   > call n 'bind k                   = eval n (c1 -> k (application c1 bind))
@@ -357,13 +358,14 @@ follows:
   #define fn(x)           ((void*) unpack(x))
 
   static const value s_ref    = symbol(0);
-  static const value s_o      = symbol(1);
-  static const value s_cons   = symbol(2);
+  static const value s_beta   = symbol(1);
+  static const value s_o      = symbol(2);
+  static const value s_cons   = symbol(3);
 
-  static const value s_h      = symbol(3);
-  static const value s_t      = symbol(4);
-  static const value s_bind   = symbol(5);
-  static const value s_unbind = symbol(6);
+  static const value s_h      = symbol(4);
+  static const value s_t      = symbol(5);
+  static const value s_bind   = symbol(6);
+  static const value s_unbind = symbol(7);
 
   int main () {
     const void *eval_targets[3]   = {&&eval_cons, &&eval_symbol, &&eval_ref};
@@ -461,9 +463,48 @@ follows:
         call_x_h = h(call_x);
         call_x_t = t(call_x);
 
-        // TODO
-        
+        if (call_x_h & 0x7ull == 0x7ull) {
+          // Case 1. x_h is a continuation of some sort, so pass x_t and y to it.
+          push(call_x_t);
+          push(call_y);
+          push(call_k);
+          goto *fn(call_x_h);
+        } else if (call_x_h & 0x7ull == 0x1ull) {
+          // Case 2. It's a symbol, so create the binding. (Flattening the conditional by relying on the precondition that (application n x) implies that x ==
+          // bind)
+          push(call_k);
+          push(call_x_h);
+          push(call_y);
+          push(&&call_application_symbol_bind);
+          goto eval;
+        }
+
+        call_application_symbol_bind:
+          call_y = pop;
+          call_x = pop;
+          push(m[unpack(call_x)] = call_y);
+          goto *fn(pop);
+
       call_composition:
+        call_k   = pop;
+        call_y   = pop;
+        call_x   = pop;
+        push(call_k);
+        push(h(call_x));
+        push(t(call_x));
+        push(call_y);
+        push(&&call_composition_c1);
+        goto call;
+
+        call_composition_c1:
+          call_x = pop;
+          call_y = pop;
+          call_k = pop;
+          push(call_x);
+          push(call_y);
+          push(call_k);
+          goto call;
+
       call_expander:
       call_continuation:
         goto *fn(pop);
@@ -474,7 +515,7 @@ follows:
 
     return 0;
   }
-__H/unvocM6bsFKQe+B4n3lZacNFTdsz/283eHzClxddg
+__BePXqgVZ1kMkjK926z5/PEaq4Xq2W3NNxJLmh/QQE94
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
