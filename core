@@ -208,7 +208,7 @@ meta::define_form 'meta', sub {
 
 __plktoDCjGQioE48vwfrH0xL3ulcYnTWp+fUvaFwRnnc
 
-meta::c('interpreter', <<'__45KAdonAlOZlfe9fpKf9YVH+qwXBGy8ZXUPlePOK8xU');
+meta::c('interpreter', <<'__BvSEsZ7HOd9+ZkryaWOF3sMVWPxVlaLrdNY3adwkKP4');
 C++ implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -277,7 +277,129 @@ of this decisional for the C++ implementation. Also note that the type construct
   > call (cons x y) 't k             = k y
 
   > eval input output
-__45KAdonAlOZlfe9fpKf9YVH+qwXBGy8ZXUPlePOK8xU
+
+Encoding in imperative form.
+Probably the simplest way to encode the CPS-expanded forms above is to use a value stack with computed GOTO as the control flow mechanism. At this point,
+control flow is forward-only (as would always be the case with a fully CPS-converted program).
+
+Defining an expansion of one of the above CPS forms would involve popping the requisite parameters off of the stack, pushing parameters for the continuations,
+and then invoking GOTO on those continuations with the new parameters in place. The only difficulty that arises is encoding the anonymous functions, which close
+over other parameter values. I'm handling these by pushing the closure parameters manually and popping them as if they were explicit.
+
+Types of arguments are encoded using the least-significant bits. (I'm relying on the fact that all pointers are to 64-bit-aligned integers.) The encoding is as
+follows:
+
+  | 000 cons cell (nil if the entire value is 0)
+  | 001 symbol
+  | 010 ref
+  | 100 expander
+  | 101 composition
+  | 110 application
+  | 111 continuation
+
+  typedef uint64_t value;
+
+  #define STACK_SIZE 1000000
+  #define CONS_SIZE  10000000
+  #define TABLE_SIZE 1000000
+
+  #define table(size, name) \
+    static value[size] name; \
+    static unsigned value* name##p = name;
+
+  table(c, 10000000)
+  table(s, 1000000)
+  table(m, 1000000)
+
+  #define pop     (*(sp--))
+  #define push(x) (*(++sp) = (x))
+  #define peek    (*sp)
+  #define peek1   (*(sp - 1))
+  #define peek2   (*(sp - 2))
+  #define poke(x) (*sp = (x))
+
+  #define h(x)       (*x)
+  #define t(x)       (*(x + 1))
+  #define cons(x, y) (*(++cp) = x, *(++cp = y), cp - 2)
+
+  #define symbol(x)  ((x) | 0x1ull)
+
+  #define unpack(x)       ((x) & ~0x7ull)
+
+  #define continuation(x) ((x) | 0x7ull)
+  #define fn(x)           ((void*) unpack(x))
+
+  static const value s_bind   = symbol(0 << 3);
+  static const value s_unbind = symbol(1 << 3);
+  static const value s_ref    = symbol(2 << 3);
+  static const value s_o      = symbol(3 << 3);
+  static const value s_cons   = symbol(4 << 3);
+  static const value s_h      = symbol(5 << 3);
+  static const value s_t      = symbol(6 << 3);
+
+  void run () {
+    const void** eval_targets   = {&&eval_cons, &&eval_symbol, &&eval_ref};
+    const void** call_targets   = {&&call_application, &&call_composition, &&call_expander};
+    const void** call_s_targets = {&&call_s_bind, call_s_unbind, call_s_ref, call_s_o, call_s_cons};
+    value eval_x, eval_k, eval_c1_x, eval_c1_t, eval_c1_k;
+    value call_x, call_y, call_k, call_x_type;
+
+    eval:
+      eval_x = peek1;
+      if (eval_x & 0x4ull) goto *fn(pop);           // Inlined
+      else                 goto *eval_targets[eval_x & 0x3ull];
+
+      eval_cons:
+        eval_k = pop;
+        eval_x = peek;    // Linked (pop)
+        poke(eval_k);     // Linked (push)
+        push(t(eval_x));
+        push(h(eval_x));
+        push(cc(&&eval_cons_c1));
+        goto eval;
+
+      eval_symbol:
+        eval_k = pop;
+        eval_x = pop;
+        push(m[x & 0xffffffff]);
+        goto *fn(eval_k);
+
+      eval_ref:
+        eval_k = pop;
+        poke(*unpack(peek));
+        goto *fn(eval_k);
+
+      eval_cons_c1:       // Fragile (implicit 'goto call' -- see end of block)
+        eval_c1_x = pop;
+        eval_c1_t = pop;
+        eval_c1_k = pop;
+        push(eval_c1_x);
+        push(eval_c1_t);
+        push(eval_c1_k);
+        // goto call
+
+    call:
+      call_x_type = peek2 & 0x7ull;
+
+      if (call_x_type == 0ull) {
+        sp[-2] = sp[-1];
+        sp[-1] = *sp;
+        pop;
+        goto eval;
+      }
+
+
+      call_s_bind:
+      call_s_unbind:
+      call_s_ref:
+      call_s_o:
+      call_s_cons:
+      call_application:
+      call_composition:
+      call_expander:
+      call_cons:
+  }
+__BvSEsZ7HOd9+ZkryaWOF3sMVWPxVlaLrdNY3adwkKP4
 
 meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU');
 Integration tests. These are run after your code is loaded and the unit tests have been run.
