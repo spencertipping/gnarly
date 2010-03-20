@@ -524,7 +524,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__9bIa38GHPmd9JrNXXL1OjSn2wk3t6LVpsmVsuii4YT4');
+meta::code('source', <<'__QnwrSDphc/o0rTAhG1A2aeEWzQOJSKCDLIwGIT+W+ic');
 Gnarly Standard Library | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -713,7 +713,17 @@ Basic things to assist testing.
   (def assert (qn predicate (fn e1 (fn e2
     (cond (((:: predicate e1 e2) :)
            (k                    (o ('> fail) $ ('> ++ ("Assertion failed:") (* serialize (list (predicate e1 e2))))))))))))
-__9bIa38GHPmd9JrNXXL1OjSn2wk3t6LVpsmVsuii4YT4
+
+Function compilation.
+Realistically, you shouldn't be using pure Gnarly functions for much. Not only are they tremendously slow, but their advantages are rarely needed for most
+applications. Better is to compile the function, which results in a tremendous speed increase and makes certain assumptions about its behavior:
+
+  1. All parameters to the function will evaluate their arguments.
+  2. Macros defined in the global symbol table are constant. (If this is not the case, then you'll need to recompile the function.)
+
+The compile function works on an existing beta-expander and assumes the form output by fn. If it is not of this form, then you will have a broken function or
+Perl error.
+__QnwrSDphc/o0rTAhG1A2aeEWzQOJSKCDLIwGIT+W+ic
 
 meta::code('tests', <<'__kv8CGNFsYoM4Ze02VeosDeM9GCuuAQdi3ZZN0ZWwUz4');
 Most of the code is the sort that "obviously works" in the sense that the algorithm being encoded is so simple and transparent that its correctness is apparent.
@@ -1617,6 +1627,16 @@ __UqcWaKvw20yAGxzo+r5ZwEssO3nQjhzUp8hYS5n6iIs
 meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
+
+meta::note('code-as-deltas', <<'__TpzZQtxCNif1pAmnxjVcs7qoZiGg5rdl2TNFfz35n3g');
+Objects represented as static quantities have fewer composable properties than those represented as generated values. More particularly, if you have the option
+of either (1) defining objects statically, or (2) defining objects in terms of a series of differences from some fundamental 'zero' object, the first method
+will be less flexible than the second.
+
+As a real-world example of this, using a version control system gives you much more flexibility to manipulate your files than using snapshots, because often the
+patches that are generated to carry the source code from one version to another can be split into pieces with partial meaning. The number of distinct types of
+patches is quite low, and patterns can be recognized based on parameterized combinations of those fundamental patch types.
+__TpzZQtxCNif1pAmnxjVcs7qoZiGg5rdl2TNFfz35n3g
 
 meta::ocaml('prototype', <<'__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k');
 OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
