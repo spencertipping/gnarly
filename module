@@ -767,7 +767,7 @@ meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('meta-associations', <<'__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U');
+meta::data('meta-associations', <<'__aEJIsIbfe/K4YicYlSn/uNNc4heo44dfrgLgKgcmkuE');
 ^function:: .pl
 ^library:: .pl
 ^internal_function:: .pl
@@ -776,7 +776,10 @@ meta::data('meta-associations', <<'__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U
 ^configuration:: .pl
 ^code:: .gnarly
 ^vim_highlighter:: .vim
-__NDlbniBIqlUMMFt2j+H/M2C23PT4iOuVEABcA+vGo6U
+^c:: .lc
+^ocaml:: .locaml
+
+__aEJIsIbfe/K4YicYlSn/uNNc4heo44dfrgLgKgcmkuE
 
 meta::function('add-to', <<'__KBgra0vG1gIsUI8CCVf4ZEdCatZDCdVO6HuUx+jOJ9Q');
 my ($filename) = @_;
@@ -1301,14 +1304,6 @@ __KtdLV8oE00qsOR/lprnhBJF7moFLLNHXYD+k6Ih9sDs
 meta::issue('todos', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
-
-meta::java('interpreter', <<'__eKfMlYplkP3xgkEcPAEz2Fib3wkxCjnruIEho/BYPvk');
-Java implementation of Gnarly.
-Because Perl's reference allocation/deallocation process is quite slow, I'm implementing Gnarly as a Java-interpreted language with the possible future
-intention of compiling it directly to bytecode. (This, of course, makes sense only if there is some isomorphism between Gnarly constructs and JVM bytecode,
-which I'm not sure there is.) Whether or not Gnarly is directly compiled, the performance of interpreting Gnarly expressions should increase significantly once
-the interpreter is based on the JVM.
-__eKfMlYplkP3xgkEcPAEz2Fib3wkxCjnruIEho/BYPvk
 
 meta::library('datatypes', <<'__q1LSLuHGLAt+1XUTuRfyzIH3/XWigXMQ1PScnZNIjJI');
 # Data type definitions for the interpreter.
