@@ -885,9 +885,10 @@ my ($name) = @_;
 associate($name, join('', <STDIN>));
 __oK2Kj5RYHcEUK0Iyiqu8w7zipbg+QNF4VO4hm7BkUNA
 
-meta::function('load-dependencies', <<'__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4');
+meta::function('load-dependencies', <<'__oYAWdUSIg7K9xPssNpQhu7nUGr94qBGg5QJpTDAA3sA');
 my $errors = '';
 for (grep length, split /\n/, &{'dependencies'}()) {
+  terminal::message('loader', "Running integration test checks on $_...");
   my $output = `$_ :check`;
   chomp $output;
   $errors .= $output ? "module $_\n$output\n" : '';
@@ -896,7 +897,7 @@ for (grep length, split /\n/, &{'dependencies'}()) {
 return terminal::message('error', "dependency loading failed:\n$errors") if $errors;
 associate('code::cached-dependencies', join('', map `$_ :export`, grep length, split /\n/, &{'dependencies'}()));
 terminal::message('loader', "imported dependencies");
-__kReB7N+JwghuCBrba+IZ595SPDJVawc4OHcJ9OXp0Y4
+__oYAWdUSIg7K9xPssNpQhu7nUGr94qBGg5QJpTDAA3sA
 
 meta::function('lock', <<'__pqf/HijyN91BWpnS+uWYip/mFhHhcd+M9/YdlYsvv9Y');
 my (undef, undef, $mode) = stat $0;
@@ -1638,7 +1639,7 @@ patches that are generated to carry the source code from one version to another 
 patches is quite low, and patterns can be recognized based on parameterized combinations of those fundamental patch types.
 __TpzZQtxCNif1pAmnxjVcs7qoZiGg5rdl2TNFfz35n3g
 
-meta::ocaml('prototype', <<'__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k');
+meta::ocaml('prototype', <<'__Lr6ttIXkR6jrNfQTvH8WOop5mW3aBB7JbVdWCr6HFPQ');
 OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -1718,7 +1719,7 @@ ways; Perl needs to send the expression to be evaluated along with an image of t
 There are a few significant communication barriers here. One is that other environments generally represent symbols as numbers, whereas they should be displayed as strings to the user. Thus
 some bidirectional mapping must be maintained to convert back and forth. Luckily, all type constructors are immutable in Gnarly, so referential equality/inequality need not be considered when
 converting. (And, in fact, it's safe to referentially unify when equal, potentially yielding some interesting optimizations.)
-__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k
+__Lr6ttIXkR6jrNfQTvH8WOop5mW3aBB7JbVdWCr6HFPQ
 
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
