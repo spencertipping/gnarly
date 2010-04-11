@@ -1718,7 +1718,7 @@ ways; Perl needs to send the expression to be evaluated along with an image of t
 There are a few significant communication barriers here. One is that other environments generally represent symbols as numbers, whereas they should be displayed as strings to the user. Thus
 some bidirectional mapping must be maintained to convert back and forth. Luckily, all type constructors are immutable in Gnarly, so referential equality/inequality need not be considered when
 converting. (And, in fact, it's safe to referentially unify when equal, potentially yielding some interesting optimizations.)
-__Lr6ttIXkR6jrNfQTvH8WOop5mW3aBB7JbVdWCr6HFPQ
+__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k
 
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
