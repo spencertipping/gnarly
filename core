@@ -1618,7 +1618,7 @@ meta::list('dependencies', <<'__47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU');
 
 __47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU
 
-meta::ocaml('prototype', <<'__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k');
+meta::ocaml('prototype', <<'__Lr6ttIXkR6jrNfQTvH8WOop5mW3aBB7JbVdWCr6HFPQ');
 OCaml prototype implementation of Gnarly | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license
 
@@ -1692,15 +1692,13 @@ Interpreter logic. (See the C++ interpreter implementation for the basis of thes
     | Continuation x     -> "[cont " ^ (int_to_string x) ^ "]"
 
 Perl interop.
-Because Perl is pathologically slow at allocating references, a standard interop layer is used to shell out REPL expressions to other programs. The interop
-layer communicates information both ways; Perl needs to send the expression to be evaluated along with an image of the environment, and it must receive the
-result of that expression and a new environment image.
+Because Perl is pathologically slow at allocating references, a standard interop layer is used to shell out REPL expressions to other programs. The interop layer communicates information both
+ways; Perl needs to send the expression to be evaluated along with an image of the environment, and it must receive the result of that expression and a new environment image.
 
-There are a few significant communication barriers here. One is that other environments generally represent symbols as numbers, whereas they should be displayed
-as strings to the user. Thus some bidirectional mapping must be maintained to convert back and forth. Luckily, all type constructors are immutable in Gnarly, so
-referential equality/inequality need not be considered when converting. (And, in fact, it's safe to referentially unify when equal, potentially yielding some
-interesting optimizations.)
-__qqOKu4Z9pL/wAL3wOGUZWQKJbW09L/dEQ3Q/y++l++k
+There are a few significant communication barriers here. One is that other environments generally represent symbols as numbers, whereas they should be displayed as strings to the user. Thus
+some bidirectional mapping must be maintained to convert back and forth. Luckily, all type constructors are immutable in Gnarly, so referential equality/inequality need not be considered when
+converting. (And, in fact, it's safe to referentially unify when equal, potentially yielding some interesting optimizations.)
+__Lr6ttIXkR6jrNfQTvH8WOop5mW3aBB7JbVdWCr6HFPQ
 
 meta::vim_highlighter('gnarly', <<'__Hr/Ry8cigp+dlQ8IoAikdVLpXjy0uKgv2jaGcN/Vs0g');
 " Gnarly
