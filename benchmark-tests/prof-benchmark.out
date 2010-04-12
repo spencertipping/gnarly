@@ -1,0 +1,413 @@
+time elapsed (wall):   295.5883
+time running program:  217.8258  (73.69%)
+time profiling (est.): 77.7625  (26.31%)
+number of calls:       6053158
+number of exceptions:  1
+
+%Time    Sec.     #calls   sec/call  F  name
+52.61  114.5993  3323174   0.000034     <anon>:...eval 16)[benchmark:29]:2]:71
+15.56   33.9027   524513   0.000065     types::lazy_rewrite
+15.41   33.5657  1037266   0.000032     <anon>:...val 16)[benchmark:29]:2]:166
+ 3.87    8.4349        2   4.217455     Term::ReadLine::Gnu::XS::rl_readline
+ 3.87    8.4302   236544   0.000036     <anon>:...val 16)[benchmark:29]:2]:118
+ 2.57    5.6012   345332   0.000016     <anon>:...eval 16)[benchmark:29]:2]:79
+ 2.47    5.3700   251964   0.000021     <anon>:...val 16)[benchmark:29]:2]:175
+ 1.09    2.3836    84440   0.000028     <anon>:...eval 16)[benchmark:29]:2]:54
+ 0.58    1.2589    72684   0.000017     <anon>:...eval 16)[benchmark:29]:2]:40
+ 0.47    1.0170    17512   0.000058     types::lambda
+ 0.40    0.8635    52536   0.000016     <anon>:...val 16)[benchmark:29]:2]:127
+ 0.31    0.6749    41110   0.000016     <anon>:...eval 16)[benchmark:29]:2]:53
+ 0.17    0.3775    24228   0.000016     <anon>:...eval 16)[benchmark:29]:2]:39
+ 0.12    0.2531    16812   0.000015     <anon>:...eval 16)[benchmark:29]:2]:33
+ 0.09    0.1865     4994   0.000037     <anon>:...eval 16)[benchmark:29]:2]:97
+ 0.04    0.0886     4994   0.000018     <anon>:...eval 16)[benchmark:29]:2]:92
+ 0.04    0.0881     1371   0.000064     reader::parse
+ 0.04    0.0824     2544   0.000032     <anon>:...eval 16)[benchmark:29]:2]:24
+ 0.04    0.0777     2449   0.000032     <anon>:...val 16)[benchmark:29]:2]:130
+ 0.03    0.0600     1452   0.000041     <anon>:...eval 16)[benchmark:29]:2]:22
+ 0.03    0.0548     1534   0.000036     <anon>:...val 16)[benchmark:29]:2]:100
+ 0.01    0.0320        1   0.031954     <anon>:...5.10/Term/ReadLine.pm:320]:1
+ 0.01    0.0295        1   0.029548  x  <anon>:benchmark:3
+ 0.01    0.0275        0   0.027491  *  <other>
+ 0.01    0.0239     1359   0.000018     <anon>:...val 16)[benchmark:29]:2]:129
+ 0.01    0.0171      218   0.000079     Digest::SHA::sha256_base64
+ 0.01    0.0171     1125   0.000015     <anon>:...val 16)[benchmark:29]:2]:210
+ 0.01    0.0151        1   0.015113     <anon>:benchmark:1332
+ 0.01    0.0147      432   0.000034     <anon>:...(eval 13)[benchmark:29]:4]:4
+ 0.01    0.0146        1   0.014594     <anon>:...are/perl/5.10/File/Path.pm:6
+ 0.01    0.0140      108   0.000129     <anon>:(eval 92)[benchmark:29]:14
+ 0.00    0.0106      684   0.000015     reader::unquote
+ 0.00    0.0103       27   0.000381     reader::lex
+ 0.00    0.0101        1   0.010115     <anon>:...e/perl/5.10/File/Temp.pm:141
+ 0.00    0.0098        1   0.009821     <anon>:...b/perl/5.10/IO/Seekable.pm:9
+ 0.00    0.0095      108   0.000088     <anon>:(eval 92)[benchmark:29]:1
+ 0.00    0.0081        1   0.008105     <anon>:...e/perl/5.10/File/Temp.pm:144
+ 0.00    0.0074        1   0.007429     <anon>:...e/perl/5.10/File/Temp.pm:140
+ 0.00    0.0074        1   0.007369     <anon>:...(eval 13)[benchmark:29]:4]:4
+ 0.00    0.0073        1   0.007281     <anon>:benchmark:5
+ 0.00    0.0062        1   0.006219     <anon>:...are/perl/5.10/File/Path.pm:7
+ 0.00    0.0057      108   0.000053     <anon>::
+ 0.00    0.0054        1   0.005420     <anon>:...(eval 11)[benchmark:29]:4]:3
+ 0.00    0.0053        3   0.001762     <anon>:benchmark:0
+ 0.00    0.0048       26   0.000184     Exporter::import
+ 0.00    0.0047        1   0.004700     <anon>:...e/perl/5.10/File/Temp.pm:159
+ 0.00    0.0047       75   0.000062     terminal::message
+ 0.00    0.0044        3   0.001468     <anon>:benchmark:29
+ 0.00    0.0041        1   0.004146     <anon>:...e/perl/5.10/File/Temp.pm:158
+ 0.00    0.0041       89   0.000046     reader::flatten_cons_tree
+ 0.00    0.0041        1   0.004098     <anon>:...erl/5.10/File/Basename.pm:47
+ 0.00    0.0036        1   0.003596     <anon>:...e/perl/5.10/File/Temp.pm:142
+ 0.00    0.0034        1   0.003392     <anon>:...e/perl/5.10/File/Temp.pm:213
+ 0.00    0.0032       27   0.000120     reader::read_form
+ 0.00    0.0026       62   0.000041     <anon>:...eval 16)[benchmark:29]:2]:18
+ 0.00    0.0025        1   0.002527     <anon>:...lib/perl/5.10/IO/Handle.pm:7
+ 0.00    0.0023       81   0.000029     <anon>:...eval 16)[benchmark:29]:2]:27
+ 0.00    0.0022       21   0.000105     vars::import
+ 0.00    0.0021       54   0.000039     reader::read_paragraph
+ 0.00    0.0021        6   0.000342     DynaLoader::dl_load_file
+ 0.00    0.0020       81   0.000024     <anon>:...eval 16)[benchmark:29]:2]:37
+ 0.00    0.0018        4   0.000458     reader::read_document
+ 0.00    0.0018        1   0.001821     <anon>:...e/perl/5.10/File/Temp.pm:143
+ 0.00    0.0017       62   0.000027     <anon>:...(eval 13)[benchmark:29]:4]:2
+ 0.00    0.0017        1   0.001656     <anon>:...e/perl/5.10/File/Temp.pm:139
+ 0.00    0.0016        1   0.001640     <anon>:benchmark:1564
+ 0.00    0.0016       10   0.000155     types::deftype
+ 0.00    0.0015        1   0.001503     <anon>:benchmark:968
+ 0.00    0.0015       19   0.000078     <anon>:...(eval 16)[benchmark:29]:2]:8
+ 0.00    0.0014       36   0.000039     <anon>:...eval 16)[benchmark:29]:2]:26
+ 0.00    0.0014       13   0.000106     constant::import
+ 0.00    0.0014        1   0.001364     <anon>:benchmark:1052
+ 0.00    0.0013        1   0.001317     <anon>:benchmark:1641
+ 0.00    0.0013        4   0.000319     XSLoader::load
+ 0.00    0.0012       80   0.000015     Term::ReadLine::Gnu::Var::TIESCALAR
+ 0.00    0.0012        1   0.001220     <anon>:benchmark:128
+ 0.00    0.0012       70   0.000017     <anon>:...eval 16)[benchmark:29]:2]:33
+ 0.00    0.0012        1   0.001155     Term::ReadLine::Gnu::bootstrap
+ 0.00    0.0011        1   0.001120     <anon>:benchmark:1609
+ 0.00    0.0011        8   0.000139     <anon>:...(eval 16)[benchmark:29]:2]:9
+ 0.00    0.0011       18   0.000061     meta::define_form
+ 0.00    0.0011        1   0.001090     <anon>:...lib/perl/5.10/IO/Handle.pm:9
+ 0.00    0.0011        1   0.001077     <anon>:...lib/perl/5.10/IO/Handle.pm:8
+ 0.00    0.0011        1   0.001068     <anon>:benchmark:1891
+ 0.00    0.0010       30   0.000035     <anon>:...eval 16)[benchmark:29]:2]:23
+ 0.00    0.0010        1   0.000986     <anon>:benchmark:865
+ 0.00    0.0010        1   0.000959     types::initialize_symbols
+ 0.00    0.0009        2   0.000460     DynaLoader::bootstrap
+ 0.00    0.0009        1   0.000904     <anon>:benchmark:1110
+ 0.00    0.0009        1   0.000856     <anon>:benchmark:1171
+ 0.00    0.0008        1   0.000810     <anon>:benchmark:854
+ 0.00    0.0008       45   0.000017     <anon>:...val 16)[benchmark:29]:2]:199
+ 0.00    0.0008        5   0.000151     Term::ReadLine::Gnu::AU::AUTOLOAD
+ 0.00    0.0007        3   0.000245  ?  Fcntl::AUTOLOAD
+ 0.00    0.0007        1   0.000729     <anon>:benchmark:48
+ 0.00    0.0007        1   0.000722     <anon>:benchmark:902
+ 0.00    0.0007        1   0.000716     Term::ReadLine::Gnu::XS::rl_initialize
+ 0.00    0.0007        1   0.000699     <anon>:benchmark:1229
+ 0.00    0.0007        1   0.000697     <anon>:benchmark:946
+ 0.00    0.0007        1   0.000689     <anon>:benchmark:109
+ 0.00    0.0007        1   0.000676     <anon>:benchmark:1021
+ 0.00    0.0006        1   0.000640     <anon>:benchmark:160
+ 0.00    0.0006        1   0.000623     <anon>:benchmark:1280
+ 0.00    0.0006        1   0.000612     <anon>:benchmark:1140
+ 0.00    0.0006        2   0.000297     Term::ReadLine::Gnu::readline
+ 0.00    0.0006        1   0.000591     <anon>:benchmark:808
+ 0.00    0.0006        1   0.000580     Term::ReadLine::Gnu::new
+ 0.00    0.0006        1   0.000571     <anon>:...ib/perl/5.10/Digest/SHA.pm:6
+ 0.00    0.0006        5   0.000112     Term::ReadLine::Gnu::Var::_rl_fetch_iostream
+ 0.00    0.0005        1   0.000541     <anon>:benchmark:33
+ 0.00    0.0005        1   0.000536     <anon>:benchmark:1043
+ 0.00    0.0005       13   0.000041     strict::unimport
+ 0.00    0.0005        1   0.000520     <anon>:benchmark:1221
+ 0.00    0.0005        1   0.000497     <anon>:...(eval 11)[benchmark:29]:4]:3
+ 0.00    0.0005        1   0.000481     <anon>:benchmark:81
+ 0.00    0.0005       20   0.000024     types::trace
+ 0.00    0.0005        1   0.000475     Fcntl::bootstrap
+ 0.00    0.0005        1   0.000469     <anon>:benchmark:1300
+ 0.00    0.0004        1   0.000442     <anon>:benchmark:1135
+ 0.00    0.0004       23   0.000019     strict::import
+ 0.00    0.0004        1   0.000410     Digest::SHA::bootstrap
+ 0.00    0.0004        2   0.000203     warnings::register::import
+ 0.00    0.0004        1   0.000402     <anon>:benchmark:833
+ 0.00    0.0004        1   0.000384     <anon>:benchmark:1206
+ 0.00    0.0004        8   0.000048     Term::ReadLine::Gnu::Var::STORE
+ 0.00    0.0004        1   0.000377     <anon>:benchmark:1304
+ 0.00    0.0004        8   0.000047     Term::ReadLine::Gnu::Var::FETCH
+ 0.00    0.0004        1   0.000368     types::initialize_debugging_symbols
+ 0.00    0.0004        1   0.000366     <anon>:benchmark:152
+ 0.00    0.0004        1   0.000363     <anon>:benchmark:1154
+ 0.00    0.0004        2   0.000181     base::import
+ 0.00    0.0004        1   0.000361     AutoLoader::import
+ 0.00    0.0004        1   0.000360     <anon>:benchmark:764
+ 0.00    0.0004        1   0.000359     <anon>:benchmark:62
+ 0.00    0.0004        1   0.000354     <anon>:benchmark:1213
+ 0.00    0.0003        1   0.000349     <anon>:benchmark:941
+ 0.00    0.0003        1   0.000349     <anon>:benchmark:1289
+ 0.00    0.0003        6   0.000058     Term::ReadLine::Gnu::Var::_rl_store_iostream
+ 0.00    0.0003        1   0.000346     <anon>:benchmark:92
+ 0.00    0.0003        1   0.000346     <anon>:benchmark:1003
+ 0.00    0.0003        1   0.000343     <anon>:benchmark:1296
+ 0.00    0.0003        1   0.000334     <anon>:benchmark:72
+ 0.00    0.0003        1   0.000332     <anon>:benchmark:929
+ 0.00    0.0003        1   0.000322     <anon>:benchmark:773
+ 0.00    0.0003       15   0.000021     strict::bits
+ 0.00    0.0003        1   0.000318     <anon>:benchmark:964
+ 0.00    0.0003        2   0.000158     UNIVERSAL::VERSION
+ 0.00    0.0003        4   0.000079     shell::definitions
+ 0.00    0.0003        1   0.000315     <anon>:benchmark:1308
+ 0.00    0.0003        1   0.000312     <anon>:benchmark:1128
+ 0.00    0.0003        1   0.000311     <anon>:benchmark:1316
+ 0.00    0.0003        1   0.000310     <anon>:benchmark:958
+ 0.00    0.0003        1   0.000309     <anon>:benchmark:892
+ 0.00    0.0003        4   0.000077     <anon>:...eval 16)[benchmark:29]:2]:32
+ 0.00    0.0003        1   0.000299     <anon>:benchmark:1312
+ 0.00    0.0003        1   0.000295     <anon>:benchmark:1148
+ 0.00    0.0003        1   0.000295     <anon>:benchmark:824
+ 0.00    0.0003        1   0.000295     IO::bootstrap
+ 0.00    0.0003        1   0.000293     <anon>:benchmark:101
+ 0.00    0.0003        4   0.000073     <anon>:...eval 16)[benchmark:29]:2]:48
+ 0.00    0.0003        1   0.000289     <anon>:benchmark:1160
+ 0.00    0.0003        4   0.000072     <anon>:...eval 16)[benchmark:29]:2]:19
+ 0.00    0.0003        1   0.000280     <anon>:benchmark:1165
+ 0.00    0.0003        1   0.000280     <anon>:benchmark:847
+ 0.00    0.0003        1   0.000279     <anon>:benchmark:121
+ 0.00    0.0003        1   0.000274     <anon>:benchmark:1095
+ 0.00    0.0003        1   0.000257     <anon>:benchmark:1258
+ 0.00    0.0003       16   0.000016     <anon>:...val 16)[benchmark:29]:2]:145
+ 0.00    0.0003        4   0.000063     <anon>:...eval 16)[benchmark:29]:2]:55
+ 0.00    0.0003        4   0.000063     <anon>:...eval 16)[benchmark:29]:2]:59
+ 0.00    0.0002        1   0.000248     <anon>:benchmark:916
+ 0.00    0.0002        1   0.000247     <anon>:benchmark:936
+ 0.00    0.0002        1   0.000245     <anon>:benchmark:888
+ 0.00    0.0002        1   0.000241     <anon>:benchmark:1105
+ 0.00    0.0002        1   0.000239     <anon>:benchmark:883
+ 0.00    0.0002        3   0.000080     <anon>:...eval 13)[benchmark:29]:4]:22
+ 0.00    0.0002        2   0.000118     Term::ReadLine::Gnu::XS::ornaments
+ 0.00    0.0002        1   0.000229     <anon>:benchmark:828
+ 0.00    0.0002        1   0.000229     <anon>:benchmark:1015
+ 0.00    0.0002        1   0.000217     <anon>:benchmark:897
+ 0.00    0.0002        1   0.000216     <anon>:benchmark:1276
+ 0.00    0.0002        1   0.000216     <anon>:benchmark:1248
+ 0.00    0.0002        1   0.000214     <anon>:benchmark:820
+ 0.00    0.0002        1   0.000211     <anon>:benchmark:1253
+ 0.00    0.0002        1   0.000207     <anon>:benchmark:44
+ 0.00    0.0002        1   0.000206     <anon>:benchmark:780
+ 0.00    0.0002        1   0.000202     <anon>:benchmark:925
+ 0.00    0.0002        1   0.000195     <anon>:benchmark:1268
+ 0.00    0.0002        1   0.000194     <anon>:benchmark:921
+ 0.00    0.0002        1   0.000193     <anon>:benchmark:1272
+ 0.00    0.0002        6   0.000032     DynaLoader::dl_install_xsub
+ 0.00    0.0002        1   0.000190     <anon>:benchmark:785
+ 0.00    0.0002       18   0.000010     Time::HiRes::time
+ 0.00    0.0002        1   0.000187     <anon>:benchmark:1264
+ 0.00    0.0002        3   0.000062     <anon>:...eval 13)[benchmark:29]:4]:36
+ 0.00    0.0002        1   0.000184     <anon>:benchmark:1091
+ 0.00    0.0002        1   0.000184     <anon>:benchmark:1011
+ 0.00    0.0002        4   0.000045     <anon>:...eval 16)[benchmark:29]:2]:17
+ 0.00    0.0002        1   0.000180     Exporter::export
+ 0.00    0.0002        1   0.000180     <anon>:benchmark:1101
+ 0.00    0.0002        4   0.000045     Term::ReadLine::Gnu::XS::rl_add_defun
+ 0.00    0.0002        1   0.000173     File::Basename::fileparse_set_fstype
+ 0.00    0.0002        1   0.000167     <anon>:...hare/perl/5.10/constant.pm:2
+ 0.00    0.0002        3   0.000053     types::method
+ 0.00    0.0002        1   0.000155     <anon>:benchmark:174
+ 0.00    0.0001        1   0.000146     <anon>:.../share/perl/5.10/Symbol.pm:3
+ 0.00    0.0001        1   0.000144     <anon>:benchmark:178
+ 0.00    0.0001        2   0.000071     <anon>:(eval 92)[benchmark:29]:9
+ 0.00    0.0001        3   0.000047     <anon>:...l 16)[benchmark:29]:2]:62]:2
+ 0.00    0.0001       10   0.000014     types::number_op
+ 0.00    0.0001        2   0.000066     <anon>:...eval 16)[benchmark:29]:2]:41
+ 0.00    0.0001        1   0.000129     <anon>:...e/perl/5.10/File/Temp.pm:137
+ 0.00    0.0001        1   0.000128     shell::initialize_symbol_table
+ 0.00    0.0001        3   0.000042     Exporter::as_heavy
+ 0.00    0.0001        3   0.000039     <anon>:...l 16)[benchmark:29]:2]:62]:2
+ 0.00    0.0001        3   0.000039     warnings::import
+ 0.00    0.0001        3   0.000038     <anon>:...l 16)[benchmark:29]:2]:62]:2
+ 0.00    0.0001        3   0.000038     <anon>:...l 16)[benchmark:29]:2]:62]:3
+ 0.00    0.0001        3   0.000037     <anon>:...l 16)[benchmark:29]:2]:62]:2
+ 0.00    0.0001        1   0.000102     <anon>:...lib/perl/5.10/IO/Handle.pm:3
+ 0.00    0.0001        2   0.000050     <anon>:...eval 16)[benchmark:29]:2]:28
+ 0.00    0.0001        1   0.000100     MIME::Base64::bootstrap
+ 0.00    0.0001        1   0.000099     overload::OVERLOAD
+ 0.00    0.0001        4   0.000024     <anon>:...(eval 13)[benchmark:29]:4]:2
+ 0.00    0.0001        1   0.000094     Term::ReadLine::Gnu::XS::add_history
+ 0.00    0.0001       13   0.000007     Internals::SvREADONLY
+ 0.00    0.0001        1   0.000093     <anon>:benchmark:535
+ 0.00    0.0001        1   0.000093     <anon>:...b/perl/5.10/MIME/Base64.pm:5
+ 0.00    0.0001        1   0.000090     <anon>:...b/perl/5.10/IO/Seekable.pm:5
+ 0.00    0.0001        1   0.000089     <anon>:...rl5/Term/ReadLine/Gnu.pm:710
+ 0.00    0.0001        1   0.000083     Cwd::bootstrap
+ 0.00    0.0001        1   0.000083     <anon>:...erl/5.10/File/Basename.pm:51
+ 0.00    0.0001        1   0.000082     <anon>:(eval 16)[benchmark:29]:2
+ 0.00    0.0001        1   0.000082     <anon>:...r/lib/perl/5.10/Fcntl.pm:161
+ 0.00    0.0001        1   0.000081     <anon>:...are/perl/5.10/File/Path.pm:3
+ 0.00    0.0001        1   0.000081     <anon>:...e/perl/5.10/File/Temp.pm:138
+ 0.00    0.0001        2   0.000040     <anon>:...eval 16)[benchmark:29]:2]:65
+ 0.00    0.0001        1   0.000080     <anon>:...rl/5.10/File/Basename.pm:394
+ 0.00    0.0001        4   0.000020     warnings::register::mkMask
+ 0.00    0.0001        2   0.000039     <anon>:...eval 16)[benchmark:29]:2]:14
+ 0.00    0.0001        1   0.000077     <anon>:.../Term/ReadLine/Gnu/XS.pm:363
+ 0.00    0.0001        1   0.000077     <anon>:...rl5/Term/ReadLine/Gnu.pm:368
+ 0.00    0.0001        1   0.000076     <anon>:...re/perl/5.10/overload.pm:138
+ 0.00    0.0001        1   0.000076     <anon>:...b/perl/5.10/IO/Seekable.pm:6
+ 0.00    0.0001        1   0.000076     Exporter::export_to_level
+ 0.00    0.0001        2   0.000038     <anon>:...eval 16)[benchmark:29]:2]:57
+ 0.00    0.0001        1   0.000072     <anon>:...rl5/Term/ReadLine/Gnu.pm:689
+ 0.00    0.0001        1   0.000072     <anon>:benchmark:182
+ 0.00    0.0001        1   0.000072     <anon>:...e/perl/5.10/SelectSaver.pm:6
+ 0.00    0.0001       13   0.000006     mro::method_changed_in
+ 0.00    0.0001        2   0.000036     <anon>:...(eval 13)[benchmark:29]:4]:6
+ 0.00    0.0001        1   0.000071     <anon>:benchmark:4
+ 0.00    0.0001        1   0.000069     <anon>:benchmark:237
+ 0.00    0.0001        1   0.000068     <anon>:...rl/5.10/File/Spec/Unix.pm:61
+ 0.00    0.0001        1   0.000068     <anon>:benchmark:1684
+ 0.00    0.0001        1   0.000067     <anon>:...re/perl/5.10/Carp/Heavy.pm:5
+ 0.00    0.0001        1   0.000067     Exporter::export_tags
+ 0.00    0.0001        1   0.000065     <anon>:...rl5/Term/ReadLine/Gnu.pm:672
+ 0.00    0.0001        3   0.000022     Fcntl::constant
+ 0.00    0.0001        1   0.000064     Exporter::Heavy::_push_tags
+ 0.00    0.0001        1   0.000064     <anon>:benchmark:186
+ 0.00    0.0001        1   0.000064     <anon>:...5/Term/ReadLine/Gnu/XS.pm:14
+ 0.00    0.0001        6   0.000011     DynaLoader::dl_find_symbol
+ 0.00    0.0001        1   0.000063     <anon>:...(eval 11)[benchmark:29]:4]:2
+ 0.00    0.0001        1   0.000063     <anon>:...are/perl/5.10/File/Spec.pm:3
+ 0.00    0.0001        1   0.000063     <anon>:...usr/lib/perl/5.10/Cwd.pm:556
+ 0.00    0.0001        1   0.000062     <anon>:...rl5/Term/ReadLine/Gnu.pm:506
+ 0.00    0.0001        2   0.000030     base::has_version
+ 0.00    0.0001        1   0.000059     <anon>:benchmark:1670
+ 0.00    0.0001        1   0.000058     <anon>:/usr/lib/perl/5.10/re.pm:5
+ 0.00    0.0001        1   0.000058     integer::import
+ 0.00    0.0001        1   0.000056     <anon>:...b/perl/5.10/IO/Handle.pm:356
+ 0.00    0.0001        1   0.000056     <anon>:...rl5/Term/ReadLine/Gnu.pm:474
+ 0.00    0.0001        1   0.000056     <anon>:...erl5/Term/ReadLine/Gnu.pm:58
+ 0.00    0.0001        1   0.000056     <anon>:...(eval 16)[benchmark:29]:2]:5
+ 0.00    0.0001        6   0.000009     DynaLoader::dl_undef_symbols
+ 0.00    0.0001        2   0.000028     types::gensym
+ 0.00    0.0001        1   0.000055     <anon>:benchmark:1320
+ 0.00    0.0001        1   0.000055     Time::HiRes::import
+ 0.00    0.0001        1   0.000055     <anon>:...e/perl/5.10/File/Path.pm:265
+ 0.00    0.0001        1   0.000055     <anon>:...5/Term/ReadLine/Gnu/XS.pm:16
+ 0.00    0.0001        1   0.000054     <anon>:.../perl/5.10/Carp/Heavy.pm:289
+ 0.00    0.0001        1   0.000054     <anon>:...rl/5.10/Term/ReadLine.pm:177
+ 0.00    0.0001        1   0.000053     <anon>:...r/lib/perl/5.10/Fcntl.pm:184
+ 0.00    0.0001        1   0.000053     <anon>:/usr/lib/perl/5.10/re.pm:4
+ 0.00    0.0001        2   0.000026     shell::make_loader
+ 0.00    0.0001        1   0.000052     <anon>:...(eval 16)[benchmark:29]:2]:7
+ 0.00    0.0001        1   0.000052     <anon>:...r/lib/perl/5.10/Errno.pm:188
+ 0.00    0.0001        1   0.000052     <anon>:...ib/perl/5.10/Digest/SHA.pm:7
+ 0.00    0.0001        1   0.000052     <anon>:...5/Term/ReadLine/Gnu/XS.pm:38
+ 0.00    0.0001        1   0.000052     <anon>:.../perl/5.10/IO/Seekable.pm:12
+ 0.00    0.0001        1   0.000052     Term::ReadLine::Stub::findConsole
+ 0.00    0.0001        1   0.000052     <anon>:...erl5/Term/ReadLine/Gnu.pm:59
+ 0.00    0.0001        1   0.000052     <anon>:...e/perl/5.10/Digest/base.pm:3
+ 0.00    0.0001        1   0.000051     <anon>:...e/perl/5.10/File/Temp.pm:259
+ 0.00    0.0001        1   0.000051     <anon>:...b/perl/5.10/MIME/Base64.pm:6
+ 0.00    0.0001        1   0.000051     <anon>:...usr/lib/perl/5.10/Fcntl.pm:3
+ 0.00    0.0001        1   0.000051     overload::import
+ 0.00    0.0001        1   0.000050     <anon>:...b/perl/5.10/IO/Seekable.pm:7
+ 0.00    0.0000        1   0.000049     <anon>:...are/perl/5.10/File/Spec.pm:4
+ 0.00    0.0000        1   0.000049     <anon>:benchmark:790
+ 0.00    0.0000        1   0.000049     <anon>:...rl5/Term/ReadLine/Gnu.pm:703
+ 0.00    0.0000        1   0.000049     <anon>:...erl/5.10/File/Spec/Unix.pm:3
+ 0.00    0.0000        1   0.000048     <anon>:benchmark:1324
+ 0.00    0.0000        1   0.000048     <anon>:...sr/share/perl/5.10/base.pm:3
+ 0.00    0.0000        1   0.000048     <anon>:benchmark:190
+ 0.00    0.0000        1   0.000048     <anon>:benchmark:1674
+ 0.00    0.0000        1   0.000047     <anon>:...(eval 16)[benchmark:29]:2]:5
+ 0.00    0.0000        1   0.000046     <anon>:...5/Term/ReadLine/Gnu/XS.pm:18
+ 0.00    0.0000        1   0.000046     <anon>:...(eval 13)[benchmark:29]:4]:2
+ 0.00    0.0000        1   0.000046     <anon>:...erl5/Term/ReadLine/Gnu.pm:74
+ 0.00    0.0000        1   0.000046     <anon>:...rl5/Term/ReadLine/Gnu.pm:507
+ 0.00    0.0000        1   0.000046     <anon>:...e/perl/5.10/SelectSaver.pm:7
+ 0.00    0.0000        1   0.000045     <anon>:...erl/5.10/File/Basename.pm:52
+ 0.00    0.0000        1   0.000045     <anon>:...ib/perl/5.10/Digest/SHA.pm:5
+ 0.00    0.0000        1   0.000044     <anon>:...e/perl/5.10/File/Temp.pm:162
+ 0.00    0.0000        1   0.000044     <anon>:...lib/perl/5.10/IO/Handle.pm:4
+ 0.00    0.0000        1   0.000044     <anon>:...re/perl/5.10/constant.pm:101
+ 0.00    0.0000        1   0.000044     <anon>:benchmark:794
+ 0.00    0.0000        1   0.000044     <anon>:/usr/lib/perl/5.10/Cwd.pm:3
+ 0.00    0.0000        1   0.000044     <anon>:/usr/lib/perl/5.10/IO.pm:6
+ 0.00    0.0000        1   0.000044     <anon>:...re/perl/5.10/File/Path.pm:19
+ 0.00    0.0000        4   0.000011     UNIVERSAL::isa
+ 0.00    0.0000        1   0.000043     <anon>:...rl5/Term/ReadLine/Gnu.pm:109
+ 0.00    0.0000        1   0.000043     <anon>:...lib/perl/5.10/IO/Handle.pm:6
+ 0.00    0.0000        1   0.000043     <anon>:benchmark:1328
+ 0.00    0.0000        1   0.000043     <anon>:...are/perl/5.10/constant.pm:38
+ 0.00    0.0000        1   0.000043     <anon>:...are/perl/5.10/File/Path.pm:4
+ 0.00    0.0000        1   0.000042     <anon>:...erl/5.10/File/Basename.pm:50
+ 0.00    0.0000        1   0.000042     re::import
+ 0.00    0.0000        1   0.000042     <anon>:...rl5/Term/ReadLine/Gnu.pm:508
+ 0.00    0.0000        1   0.000042     <anon>:benchmark:739
+ 0.00    0.0000        1   0.000042     <anon>:/usr/lib/perl/5.10/Cwd.pm:5
+ 0.00    0.0000        1   0.000042     <anon>:benchmark:743
+ 0.00    0.0000        1   0.000042     <anon>:.../perl/5.10/Carp/Heavy.pm:290
+ 0.00    0.0000        2   0.000021     Term::ReadLine::Gnu::XS::tgetstr
+ 0.00    0.0000        1   0.000041     <anon>:...e/perl/5.10/File/Temp.pm:169
+ 0.00    0.0000        1   0.000041     <anon>:...5/Term/ReadLine/Gnu/XS.pm:22
+ 0.00    0.0000        1   0.000041     <anon>:...(eval 16)[benchmark:29]:2]:8
+ 0.00    0.0000        1   0.000041     <anon>:...5/Term/ReadLine/Gnu/XS.pm:15
+ 0.00    0.0000        1   0.000041     <anon>:...5/Term/ReadLine/Gnu/XS.pm:30
+ 0.00    0.0000        1   0.000041     <anon>:...sr/share/perl/5.10/base.pm:4
+ 0.00    0.0000        1   0.000041     <anon>:...e/perl/5.10/File/Temp.pm:216
+ 0.00    0.0000        1   0.000041     <anon>:...5/Term/ReadLine/Gnu/XS.pm:25
+ 0.00    0.0000        1   0.000041     <anon>:...hare/perl/5.10/constant.pm:6
+ 0.00    0.0000        1   0.000040     <anon>:...eval 16)[benchmark:29]:2]:10
+ 0.00    0.0000        1   0.000040     <anon>:...rl5/Term/ReadLine/Gnu.pm:673
+ 0.00    0.0000        1   0.000040     <anon>:/usr/lib/perl/5.10/Cwd.pm:4
+ 0.00    0.0000        1   0.000040     <anon>:benchmark:198
+ 0.00    0.0000        1   0.000040     <anon>:...(eval 16)[benchmark:29]:2]:6
+ 0.00    0.0000        1   0.000040     <anon>:...eval 16)[benchmark:29]:2]:11
+ 0.00    0.0000        1   0.000039     <anon>:...e/perl/5.10/Digest/base.pm:4
+ 0.00    0.0000        1   0.000039     <anon>:...rl5/Term/ReadLine/Gnu.pm:711
+ 0.00    0.0000        1   0.000039     <anon>:benchmark:752
+ 0.00    0.0000        1   0.000039     <anon>:benchmark:194
+ 0.00    0.0000        1   0.000039     <anon>:...e/perl/5.10/File/Temp.pm:220
+ 0.00    0.0000        1   0.000038     <anon>:...(eval 16)[benchmark:29]:2]:9
+ 0.00    0.0000        1   0.000038     <anon>:...hare/perl/5.10/constant.pm:3
+ 0.00    0.0000        1   0.000038     <anon>:...erl/5.10/File/Spec/Unix.pm:4
+ 0.00    0.0000        1   0.000038     <anon>:...usr/lib/perl/5.10/Errno.pm:8
+ 0.00    0.0000        1   0.000038     <anon>:...e/perl/5.10/File/Temp.pm:226
+ 0.00    0.0000        1   0.000038     Term::ReadLine::Gnu::Var::_rl_store_str
+ 0.00    0.0000        1   0.000038     <anon>:/usr/lib/perl/5.10/IO.pm:8
+ 0.00    0.0000        1   0.000037     <anon>:/usr/lib/perl/5.10/IO.pm:7
+ 0.00    0.0000        1   0.000037     warnings::unimport
+ 0.00    0.0000        1   0.000037     <anon>:...e/perl/5.10/File/Temp.pm:236
+ 0.00    0.0000        1   0.000036     Errno::TIEHASH
+ 0.00    0.0000        1   0.000036     <anon>:...erl5/Term/ReadLine/Gnu.pm:73
+ 0.00    0.0000        1   0.000035     <anon>:...hare/perl/5.10/constant.pm:4
+ 0.00    0.0000        1   0.000034     <anon>:...e/perl/5.10/File/Temp.pm:225
+ 0.00    0.0000        1   0.000034     <anon>:...e/perl/5.10/File/Temp.pm:224
+ 0.00    0.0000        1   0.000032     re::bits
+ 0.00    0.0000        1   0.000032     Term::ReadLine::Gnu::OUT
+ 0.00    0.0000        2   0.000015     <anon>:...e/perl/5.10/File/Temp.pm:242
+ 0.00    0.0000        1   0.000029     <anon>:...usr/lib/perl/5.10/Errno.pm:7
+ 0.00    0.0000        2   0.000014     <anon>:...val 16)[benchmark:29]:2]:155
+ 0.00    0.0000        2   0.000014     DynaLoader::dl_load_flags
+ 0.00    0.0000        1   0.000028     File::Temp::cleanup
+ 0.00    0.0000        2   0.000014     base::has_fields
+ 0.00    0.0000        1   0.000027     <anon>:benchmark:1766
+ 0.00    0.0000        2   0.000013     Term::ReadLine::Gnu::Var::_rl_fetch_function
+ 0.00    0.0000        1   0.000025     <anon>:benchmark:1822
+ 0.00    0.0000        1   0.000024     <anon>:...are/perl/5.10/File/Path.pm:8
+ 0.00    0.0000        1   0.000024     types::clear_symbols
+ 0.00    0.0000        2   0.000012     base::has_attr
+ 0.00    0.0000        1   0.000023     <anon>:benchmark:1845
+ 0.00    0.0000        1   0.000023     <anon>:/usr/lib/perl/5.10/IO.pm:5
+ 0.00    0.0000        1   0.000022     <anon>:...usr/lib/perl/5.10/Fcntl.pm:7
+ 0.00    0.0000        1   0.000022     <anon>:...erl5/Term/ReadLine/Gnu.pm:69
+ 0.00    0.0000        1   0.000021     <anon>:...sr/lib/perl/5.10/Fcntl.pm:11
+ 0.00    0.0000        1   0.000021     Config::FETCH
+ 0.00    0.0000        1   0.000020     <anon>:...re/perl/5.10/File/Path.pm:16
+ 0.00    0.0000        1   0.000020     <anon>:...erl5/Term/ReadLine/Gnu.pm:72
+ 0.00    0.0000        2   0.000010     Term::ReadLine::Gnu::RL_PROMPT_START_IGNORE
+ 0.00    0.0000        1   0.000018     <anon>:...re/perl/5.10/File/Path.pm:18
+ 0.00    0.0000        2   0.000009     Term::ReadLine::Stub::Features
+ 0.00    0.0000        2   0.000008     Term::ReadLine::Gnu::RL_PROMPT_END_IGNORE
+ 0.00    0.0000        1   0.000014     <anon>:...e/perl/5.10/File/Temp.pm:265
+ 0.00    0.0000        1   0.000014     Term::ReadLine::Gnu::Var::_rl_store_function
+ 0.00    0.0000        1   0.000014     <anon>:benchmark:202
+ 0.00    0.0000        1   0.000013     <anon>:benchmark:1868
+ 0.00    0.0000        1   0.000009     Term::ReadLine::Gnu::Attribs
+ 0.00    0.0000        1   0.000008     Term::ReadLine::Gnu::Var::_rl_fetch_int
+ 0.00    0.0000        1   0.000006     Fcntl::O_NOFOLLOW
+ 0.00    0.0000        1   0.000005     Fcntl::O_LARGEFILE
+ 0.00    0.0000        1   0.000004     Fcntl::O_BINARY
