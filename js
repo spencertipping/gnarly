@@ -738,7 +738,7 @@ meta::code('integration-tests', <<'__Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 Integration tests. These are run after your code is loaded and the unit tests have been run.
 __Q4ZqcS3Gx3zaAHh8IKp8z9BT+IJxx4qAJ/5ZT2Y8kDU
 
-meta::code('source', <<'__hCXQ7E8pkw+lbmkTumknuIDjGphWebxCON1I9XTSL7w');
+meta::code('source', <<'__R9iHtaQWvp6P+D39PUNgCTkVvulWsizvoNirTusvxh8');
 JavaScript generation | Spencer Tipping <spencer@spencertipping.com>
 Licensed under the terms of the MIT source code license.
 
@@ -748,16 +748,14 @@ tree as you use it, so for example:
 
   js foo.bar + 6
 
-returns a new js object with the expression tree (js-bop + (js-bop . foo bar) 6). This expression tree can then be serialized by invoking serialize:
-
-  js foo.bar + 6 serialize      => (foo.bar+6)
+returns a new js object with the expression tree (js-bop + foo.bar 6). (The dot-notation isn't split at this point.)
 
   (def js-serialize (fn form (*? form (:: form) (o? form (form serialize) (serialize form)))))
 
   (def js-var  (fn name (fn v ('"var " + (js-serialize name) +' = + (js-serialize v) +' ;))))
   (def js-fn   (fn as (fn body ('"(function(){" + (js-var as (' arguments)) +' "return " + (js-serialize body) +' "})"))))
-  (def js-bop  (qn op (fn v1 (fn v2 ('"(" + (js-serialize v1) + op + (js-serialize v2) +' ")")))))
-  (def js-uop  (qn op (fn v ('"(" + (js-serialize v) +' ")"))))
+  (def js-bop  (fn op (fn v1 (fn v2 ('"(" + (js-serialize v1) + op + (js-serialize v2) +' ")")))))
+  (def js-uop  (fn op (fn v ('"(" + (js-serialize v) +' ")"))))
   (def js-sub  (fn x (fn s (js-serialize x +' [ + (js-serialize s) +' ]))))
   (def js-call (fn f (fn xs (js-serialize f +' "(" + (/ (_ (_ +' , +)) (* js-serialize xs)) +' ")"))))
 
@@ -771,7 +769,7 @@ returns a new js object with the expression tree (js-bop + (js-bop . foo bar) 6)
                                                    ((== action (' var))       (qn name (js (js-var name v))))
                                                    ((== action (' sub))       (jsqn _ (js (js-sub v _))))
                                                    (k:                        (jsqn _ (js (js-bop action v _))))))))))
-__hCXQ7E8pkw+lbmkTumknuIDjGphWebxCON1I9XTSL7w
+__R9iHtaQWvp6P+D39PUNgCTkVvulWsizvoNirTusvxh8
 
 meta::code('tests', <<'__LyYaSZV1QHBrnAJWqdMoOVoeLahXQWFyeicpI7WKgqY');
 JavaScript unit tests. These help make sure that things don't crash, though there isn't any validation.
