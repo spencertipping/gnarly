@@ -1,7 +1,7 @@
 #ifndef CORE_FFI_MACROS_HH
 #define CORE_FFI_MACROS_HH
 
-#include "core/typedefs.hh"
+#include "bootstrap/core/typedefs.hh"
 
 #define gnarly_define(name, parameter) \
   static value* name (const value *parameter)

@@ -358,193 +358,195 @@ meta::cpp_section('cpp-introduction', <<'__dIO7xsJfuJqvPXdHd7TAMttntR4IjRjbT8tXb
   :.
 __dIO7xsJfuJqvPXdHd7TAMttntR4IjRjbT8tXbJv6WXI
 
-meta::cpp_section('gnarly-binary', <<'__5DylhcOVpswyHS72PtAjq0oboMFZy8TVLecy26XUK5A');
-- Gnarly Binary Interface
-  Gnarly programs have the ability to execute arbitrary machine code, and to make calls into the Gnarly runtime library using the function pointers in the global symbol table. This section
-  defines functions and macros that are useful for exposing C++ functions to Gnarly.
+meta::cpp_section('gnarly-binary', <<'__WP3fZv+haGYv9kGfxtuq5v85A1Q97Qj+7VpMxmPLtKQ');
+  - Binary Interface
+    Gnarly programs have the ability to execute arbitrary machine code, and to make calls into the Gnarly runtime library using the function pointers in the global symbol table. This section
+    defines functions and macros that are useful for exposing C++ functions to Gnarly.
 
-  :: cpp name=core/definitions.hh
-  #ifndef CORE_DEFINITIONS_HH
-  #define CORE_DEFINITIONS_HH
+    :: cpp name=bootstrap/core/definitions.hh
+    #ifndef CORE_DEFINITIONS_HH
+    #define CORE_DEFINITIONS_HH
 
-  #include "core/typedefs.hh"
-  #include "core/namespace-macros.hh"
-  #include "core/ffi-macros.hh"
-
-  #endif
-  :.
-
-  :: cpp name=core/namespace-macros.hh
-  #ifndef CORE_NAMESPACE_MACROS_HH
-  #define CORE_NAMESPACE_MACROS_HH
-
-  #define BEGIN_NAMESPACE() namespace gnarly {
-  #define END_NAMESPACE()   }
-
-  #endif
-  :.
-
-  - Pointer encoding
-    Because all values in Gnarly can be called, they are encoded as function pointers. In a local evaluation context they can be encoded differently, but only for optimization purposes; for
-    all observational purposes they must remain function pointers. Each function pointer refers to a unary function from values to values; thus, the type of values is recursively defined as:
-
-    $$ value :: value* \rightarrow value* $$
-    
-    To avoid recursion in the type checker, I'm encoding these values as \verb|void*| in C++ and casting them to function pointers at the last minute.
-
-    :: cpp name=core/typedefs.hh
-    #ifndef CORE_TYPEDEFS_HH
-    #define CORE_TYPEDEFS_HH
-
-    typedef void *value;
-    typedef value* (value_fn) (const value*);
+    #include "bootstrap/core/typedefs.hh"
+    #include "bootstrap/core/namespace-macros.hh"
+    #include "bootstrap/core/ffi-macros.hh"
 
     #endif
     :.
 
-  - Defining and calling C++ functions
-    Internally, C++ Gnarly functions are represented by ordinary unary static functions. The JIT environment defines a scheme for currying specialized instances of generated functions, but the
-    C++ interface doesn't presently support this.
+    :: cpp name=bootstrap/core/namespace-macros.hh
+    #ifndef CORE_NAMESPACE_MACROS_HH
+    #define CORE_NAMESPACE_MACROS_HH
 
-    :: cpp name=core/ffi-macros.hh
-    #ifndef CORE_FFI_MACROS_HH
-    #define CORE_FFI_MACROS_HH
-
-    #include "core/typedefs.hh"
-
-    #define gnarly_define(name, parameter) \
-      static value* name (const value *parameter)
-
-    #define gnarly_forward_define(name, parameter) \
-      gnarly_define(name, parameter);
-
-    #define gnarly_call(fn, v) \
-      ((* static_cast<value_fn*>(fn)) (v))
+    #define BEGIN_NAMESPACE() namespace gnarly {
+    #define END_NAMESPACE()   }
 
     #endif
     :.
-__5DylhcOVpswyHS72PtAjq0oboMFZy8TVLecy26XUK5A
 
-meta::cpp_section('gnarly-definitions', <<'__SP+QGSfd/JxaoBphaHfy4UA7f8UQhu8mg4mqPqoir4U');
-- Gnarly Language Definition
-  Gnarly is a Lisp variant that supports first-class macros. It generalizes both functions and macros by using a nonevaluative $\beta$ conversion that is itself a first-class $\beta$-expander
-  constructor. This can be combined with an evaluative identity function (written as \verb|:|, which is also used to terminate lists) to produce functions in the normal sense.
+    - Pointer encoding
+      Because all values in Gnarly can be called, they are encoded as function pointers. In a local evaluation context they can be encoded differently, but only for optimization purposes; for
+      all observational purposes they must remain function pointers. Each function pointer refers to a unary function from values to values; thus, the type of values is recursively defined as:
 
-  - Reader
-    Like Lisp, Gnarly provides a monolithic reader. Unlike later Lisps, however, the reader is not customizable; it follows a very simple syntax that simply constructs consed lists from its
-    text input. The reader can be invoked from inside Gnarly as well.
+      $$ value :: value* \rightarrow value* $$
+      
+      To avoid recursion in the type checker, I'm encoding these values as \verb|void*| in C++ and casting them to function pointers at the last minute.
 
-    The reader recognizes these forms (roughly in EBNF with regexps):
+      :: cpp name=bootstrap/core/typedefs.hh
+      #ifndef CORE_TYPEDEFS_HH
+      #define CORE_TYPEDEFS_HH
 
-    ::
-    expression ::= <symbol> | <list>
-    symbol     ::= [^()\s]+
-    list       ::= (<expression> [<expression> ...])
-    :.
+      typedef void *value;
+      typedef value* (value_fn) (const value*);
 
-    For example, here are some expression parse trees:
+      #endif
+      :.
 
-    ::
-    (foo bar)   =>      (cons (cons (symbol :) (symbol foo)) (symbol bar))
-    (foo)       =>      (cons (symbol :) (symbol foo))
-    ((foo))     =>      (cons (symbol :) (cons (symbol :) (symbol foo)))
-    bar         =>      (symbol bar)
-    5.0         =>      (symbol 5.0)
-    :           =>      (symbol :)
-    ()          =>      (symbol :)
-    :.
+    - Defining and calling C++ functions
+      Internally, C++ Gnarly functions are represented by ordinary unary static functions. The JIT environment defines a scheme for currying specialized instances of generated functions, but
+      the C++ interface doesn't presently support this.
 
-    Consing is left-associative during reading for reasons explained in \Ref{section}{sec:evaluation}. This has a couple of implications:
+      :: cpp name=bootstrap/core/ffi-macros.hh
+      #ifndef CORE_FFI_MACROS_HH
+      #define CORE_FFI_MACROS_HH
 
-    e[
-      + The head of a well-formed list is either {\tt :} or another list
-      + The tail of a well-formed list is the last element in the list
-    ]e
+      #include "bootstrap/core/typedefs.hh"
 
-    It also means that traditional list-manipulation algorithms such as \verb|map| and \verb|filter| traverse lists from right to left.
+      #define gnarly_define(name, parameter) \
+        static value* name (const value *parameter)
 
-  - List encoding
-    While the original Gnarly implementation had a native cons cell, there is no such construct in this version. Instead, the reader produces curried cons-functions that are catamorphisms on a
-    tree structure. That is, an expression produced by \verb|read| will satisfy the following (which is an exhaustive definition):
+      #define gnarly_forward_define(name, parameter) \
+        gnarly_define(name, parameter);
 
-    \begin{align*}
-      (\text{cons}~x~y)~t~a & = t~x~y \\
-      (\text{symbol}~s)~t~a & = a~s
-    \end{align*}
+      #define gnarly_call(fn, v) \
+        ((* static_cast<value_fn*>(fn)) (v))
 
-  - Evaluative semantics
-    \label{sec:evaluation}
-    From a logical perspective, evaluation follows these rules:
+      #endif
+      :.
+__WP3fZv+haGYv9kGfxtuq5v85A1Q97Qj+7VpMxmPLtKQ
 
-    \begin{align*}
-      E[(\text{cons}~x~y)] & = E[x] y \\
-      E[(\text{symbol}~s)] & = \text{dereference }s
-    \end{align*}
+meta::cpp_section('gnarly-definitions', <<'__wmB4KfySJds/6zCgCzllTEMIc+hIKPyAXa83985jVOc');
+  - Language Definition
+    Gnarly is a Lisp variant that supports first-class macros. It generalizes both functions and macros by using a nonevaluative $\beta$ conversion that is itself a first-class
+    $\beta$-expander constructor. This can be combined with an evaluative identity function (written as \verb|:|, which is also used to terminate lists) to produce functions in the normal
+    sense.
 
-    Dereferencing of symbols is done through the global symbol table, which is immutable.\footnote{Symbols are internally unified and are treated as pointers. You can convert symbols to
-    strings and vice versa, but the string indirection is not used for symbol table lookups.} The Gnarly runtime contains symbol bindings required to change existing symbol definitions, and it
-    contains a pair of functions to evaluate cons cells and dereference symbols.
-__SP+QGSfd/JxaoBphaHfy4UA7f8UQhu8mg4mqPqoir4U
+    - Reader
+      Like Lisp, Gnarly provides a monolithic reader. Unlike later Lisps, however, the reader is not customizable; it follows a very simple syntax that simply constructs consed lists from its
+      text input. The reader can be invoked from inside Gnarly as well.
 
-meta::cpp_section('gnarly-runtime', <<'__/SUXSDXMWcgGrsEa5uT17V/czNbbpRPTGe0tHeDvlyg');
-- Gnarly Runtime Bindings
-  Gnarly needs some symbol bindings to bootstrap the JIT compiler. These are C++ function pointers that get executed directly.
+      The reader recognizes these forms (roughly in EBNF with regexps):
 
-  - Evaluation
-    Because of the type erasure assumed in the reader's list encoding, evaluation is separated into two functions. The outer function, called \verb|::|, invokes its parameter on the two
-    evaluation cases. The terminology in the formal definitions is that $::*$ evaluates cons-cells, and $::\$$ evaluates symbols:
+      ::
+      expression ::= <symbol> | <list>
+      symbol     ::= [^()\s]+
+      list       ::= (<expression> [<expression> ...])
+      :.
 
-    \begin{align}
-      ::~x & = x~(::*)~(::\$) \\
-      (::*)~x~y & = ~::~x~y \label{eqn:cons-eval} \\
-      (::\$)~s & = \text{dereference }s
-    \end{align}
+      For example, here are some expression parse trees:
 
-    \Ref{Equation}{eqn:cons-eval} can be optimized by $\eta$-reduction, yielding the equivalence: $$(::*) = ~::$$ So in fact, the definition of the evaluation functions is simply:
+      ::
+      (foo bar)   =>      (cons (cons (symbol :) (symbol foo)) (symbol bar))
+      (foo)       =>      (cons (symbol :) (symbol foo))
+      ((foo))     =>      (cons (symbol :) (cons (symbol :) (symbol foo)))
+      bar         =>      (symbol bar)
+      5.0         =>      (symbol 5.0)
+      :           =>      (symbol :)
+      ()          =>      (symbol :)
+      :.
 
-    \begin{align*}
-      ::~x & = x~(::)~(::\$) \\
-      (::\$)~s & = \text{dereference }s
-    \end{align*}
+      Consing is left-associative during reading for reasons explained in \Ref{section}{sec:evaluation}. This has a couple of implications:
 
-    :: cpp name=core/evaluation.hh
-    #ifndef CORE_EVALUATION_HH
-    #define CORE_EVALUATION_HH
+      e[
+        + The head of a well-formed list is either {\tt :} or another list
+        + The tail of a well-formed list is the last element in the list
+      ]e
 
-    #include "core/definitions.hh"
+      It also means that traditional list-manipulation algorithms such as \verb|map| and \verb|filter| traverse lists from right to left.
 
-    BEGIN_NAMESPACE()
+    - List encoding
+      While the original Gnarly implementation had a native cons cell, there is no such construct in this version. Instead, the reader produces curried cons-functions that are catamorphisms on
+      a tree structure. That is, an expression produced by \verb|read| will satisfy the following (which is an exhaustive definition):
 
-    gnarly_forward_define(eval)
-    gnarly_forward_define(eval_symbol)
+      \begin{align*}
+        (\text{cons}~x~y)~t~a & = t~x~y \\
+        (\text{symbol}~s)~t~a & = a~s
+      \end{align*}
 
-    gnarly_define(eval, form) {
-      return gnarly_call(gnarly_call(form, &eval), &eval_symbol);
-    }
+    - Evaluative semantics
+      \label{sec:evaluation}
+      From a logical perspective, evaluation follows these rules:
 
-    gnarly_define(eval_symbol, symbol) {
-      return *symbol;
-    }
+      \begin{align*}
+        E[(\text{cons}~x~y)] & = E[x] y \\
+        E[(\text{symbol}~s)] & = \text{dereference }s
+      \end{align*}
 
-    END_NAMESPACE()
+      Dereferencing of symbols is done through the global symbol table.\footnote{Symbols are internally unified and are treated as pointers. You can convert symbols to strings and vice versa,
+      but the string indirection is not used for symbol table lookups.} The Gnarly runtime contains symbol bindings required to change existing symbol definitions, and it contains a pair of
+      functions to evaluate cons cells and dereference symbols.
+__wmB4KfySJds/6zCgCzllTEMIc+hIKPyAXa83985jVOc
 
-    #endif
-    :.
-__/SUXSDXMWcgGrsEa5uT17V/czNbbpRPTGe0tHeDvlyg
+meta::cpp_section('gnarly-runtime', <<'__ZtXko8UFsOdpmMR3w2StIptQRGvtrm9dXN2CuB5na1A');
+  - Runtime Bindings
+    Gnarly needs some symbol bindings to bootstrap the JIT compiler. These are C++ function pointers that get executed directly.
+
+    - Evaluation
+      Because of the type erasure assumed in the reader's list encoding, evaluation is separated into two functions. The outer function, called \verb|::|, invokes its parameter on the two
+      evaluation cases. The terminology in the formal definitions is that $::*$ evaluates cons-cells, and $::\$$ evaluates symbols:
+
+      \begin{align}
+        ::~x & = x~(::*)~(::\$) \\
+        (::*)~x~y & = ~::~x~y \label{eqn:cons-eval} \\
+        (::\$)~s & = \text{dereference }s
+      \end{align}
+
+      \Ref{Equation}{eqn:cons-eval} can be optimized by $\eta$-reduction, yielding the equivalence: $$(::*) = ~::$$ So in fact, the definition of the evaluation functions is simply:
+
+      \begin{align*}
+        ::~x & = x~(::)~(::\$) \\
+        (::\$)~s & = \text{dereference }s
+      \end{align*}
+
+      :: cpp name=bootstrap/evaluation.hh
+      #ifndef CORE_EVALUATION_HH
+      #define CORE_EVALUATION_HH
+
+      #include "bootstrap/core/definitions.hh"
+
+      BEGIN_NAMESPACE()
+
+      gnarly_forward_define(eval)
+      gnarly_forward_define(eval_symbol)
+
+      gnarly_define(eval, form) {
+        return gnarly_call(gnarly_call(form, &eval), &eval_symbol);
+      }
+
+      gnarly_define(eval_symbol, symbol) {
+        return *symbol;
+      }
+
+      END_NAMESPACE()
+
+      #endif
+      :.
+__ZtXko8UFsOdpmMR3w2StIptQRGvtrm9dXN2CuB5na1A
 
 meta::data('default-action', <<'__zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc');
 shell
 __zmNcTqv/Xk9W26j7HjnKI1UwqitrGFM+7xrzhiAWxXc
 
-meta::data('document', <<'__BUW7v1rsRGRG8+8h9kIn1IGX1yQVRTu1Zl7UVFVOIR8');
+meta::data('document', <<'__fx/Pm17nr2p5YsdeuY7WNc0Jgipf1gB8eBAGbcvO400');
 = Gnarly JIT Compiler
 a Spencer Tipping
 begin
 
+- Gnarly Bootstrap Layer
 %section(cpp_section::gnarly-definitions)
 %section(cpp_section::gnarly-binary)
 %section(cpp_section::gnarly-runtime)
-__BUW7v1rsRGRG8+8h9kIn1IGX1yQVRTu1Zl7UVFVOIR8
+__fx/Pm17nr2p5YsdeuY7WNc0Jgipf1gB8eBAGbcvO400
 
 meta::data('header', <<'__HlC/zSnFNAXNbuJ/z8ZYgHsD5DWMisPBSt/xyoy+0cw');
 \documentclass{article}
@@ -593,9 +595,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__PklVcveMrgcytvkkukqhCMAdDxPTy59Y/G+CmVSCLGc');
-/tmp/gnarly.roOc-ZTZO2kQoCd3ObzkLf7W5qjsm2ghCITcFWLUOoQ/document.pdf
-__PklVcveMrgcytvkkukqhCMAdDxPTy59Y/G+CmVSCLGc
+meta::data('pdf-output-file', <<'__IQxVYYHj5aut1pqA7Fc+om2hAvFxMdRpfjxcIgiX2LU');
+/tmp/gnarly.QZU0V6wXvhr8uKiSrGAjy99YFGhIN9OrmNzXMPHpzkQ/document.pdf
+__IQxVYYHj5aut1pqA7Fc+om2hAvFxMdRpfjxcIgiX2LU
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince

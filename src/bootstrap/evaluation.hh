@@ -1,7 +1,7 @@
 #ifndef CORE_EVALUATION_HH
 #define CORE_EVALUATION_HH
 
-#include "core/definitions.hh"
+#include "bootstrap/core/definitions.hh"
 
 BEGIN_NAMESPACE()
 
