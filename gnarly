@@ -358,7 +358,7 @@ meta::cpp_section('cpp-introduction', <<'__dIO7xsJfuJqvPXdHd7TAMttntR4IjRjbT8tXb
   :.
 __dIO7xsJfuJqvPXdHd7TAMttntR4IjRjbT8tXbJv6WXI
 
-meta::cpp_section('gnarly-binary', <<'__6iVljwO8IovyanWX7m9fkKVqFrF0TOLOxvBL0dftMHk');
+meta::cpp_section('gnarly-binary', <<'__JEEdFYQbm9Np3ywugPsxaSBtomWGOF+0tvkCNVa3joA');
   - Binary Interface
     Gnarly programs have the ability to execute arbitrary machine code, and to make calls into the Gnarly runtime library using the function pointers in the global symbol table. This section
     defines functions and macros that are useful for exposing C++ functions to Gnarly.
@@ -367,7 +367,7 @@ meta::cpp_section('gnarly-binary', <<'__6iVljwO8IovyanWX7m9fkKVqFrF0TOLOxvBL0dft
     #ifndef CORE_DEFINITIONS_HH
     #define CORE_DEFINITIONS_HH
 
-    #include "bootstrap/core/typedefs.hh"
+    #include "bootstrap/core/base-types.hh"
     #include "bootstrap/core/namespace-macros.hh"
 
     #endif
@@ -392,28 +392,34 @@ meta::cpp_section('gnarly-binary', <<'__6iVljwO8IovyanWX7m9fkKVqFrF0TOLOxvBL0dft
       Because many of these values are closures, I'm using classes with pure-virtual methods. I know, I know -- it's slow, right? It is, but this will all be replaced by the JIT machinery once
       the invocation-side specializer is written.
 
-      :: cpp name=bootstrap/core/typedefs.hh
+      :: cpp name=bootstrap/core/base-types.hh
       #ifndef CORE_TYPEDEFS_HH
       #define CORE_TYPEDEFS_HH
+
+      #include <boost/shared_ptr.hpp>
 
       #include "bootstrap/core/namespace-macros.hh"
 
       BEGIN_NAMESPACE()
 
+      using boost::shared_ptr;
+
+      class gnarly_value;
+
+      typedef shared_ptr<gnarly_value> gnarly_ref;
+
       class gnarly_value {
       public:
-        virtual gnarly_value  () {}
-        virtual ~gnarly_value () {}
-
-        // No cv-modifier here. The call must be able to alter the closure state.
-        virtual shared_ptr<gnarly_value> operator() (const shared_ptr<gnarly_value> v) = 0;
+        // No cv-modifier here. The call must be able to alter the closure state, which
+        // is presumably encoded as instance data.
+        virtual gnarly_ref operator() (const gnarly_ref v) = 0;
       };
 
       END_NAMESPACE()
 
       #endif
       :.
-__6iVljwO8IovyanWX7m9fkKVqFrF0TOLOxvBL0dftMHk
+__JEEdFYQbm9Np3ywugPsxaSBtomWGOF+0tvkCNVa3joA
 
 meta::cpp_section('gnarly-definitions', <<'__FmFSYKmCoriWaKvGsWJfhtotbNjsd0KuMZujw1iFilU');
   - Language Definition
@@ -478,11 +484,93 @@ meta::cpp_section('gnarly-definitions', <<'__FmFSYKmCoriWaKvGsWJfhtotbNjsd0KuMZu
       functions to evaluate cons cells and dereference symbols.
 __FmFSYKmCoriWaKvGsWJfhtotbNjsd0KuMZujw1iFilU
 
-meta::cpp_section('gnarly-reader', <<'__1DR/WIFa0IeYkc54zNHyGeMBdiyEN3ZHUOlVst/NrYY');
+meta::cpp_section('gnarly-reader', <<'__ABTeo+r3ZY4sdsbKszJ548oRouuQKTIjeqdsv+KuJpQ');
   - Reader
     \label{sec:reader-implementation}
     The reader reads a string expression and produces an encoded syntax tree. The specifications of the syntax tree are covered in \Ref{section}{sec:reader-definition}.
-__1DR/WIFa0IeYkc54zNHyGeMBdiyEN3ZHUOlVst/NrYY
+
+    - Cons cell encoding
+      Cons cells are encoded using the binary function format discussed in \Ref{section}{sec:reader-definition}. As tokens are read, they are linked together to form a tree.
+
+      :: cpp name=bootstrap/reader/cons.hh
+      #ifndef BOOTSTRAP_READER_CONS_HH
+      #define BOOTSTRAP_READER_CONS_HH
+
+      #include "bootstrap/core/definitions.hh"
+
+      BEGIN_NAMESPACE()
+
+      class reader_cons : public gnarly_value {
+        class reader_cons_1 : public gnarly_value {
+          const gnarly_ref t_function;
+
+        public:
+          reader_cons_1 (const gnarly_ref _t_function) : t_function (_t_function) {}
+          virtual ~reader_cons_1 () {}
+
+          gnarly_ref operator() (const gnarly_ref a_function) const {
+            return *(*t_function (head)) (tail);
+          }
+        };
+
+        const gnarly_ref head;
+        const gnarly_ref tail;
+
+      public:
+        reader_cons (const gnarly_ref _head, const gnarly_ref _tail) :
+          head (_head), tail (_tail) {}
+        virtual ~reader_cons () {}
+
+        gnarly_ref operator() (const gnarly_ref t_function) const {
+          return gnarly_ref (new reader_cons_1 (t_function));
+        }
+      };
+
+      END_NAMESPACE()
+
+      #endif
+      :.
+
+    - Symbol encoding
+      Symbols are a bit simpler than cons cells. The main reason is that there is no closure state when they are singly applied (unlike cons cells, which must store a reference to
+      \verb|t_function|).
+
+      :: cpp name=bootstrap/reader/symbol.hh
+      #ifndef BOOTSTRAP_READER_SYMBOL_HH
+      #define BOOTSTRAP_READER_SYMBOL_HH
+
+      #include "bootstrap/core/definitions.hh"
+
+      BEGIN_NAMESPACE()
+
+      class reader_symbol : public gnarly_value {
+        class reader_symbol_1 : public gnarly_value {
+        public:
+          reader_symbol_1 () {}
+          virtual ~reader_symbol_1 () {}
+
+          gnarly_ref operator() (const gnarly_ref a_function) const {
+            return *a_function (symbol);
+          }
+        };
+
+        const gnarly_ref symbol;
+        const gnarly_ref aux (new reader_symbol_1 ());
+
+      public:
+        reader_symbol (const gnarly_ref _symbol) : symbol (_symbol) {}
+        virtual ~reader_symbol () {}
+
+        gnarly_ref operator() (const gnarly_ref t_function) const {
+          return aux;
+        }
+      };
+
+      END_NAMESPACE()
+
+      #endif
+      :.
+__ABTeo+r3ZY4sdsbKszJ548oRouuQKTIjeqdsv+KuJpQ
 
 meta::cpp_section('gnarly-runtime', <<'__PLSbwe8pGnuh53klIC60OMsweVKElNm6ziiHBFabyYg');
   - Runtime Bindings
@@ -610,9 +698,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__3yANhatSBpBCI0s1Ax04PDSKYt4RurifzM1LZvq3JrM');
-/tmp/gnarly.qWrFcDk4r0NtlUbi+ZeL4rvpD2VVIAZRzdzSixY3TAY/document.pdf
-__3yANhatSBpBCI0s1Ax04PDSKYt4RurifzM1LZvq3JrM
+meta::data('pdf-output-file', <<'__QWhbYi921xhs/4d3wgeAJtxAQU194s/UiKVwS5GtxlA');
+/tmp/gnarly.W99BLptkc+eevnVlHkkqIUGEgGTaeWneOsbXh3A3CxQ/document.pdf
+__QWhbYi921xhs/4d3wgeAJtxAQU194s/UiKVwS5GtxlA
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
