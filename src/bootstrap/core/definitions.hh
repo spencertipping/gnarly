@@ -3,6 +3,5 @@
 
 #include "bootstrap/core/typedefs.hh"
 #include "bootstrap/core/namespace-macros.hh"
-#include "bootstrap/core/ffi-macros.hh"
 
 #endif
