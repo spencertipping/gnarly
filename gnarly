@@ -484,7 +484,7 @@ meta::cpp_section('gnarly-definitions', <<'__FmFSYKmCoriWaKvGsWJfhtotbNjsd0KuMZu
       functions to evaluate cons cells and dereference symbols.
 __FmFSYKmCoriWaKvGsWJfhtotbNjsd0KuMZujw1iFilU
 
-meta::cpp_section('gnarly-reader', <<'__ABTeo+r3ZY4sdsbKszJ548oRouuQKTIjeqdsv+KuJpQ');
+meta::cpp_section('gnarly-reader', <<'__KhuL+u/zqdRGuati1VzfR69d6bTcL5wu1jwVO95AC2A');
   - Reader
     \label{sec:reader-implementation}
     The reader reads a string expression and produces an encoded syntax tree. The specifications of the syntax tree are covered in \Ref{section}{sec:reader-definition}.
@@ -570,7 +570,51 @@ meta::cpp_section('gnarly-reader', <<'__ABTeo+r3ZY4sdsbKszJ548oRouuQKTIjeqdsv+Ku
 
       #endif
       :.
-__ABTeo+r3ZY4sdsbKszJ548oRouuQKTIjeqdsv+KuJpQ
+
+    - Parsing and tree construction
+      Gnarly's syntax is simple enough to just use an \verb|in >> c| parser; that is, read a character and decide what to do with it. There is no lookahead, and recursive descent is relatively
+      trivial. Also, because consing is left-associative, there is no temporary allocation. Each new token in a stream can serve as a wrapper for the current value. The read function is
+      written as \verb|*<<| in Gnarly.
+
+      :: cpp name=bootstrap/reader/parser.hh
+      #ifndef BOOTSTRAP_READER_PARSER_HH
+      #define BOOTSTRAP_READER_PARSER_HH
+
+      #include <string>
+      #include <istream>
+
+      #include "bootstrap/core/definitions.hh"
+
+      BEGIN_NAMESPACE()
+
+      namespace internal {
+
+      using namespace std;
+      
+      static gnarly_ref read (istream &in) {
+        char       c;
+        gnarly_ref value;
+
+        
+
+        while (in >> c && c != ')')
+      }
+
+      }
+
+      class $asterisk$lt$lt : public gnarly_value {
+      public:
+        $asterisk$lt$lt () {}
+        virtual ~$asterisk$lt$lt () {}
+
+        
+      };
+
+      END_NAMESPACE()
+
+      #endif
+      :.
+__KhuL+u/zqdRGuati1VzfR69d6bTcL5wu1jwVO95AC2A
 
 meta::cpp_section('gnarly-runtime', <<'__PLSbwe8pGnuh53klIC60OMsweVKElNm6ziiHBFabyYg');
   - Runtime Bindings
@@ -698,9 +742,9 @@ meta::data('output-dir', <<'__6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ');
 /tmp
 __6WcazSRIScVxZ8ZY+i+Wl1IEj3qxhKPc9cRstNVq4SQ
 
-meta::data('pdf-output-file', <<'__QWhbYi921xhs/4d3wgeAJtxAQU194s/UiKVwS5GtxlA');
-/tmp/gnarly.W99BLptkc+eevnVlHkkqIUGEgGTaeWneOsbXh3A3CxQ/document.pdf
-__QWhbYi921xhs/4d3wgeAJtxAQU194s/UiKVwS5GtxlA
+meta::data('pdf-output-file', <<'__HyuBSGWsP+pn9fkm+bU7e7DEJc8n6wVQ1T6oaqlbApQ');
+/tmp/gnarly.-jyCH5f6LUKx-QSQfKCu2h5Ks6Fiurnw7UYi4Z5Vbmo/document.pdf
+__HyuBSGWsP+pn9fkm+bU7e7DEJc8n6wVQ1T6oaqlbApQ
 
 meta::data('pdf-reader', <<'__BlFO10Obn0hAHVxLShDpKtlpv0BTeJ7iqm1v7vjCM+A');
 evince
