@@ -342,7 +342,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'gnarly');
 meta::data('output-dir', '/tmp');
-meta::data('pdf-output-file', '/tmp/gnarly.PgER/document.pdf');
+meta::data('pdf-output-file', '/tmp/gnarly.5Lzw/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1311,7 +1311,7 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\newcommand{\Ref}[2]{\hyperref[#2]{#1 \ref*{#2}}}');
 meta::resource('header-resource', '\lstnewenvironment{resourcecode}{}{}');
-meta::section('beta-calculus', <<'__9331f8ff32a8111c322e8795e3b8f76e');
+meta::section('beta-calculus', <<'__c4021b37070ef365e693f65b82271bb8');
 - sc $\beta$ Calculus | sec:beta-calculus
   Evaluation is transparent in the $\lambda$ calculus, since there are no side effects and the $\lambda$ constructor is not itself a first-class value. In that case, a $\beta$-rewrite is
   simply a rewrite, without any evaluation or unification (since that could all be done later on with the same results). This implies a degree of freedom in the $\lambda$ calculus that could
@@ -1358,7 +1358,15 @@ meta::section('beta-calculus', <<'__9331f8ff32a8111c322e8795e3b8f76e');
                                                         & = \beta y . E[\beta e . e \oplus y]                                                                & \text{by }\ref{eq:beta-motion} \\
                                                         & = \beta y . y                                                                                      & \text{by }\ref{eq:beta-simple}
     - end
-__9331f8ff32a8111c322e8795e3b8f76e
+
+  - s1 Encoding of $\lambda$ calculus | sec:beta-calculus-lambda-encoding
+    A given $\lambda$ expression can be encoded in the $\beta$ calculus as follows:
+
+    - align << end
+      \lambda x . y     & = \beta x . y \\
+      (\lambda x . y) z & = E[\beta x . E[y] \oplus z]
+    - end
+__c4021b37070ef365e693f65b82271bb8
 
 meta::section('main', <<'__e051d0b814a37f3ad59da42022e796f3');
 - documentclass report
