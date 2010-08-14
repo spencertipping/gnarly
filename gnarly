@@ -342,7 +342,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'gnarly');
 meta::data('output-dir', '/tmp');
-meta::data('pdf-output-file', '/tmp/gnarly.5Lzw/document.pdf');
+meta::data('pdf-output-file', '/tmp/gnarly.cm8P/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1169,6 +1169,15 @@ __6999988eaf441c9b1282e03e1db427b5
 meta::message_color('state', 'purple');
 meta::message_color('states', 'yellow');
 meta::message_color('watch', 'blue');
+meta::note('math-sections', <<'__6279e21dca4e1475fc5a3ddde98788f9');
+What is important to cover in the math sections?
+
+1. Properties of the language
+2. Derivations of useful forms, perhaps? (Such as an encoding of the lambda calculus)
+3. Equivalences and optimizations
+4. Invariant analyses that are applicable
+__6279e21dca4e1475fc5a3ddde98788f9
+
 meta::parent('development', <<'__0e0a735b31c0a04070af3203430bb11d');
 parent::notes
 parent::preprocessor
@@ -1311,7 +1320,7 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\newcommand{\Ref}[2]{\hyperref[#2]{#1 \ref*{#2}}}');
 meta::resource('header-resource', '\lstnewenvironment{resourcecode}{}{}');
-meta::section('beta-calculus', <<'__c4021b37070ef365e693f65b82271bb8');
+meta::section('beta-calculus', <<'__ff1ef72c1fbfc37497547cda50c21ebe');
 - sc $\beta$ Calculus | sec:beta-calculus
   Evaluation is transparent in the $\lambda$ calculus, since there are no side effects and the $\lambda$ constructor is not itself a first-class value. In that case, a $\beta$-rewrite is
   simply a rewrite, without any evaluation or unification (since that could all be done later on with the same results). This implies a degree of freedom in the $\lambda$ calculus that could
@@ -1321,14 +1330,14 @@ meta::section('beta-calculus', <<'__c4021b37070ef365e693f65b82271bb8');
     The $\beta$ calculus is defined recursively as:
 
     - nalign << end
-      \exists (E')                            & : E[E' \oplus x] = E[x]                                                     \label{eq:eval} \\
-      \exists (\circ')                        & : E[\circ' x] = \beta e_1 . \beta e_2 . E[E[x] \oplus E[e_1] \oplus E[e_2]] \label{eq:compose} \\
-      \exists (\beta')                        & : E[\beta' \oplus x] = \beta e . \beta x . e                                \label{eq:beta-construction} \\
-      \exists (\oplus')                       & : E[\oplus' \oplus x] = \beta e . (x \oplus e)                              \label{eq:beta-juxtaposition} \\
-      E[\beta x . E[y] \oplus z]              & = E[E[\beta x . y \oplus z]]                                                \label{eq:beta-eval} \\
-      E[\beta x . y \oplus z]                 & = \begin{cases} z & x = y \\ y & x \ne y \end{cases}                        \label{eq:beta-simple} \\
-      E[\beta x . (y_1 \oplus y_2) \oplus z]  & = E[E[\beta x . y_1] \oplus E[\beta x . y_2]]                               \label{eq:beta-oplus} \\
-      E[\beta x . (\beta y_1 . y_2) \oplus z] & = \beta y_1 . E[\beta x . y_2 \oplus z]                                     \label{eq:beta-motion}
+      \exists (E')                            & : E[E' \oplus x] = E[x]                                                            \label{eq:eval} \\
+      \exists (\circ')                        & : E[\circ' \oplus x] = \beta e_1 . \beta e_2 . E[E[x] \oplus E[e_1] \oplus E[e_2]] \label{eq:compose} \\
+      \exists (\beta')                        & : E[\beta' \oplus x] = \beta e . \beta x . e                                       \label{eq:beta-construction} \\
+      \exists (\oplus')                       & : E[\oplus' \oplus x] = \beta e . (x \oplus e)                                     \label{eq:beta-juxtaposition} \\
+      E[\beta x . E[y] \oplus z]              & = E[E[\beta x . y \oplus z]]                                                       \label{eq:beta-eval} \\
+      E[\beta x . y \oplus z]                 & = \begin{cases} z & x = y \\ y & x \ne y \end{cases}                               \label{eq:beta-simple} \\
+      E[\beta x . (y_1 \oplus y_2) \oplus z]  & = E[E[\beta x . y_1] \oplus E[\beta x . y_2]]                                      \label{eq:beta-oplus} \\
+      E[\beta x . (\beta y_1 . y_2) \oplus z] & = \beta y_1 . E[\beta x . y_2 \oplus z]                                            \label{eq:beta-motion}
     - end
 
     Statements \ref{eq:eval}, \ref{eq:compose}, \ref{eq:beta-construction}, and \ref{eq:beta-juxtaposition} stipulate that there must exist first-class values $E'$, $\circ'$, $\beta'$, and
@@ -1360,15 +1369,27 @@ meta::section('beta-calculus', <<'__c4021b37070ef365e693f65b82271bb8');
     - end
 
   - s1 Encoding of $\lambda$ calculus | sec:beta-calculus-lambda-encoding
-    A given $\lambda$ expression can be encoded in the $\beta$ calculus as follows:
+    A given $\lambda$ expression can be encoded in the $\beta$ calculus by a function $T$ as follows:
 
     - align << end
-      \lambda x . y     & = \beta x . y \\
-      (\lambda x . y) z & = E[\beta x . E[y] \oplus z]
+      T[\lambda x . y] & = \beta x . E[T[y]] \\
+      T[x y]           & = E[T[x] \oplus T[y]] \\
+      T[x]             & = x
     - end
-__c4021b37070ef365e693f65b82271bb8
 
-meta::section('main', <<'__e051d0b814a37f3ad59da42022e796f3');
+    (Proof later)
+
+    Note that while $T^{-1}$ does exist, it is nontrivial to implement given the presence of $\beta'$, $\oplus'$, $E'$, and $\circ'$.
+__ff1ef72c1fbfc37497547cda50c21ebe
+
+meta::section('evaluation-ordering', <<'__bd437225b716a43dce4128c14ece74f9');
+- sc Evaluation Ordering | sec:evaluation-ordering
+  The significance of evaluation ordering enables different forms of expression to take place. In particular, either lexical or dynamic scoping semantics are possible depending on whether
+  forms are evaluated inside or outside $\beta$ closures (as demonstrated in \Ref{section}{sec:beta-calculus-evaluative-significance}). Also, because evaluation is selective, some forms can be
+  left unevaluated. (Note, however, that using delayed evaluation to achieve dynamic scoping is probably detrimental to performance in most implementations.)
+__bd437225b716a43dce4128c14ece74f9
+
+meta::section('main', <<'__1ef780632144a2baea13ce9772dbd1a0');
 - documentclass report
 - include resource::header
 
@@ -1381,8 +1402,9 @@ meta::section('main', <<'__e051d0b814a37f3ad59da42022e796f3');
 
   - sp Mathematical Background | sec:mathematical-background
   - include section::beta-calculus
+  - include section::evaluation-ordering
 - end
-__e051d0b814a37f3ad59da42022e796f3
+__1ef780632144a2baea13ce9772dbd1a0
 
 meta::template('comment', "'';     # A mechanism for line or block comments.");
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
